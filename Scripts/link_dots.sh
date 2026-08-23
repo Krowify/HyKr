@@ -13,3 +13,14 @@ for manifest in "${dotsDir}"/*.toml; do
 
     link_dot "$src" "$dst"
 done
+
+# hyprland.conf sources ~/.cache/wal/colors-hyprland — seed it so a fresh
+# install doesn't hand Hyprland a config that fails to parse.
+if [ ! -f "$HOME/.cache/wal/colors-hyprland" ]; then
+    if command -v wal >/dev/null 2>&1; then
+        print_log "No pywal theme yet — generating one from the default wallpaper"
+        wal -i "${repoDir}/Source/wallpapers/pywallpaper.jpg" -n --cols16
+    else
+        print_log "python-pywal not installed yet — install it, then run: wal -i <wallpaper> -n"
+    fi
+fi

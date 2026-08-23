@@ -51,6 +51,9 @@ base-devel                                             # C toolchain for treesit
 # --------------------------------------------------- // Starship
 starship
 
+# --------------------------------------------------- // Fastfetch
+fastfetch                                              # system info fetch tool — package only, not yet wired to auto-run (no kitty.conf/.bashrc in this repo yet)
+
 # --------------------------------------------------- // Hyprland keybinds
 jq                                                      # parses hyprctl -j output for the force-kill and per-monitor screenshot binds
 grim                                                    # screenshots
