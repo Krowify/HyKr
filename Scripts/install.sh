@@ -46,6 +46,29 @@ if [[ ${EUID} -eq 0 ]]; then
         fi
     fi
 
+    TARGET_HOME="$(getent passwd "${TARGET_USER}" | cut -d: -f6)"
+    if [[ -z "${TARGET_HOME}" || ! -d "${TARGET_HOME}" ]]; then
+        print_log "Could not resolve a home directory for ${TARGET_USER}, aborting."
+        exit 1
+    fi
+
+    # This repo was cloned as root (the normal state right after pacstrap,
+    # before ${TARGET_USER} existed), so it lives under /root -- mode 0700,
+    # unreadable by anyone but root. Re-execing via `su` below would fail
+    # with "Permission denied" just trying to read install.sh, so move the
+    # repo into the target user's home first.
+    if [[ "${repoDir}" != "${TARGET_HOME}"/* ]]; then
+        TARGET_REPO="${TARGET_HOME}/$(basename "${repoDir}")"
+        if [[ -e "${TARGET_REPO}" ]]; then
+            print_log "${TARGET_REPO} already exists — using it instead of moving ${repoDir}."
+        else
+            print_log "Moving ${repoDir} -> ${TARGET_REPO}"
+            mv "${repoDir}" "${TARGET_REPO}"
+        fi
+        chown -R "${TARGET_USER}:" "${TARGET_REPO}"
+        scrDir="${TARGET_REPO}/Scripts"
+    fi
+
     # `su - user -c "..."` doesn't reliably keep a controlling terminal
     # attached, so any sudo call further down this script (pacman, yay,
     # systemctl, firewall-cmd, ...) could hang asking for a password that
