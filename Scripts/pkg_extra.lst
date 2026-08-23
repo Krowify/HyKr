@@ -2,4 +2,5 @@
 vesktop-bin                                            # Discord client with Vencord (mod) built in — AUR, precompiled
 spotify-launcher                                       # lightweight Spotify installer/launcher — same package elifouts/Dotfiles uses
 proton-mail-bin                                        # Proton Mail desktop client — unofficial AUR build, precompiled (Proton doesn't publish an Arch package)
+code                                                    # VS Code OSS (extra repo, MIT build) — apply-theme.sh already targets "~/.config/Code - OSS/User/settings.json", which is this package's config dir, not Microsoft's branded build
 hyprmod                                                # GTK4/libadwaita live settings GUI for Hyprland — AUR, community-maintained and still in active development; writes its own hypr/hyprland-gui.conf, doesn't touch hyprland.conf

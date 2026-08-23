@@ -122,12 +122,9 @@ print_log "Installing core packages (Scripts/pkg_core.lst)"
 mapfile -t core_pkgs < <(pkg_names "${scrDir}/pkg_core.lst")
 yay -S --needed --noconfirm "${core_pkgs[@]}"
 
-read -rp "Install optional apps too (vesktop, spotify, proton mail)? [y/N] " extra_choice
-if [[ "${extra_choice,,}" == "y" ]]; then
-    print_log "Installing optional packages (Scripts/pkg_extra.lst)"
-    mapfile -t extra_pkgs < <(pkg_names "${scrDir}/pkg_extra.lst")
-    yay -S --needed --noconfirm "${extra_pkgs[@]}"
-fi
+print_log "Installing optional packages (Scripts/pkg_extra.lst)"
+mapfile -t extra_pkgs < <(pkg_names "${scrDir}/pkg_extra.lst")
+yay -S --needed --noconfirm "${extra_pkgs[@]}"
 
 # --------------------------------------------------- // Dotfiles
 print_log "Linking dotfiles (also seeds a default pywal theme if needed)"
