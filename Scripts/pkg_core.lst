@@ -68,7 +68,8 @@ jq                                                      # parses hyprctl -j outp
 grim                                                    # screenshots
 slurp                                                   # region select for screenshots
 wl-clipboard                                            # wl-copy, screenshots go to clipboard
-pamixer                                                 # volume keys (F10/F11/F12)
+pamixer                                                 # volume keys (F10/F11/F12), also the quick-settings volume slider
+brightnessctl                                           # quick-settings brightness slider
 hyprsunset                                              # blue light filter, Super+Shift+N
 eww                                                      # widget panel, Super+M — no eww config in this repo yet, keybind is a stub
 wlogout                                                 # logout menu, Super+Escape

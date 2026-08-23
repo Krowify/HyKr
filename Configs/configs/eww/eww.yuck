@@ -1,0 +1,41 @@
+; HyKr quick-settings widget panel (Super+M).
+; Polling-based (defpoll), not event-watched — simpler and good enough
+; for a settings panel that isn't open all the time.
+
+(defpoll volume :interval "2s" "pamixer --get-volume")
+(defpoll brightness :interval "2s" "brightnessctl -m | awk -F, '{print $4}' | tr -d '%'")
+(defpoll wifi-on :interval "3s" "nmcli radio wifi | grep -q enabled && echo on || echo off")
+(defpoll bt-on :interval "3s" "bluetoothctl show | grep -q 'Powered: yes' && echo on || echo off")
+(defpoll nightlight-on :interval "3s" "pgrep -x hyprsunset >/dev/null && echo on || echo off")
+
+(defwidget toggle [icon text active onclick]
+  (button :class {active == "on" ? "toggle active" : "toggle"} :onclick onclick
+    (label :text "${icon} ${text}")))
+
+(defwidget slider [icon value onchange]
+  (box :class "slider-row" :orientation "h" :spacing 8
+    (label :class "icon" :text icon)
+    (scale :min 0 :max 100 :value value :onchange onchange)))
+
+(defwidget quick-settings []
+  (box :class "panel" :orientation "v" :space-evenly false :spacing 10
+    (box :class "toggles" :orientation "h" :spacing 8 :halign "center"
+      (toggle :icon "󰖩" :text "Wi-Fi" :active wifi-on
+              :onclick "nmcli radio wifi $(nmcli radio wifi | grep -q enabled && echo off || echo on)")
+      (toggle :icon "󰂯" :text "Bluetooth" :active bt-on
+              :onclick "bluetoothctl power $(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)")
+      (toggle :icon "󰛨" :text "Night Light" :active nightlight-on
+              :onclick "pkill hyprsunset || hyprsunset"))
+    (slider :icon "󰕾" :value volume :onchange "pamixer --set-volume {}")
+    (slider :icon "󰃟" :value brightness :onchange "brightnessctl set {}%")
+    (box :class "power-row" :orientation "h" :spacing 8 :halign "center"
+      (button :class "power-btn" :onclick "hyprlock" "󰌾")
+      (button :class "power-btn" :onclick "wlogout" "⏻")
+      (button :class "power-btn" :onclick "nwg-look" "󰒓"))))
+
+(defwindow widget-panel
+  :monitor 0
+  :geometry (geometry :x "0px" :y "40px" :width "320px" :height "260px" :anchor "top right")
+  :stacking "overlay"
+  :exclusive false
+  (quick-settings))

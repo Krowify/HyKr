@@ -47,6 +47,12 @@ preference — installed as packages (`materia-gtk-theme`,
 is ours, not elifouts' — their `.bashrc` was built around tools this
 repo doesn't have (Docker, zoxide, ncspot, custom sound-effect hooks).
 
+## Quick Settings
+
+`Configs/configs/eww/` (widget panel, `Super+M`) and
+`Configs/configs/hypr/quick_settings.sh` (wofi menu, `Super+S`) are
+original — written for this repo, not sourced from any of the repos above.
+
 ## Tools & Packages
 
 - _TBD_
