@@ -13,15 +13,15 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 - [HyDE-Project/HyDE](https://github.com/HyDE-Project/HyDE) — repo/Scripts layout and README style this project follows.
 - [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles) (GPLv3) — source of the wallpapers, and the waybar, wofi, swaync, hyprlock, nvim, and starship configs.
 - [Darkkal44/qylock](https://github.com/Darkkal44/qylock) (GPLv3) — source of the `pixel-sakura` SDDM theme.
+- [dharmx/walls](https://github.com/dharmx/walls) — source of the themed wallpaper packs (no license file upstream; kept for personal desktop use, per-image credit unknown/unlisted upstream).
 - [Hyprland](https://hyprland.org/) — the Wayland compositor this setup is built around.
 
 ## Wallpapers
 
-All wallpapers in [`wallpapers/`](wallpapers) are from [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles/tree/main/wallpapers).
-
 | Wallpaper | Artist | Source |
 | --- | --- | --- |
-| Aloe.jpg, DSC02292-EDIT.jpg, DSC04822.JPG, DSC05767.JPG, MistyTrees.jpg, Sunset.jpg, dreamlike.jpg, leaves.jpg, pywallpaper.jpg | Eli F. ([elifouts](https://github.com/elifouts)) | [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles) |
+| Aloe.jpg, DSC02292-EDIT.jpg, DSC04822.JPG, DSC05767.JPG, MistyTrees.jpg, Sunset.jpg, dreamlike.jpg, leaves.jpg, pywallpaper.jpg | Eli F. ([elifouts](https://github.com/elifouts)) | [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles/tree/main/wallpapers) |
+| `nord/`, `anime/`, `m-26.jp/`, `apocalypse/`, `outrun/`, `evangelion/`, `stalenhag/`, `pixel/`, `radium/` (554 images total) | Unlisted (repo has no per-image credits or LICENSE) | [dharmx/walls](https://github.com/dharmx/walls) |
 
 ## SDDM Theme
 

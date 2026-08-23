@@ -31,7 +31,7 @@ HyKr/
 │   ├── dots/         # one .toml manifest per app (source → target)
 │   └── extra/        # optional/secondary scripts (e.g. install_sddm_theme.sh)
 └── Source/
-    ├── wallpapers/  # shipped wallpapers
+    ├── wallpapers/  # shipped wallpapers (elifouts/Dotfiles + 9 themed packs from dharmx/walls)
     └── CREDITS.md   # attribution
 ```
 
