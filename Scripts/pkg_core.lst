@@ -62,6 +62,7 @@ fastfetch                                              # system info fetch tool,
 
 # --------------------------------------------------- // Firewall
 firewalld                                              # hardened via Scripts/extra/setup_firewall.sh
+fail2ban                                               # bans repeat-offender IPs, sshd jail configured by setup_firewall.sh
 
 # --------------------------------------------------- // Hyprland keybinds
 jq                                                      # parses hyprctl -j output for the force-kill and per-monitor screenshot binds

@@ -61,9 +61,10 @@ cd ~/HyKr/Scripts
 > [!IMPORTANT]
 > `install.sh` installs `yay` if missing, installs everything in
 > `pkg_core.lst`, optionally `pkg_extra.lst`, links the dotfiles, then
-> asks before installing the SDDM theme and hardening the firewall.
-> The firewall step denies all incoming by default — if you SSH into
-> this machine or use LAN file sharing, re-add what you need afterward:
+> asks before installing the SDDM theme and running the security hardening
+> step (firewalld + sysctl anti-spoofing + fail2ban). Firewalld denies all
+> incoming by default on any untrusted network — if you SSH into this
+> machine or use LAN file sharing, re-add what you need afterward:
 > `sudo firewall-cmd --zone=public --add-service=ssh --permanent && sudo firewall-cmd --reload`
 
 <div align="right">

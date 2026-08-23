@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Firewall hardening via firewalld: deny incoming by default, allow
-# outgoing, log denials. Same posture as ufw setups in other Arch
-# dotfiles repos (e.g. tiesen243/dotfiles), adapted to firewalld's
-# zone model since that's what's installed here instead of ufw.
+# System hardening: firewalld, sysctl anti-spoofing, fail2ban. Same overall
+# posture as arch-install's stage-4 (deny incoming / allow outgoing / log /
+# fail2ban / sysctl), adapted to firewalld's zone model instead of ufw --
+# chosen deliberately over ufw for its NetworkManager zone integration,
+# since this runs on both a desktop and a laptop that moves between networks.
 
 scrDir="$(dirname "$(dirname "$(realpath "$0")")")"
 source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
@@ -15,7 +16,7 @@ fi
 print_log "Enabling firewalld"
 sudo systemctl enable --now firewalld
 
-print_log "Setting default zone to 'public'"
+print_log "Setting default zone to 'public' (applies to any network firewalld hasn't been told to trust)"
 sudo firewall-cmd --set-default-zone=public
 
 print_log "Removing default-enabled services from the public zone (ssh, mdns, samba-client, dhcpv6-client)"
@@ -30,5 +31,52 @@ sudo firewall-cmd --set-log-denied=all
 print_log "Reloading firewalld"
 sudo firewall-cmd --reload
 
+# --- sysctl anti-spoofing hardening (firewall-agnostic, ported from
+# arch-install's stage 4)
+print_log "Writing sysctl hardening rules"
+cat <<'EOF' | sudo tee /etc/sysctl.d/90-hardening.conf > /dev/null
+# Enable source route verification (anti IP-spoofing)
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+# Ignore ICMP redirects
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+
+# Ignore bogus ICMP error responses
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# Log packets with impossible addresses (martians)
+net.ipv4.conf.all.log_martians = 1
+EOF
+sudo sysctl --system
+
+print_log "Writing /etc/host.conf (anti IP-spoofing)"
+cat <<EOF | sudo tee /etc/host.conf > /dev/null
+order bind,hosts
+multi on
+EOF
+
+# --- fail2ban: inert until sshd is actually enabled and generating auth
+# logs, so it's safe to configure regardless of whether you use SSH.
+print_log "Configuring fail2ban"
+sudo mkdir -p /etc/fail2ban
+cat <<'EOF' | sudo tee /etc/fail2ban/jail.local > /dev/null
+[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+
+[sshd]
+enabled = true
+EOF
+sudo systemctl enable --now fail2ban
+
 print_log "Firewall hardened. Current zone config:"
 sudo firewall-cmd --list-all
+
+print_log "NOTE: 'public' (restrictive) is the default for any network firewalld"
+print_log "hasn't been told to trust. On the laptop, once connected to a network"
+print_log "you actually trust (home/work Wi-Fi), assign it a looser zone with:"
+print_log "  sudo firewall-cmd --zone=home --change-interface=<iface> --permanent"
+print_log "  sudo firewall-cmd --reload"

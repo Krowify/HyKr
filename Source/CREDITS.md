@@ -16,6 +16,7 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 - [dharmx/walls](https://github.com/dharmx/walls) — source of the themed wallpaper packs (no license file upstream; kept for personal desktop use, per-image credit unknown/unlisted upstream).
 - [Hyprland](https://hyprland.org/) — the Wayland compositor this setup is built around.
 - [tiesen243/dotfiles](https://github.com/tiesen243/dotfiles) — reference for the `firewalld` hardening posture in `Scripts/extra/setup_firewall.sh` (deny incoming / allow outgoing / log denials), adapted from their `ufw` setup since this repo uses `firewalld` instead.
+- [Krowify/arch-install](https://github.com/Krowify/arch-install) — the previous, proven install this repo replaces. The sysctl anti-spoofing rules, `/etc/host.conf`, and `fail2ban` jail in `setup_firewall.sh` are carried over from its stage 4 (firewall-agnostic, so they apply regardless of ufw vs firewalld).
 
 ## Wallpapers
 
