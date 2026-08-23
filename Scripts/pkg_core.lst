@@ -87,6 +87,8 @@ matugen                                                 # generates colors.json 
 thunar                                                  # file manager, Super+E
 kate                                                     # text editor, Super+C
 brave-bin                                                # web browser, Super+B (AUR — Brave has no official Arch package)
+swayimg                                                  # image viewer, Wayland-native — Thunar's Open With target for images
+celluloid                                                # video player (GTK frontend for mpv) — Thunar's Open With target for video
 
 # --------------------------------------------------- // SDDM (pixel-sakura theme)
 sddm
