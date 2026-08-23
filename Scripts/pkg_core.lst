@@ -11,6 +11,7 @@ pipewire-pulse                                         # pipewire pulseaudio cli
 pipewire-audio                                         # pipewire audio meta-package (pulls in the pipewire audio session bits)
 wireplumber                                            # pipewire session manager
 alsa-utils                                             # alsamixer/amixer -- low-level ALSA control, useful when PipeWire's own mixer isn't picking up hardware
+pavucontrol                                            # every theme's waybar pulseaudio module left-click already opens this (see theme-switcher/themes/*/templates/waybar/config), was just never listed as a dependency
 networkmanager                                         # network manager, used by waybar's network module + wofi's nmtui
 bluez                                                  # bluetooth protocol stack
 bluez-utils                                            # bluetooth utility cli
