@@ -417,8 +417,12 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
 fi
 
 # --------- Kitty ----------
+# current-theme.conf, not theme.conf: kitty.conf only ever `include`s
+# current-theme.conf (also written by wallpaper.sh from pywal colors), so
+# whichever of {this theme apply, the wallpaper picker} ran most recently
+# wins -- same "last write wins" pattern as starship.
 KITTY_TPL="$BASE/templates/kitty.conf.tpl"
-KITTY_OUT="$HOME/.config/kitty/theme.conf"
+KITTY_OUT="$HOME/.config/kitty/current-theme.conf"
 
 if [[ -f "$KITTY_TPL" ]]; then
   mkdir -p "$HOME/.config/kitty"
