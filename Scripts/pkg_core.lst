@@ -20,7 +20,7 @@ qt5-wayland                                            # wayland support for qt5
 qt6-wayland                                            # wayland support for qt6 apps
 
 # --------------------------------------------------- // Theming
-python-pywal                                           # generates the colors waybar/wofi/swaync style.css all @import — nothing themes correctly without this
+python-pywal16                                         # generates the colors waybar/wofi/swaync style.css all @import — 16-color fork of pywal, needed for the --cols16 flag used in wallpaper.sh/link_dots.sh (plain python-pywal doesn't support it, provides/replaces it, same `wal` command)
 awww                                                    # wallpaper daemon, paired with pywal by wofi's wallpaper picker (newer fork of swww, same usage)
 kitty                                                  # terminal, opened by waybar's network widget (nmtui) and wofi
 nerd-fonts                                             # glyphs used by waybar, wofi, and starship

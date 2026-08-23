@@ -60,7 +60,7 @@ shell explicitly replaced an earlier Eww/AGS attempt with Quickshell.
 
 ## Tools & Packages
 
-- _TBD_
+- [eylles/pywal16](https://github.com/eylles/pywal16) — 16-color fork of [dylanaraps/pywal](https://github.com/dylanaraps/pywal), installed (`python-pywal16`) instead of plain `python-pywal` because it's what provides the `--cols16` flag used in `wallpaper.sh`/`link_dots.sh` to guarantee a full 16-color palette from any wallpaper.
 
 ---
 
