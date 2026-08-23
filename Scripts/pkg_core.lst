@@ -41,6 +41,9 @@ hyprpicker                                             # backs waybar's custom/c
 # --------------------------------------------------- // Wofi
 wofi
 
+# --------------------------------------------------- // Rofi
+rofi                                                    # icon-grid picker used by wallpaper.sh and apply-theme.sh's dynamic theme picker — wofi's own image grid is flaky to click-select, so this is preferred when present
+
 # --------------------------------------------------- // Swaync
 swaync
 gvfs                                                   # needed for swaync's file actions
