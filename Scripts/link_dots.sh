@@ -18,6 +18,10 @@ for manifest in "${dotsDir}"/*.toml; do
     link_dot "$src" "$dst"
 done
 
+# ~/.config/hypr/wallpaper.sh (super+shift+W) picks from ~/wallpapers, which
+# nothing else populates -- link it to the repo's bundled wallpaper set.
+link_dot "${repoDir}/Source/wallpapers" "$HOME/wallpapers"
+
 # hyprland.conf sources ~/.cache/wal/colors-hyprland — seed it so a fresh
 # install doesn't hand Hyprland a config that fails to parse.
 if [ ! -f "$HOME/.cache/wal/colors-hyprland" ]; then
