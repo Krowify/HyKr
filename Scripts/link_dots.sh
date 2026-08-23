@@ -2,7 +2,11 @@
 # Symlinks every app manifest in Scripts/dots/*.toml from Configs/ into $HOME.
 
 scrDir="$(dirname "$(realpath "$0")")"
-source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+source "${scrDir}/global_fn.sh" || {
+    echo "Error: unable to source ${scrDir}/global_fn.sh"
+    ls -la "${scrDir}/global_fn.sh" 2>&1
+    exit 1
+}
 
 for manifest in "${dotsDir}"/*.toml; do
     source_rel="$(grep '^source' "$manifest" | cut -d'"' -f2)"

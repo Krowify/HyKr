@@ -4,7 +4,11 @@
 # theme + firewall hardening. Run from anywhere: ~/HyKr/Scripts/install.sh
 
 scrDir="$(dirname "$(realpath "$0")")"
-source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+source "${scrDir}/global_fn.sh" || {
+    echo "Error: unable to source ${scrDir}/global_fn.sh"
+    ls -la "${scrDir}/global_fn.sh" 2>&1
+    exit 1
+}
 
 pkg_names() {
     grep -vE '^\s*#|^\s*$' "$1" | awk '{print $1}'
@@ -67,6 +71,12 @@ if [[ ${EUID} -eq 0 ]]; then
         fi
         chown -R "${TARGET_USER}:" "${TARGET_REPO}"
         scrDir="${TARGET_REPO}/Scripts"
+
+        if [[ ! -f "${scrDir}/global_fn.sh" ]]; then
+            print_log "Moved the repo but ${scrDir}/global_fn.sh is missing — aborting before re-exec."
+            ls -la "${TARGET_REPO}" "${scrDir}" 2>&1
+            exit 1
+        fi
     fi
 
     # `su - user -c "..."` doesn't reliably keep a controlling terminal

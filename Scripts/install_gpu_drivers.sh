@@ -5,7 +5,11 @@
 # Krowify/arch-install's stage 1, made non-interactive.
 
 scrDir="$(dirname "$(dirname "$(realpath "$0")")")"
-source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+source "${scrDir}/global_fn.sh" || {
+    echo "Error: unable to source ${scrDir}/global_fn.sh"
+    ls -la "${scrDir}/global_fn.sh" 2>&1
+    exit 1
+}
 
 if ! command -v lspci &>/dev/null; then
     print_log "lspci not found — installing pciutils to detect the GPU"

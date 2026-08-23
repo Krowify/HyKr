@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # Shared lib sourced by every script in Scripts/. Callers set scrDir first:
 #   scrDir="$(dirname "$(realpath "$0")")"
-#   source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+#   source "${scrDir}/global_fn.sh" || {
+#       echo "Error: unable to source ${scrDir}/global_fn.sh"
+#       ls -la "${scrDir}/global_fn.sh" 2>&1
+#       exit 1
+#   }
 
 set -e
 

@@ -6,7 +6,11 @@
 # since this runs on both a desktop and a laptop that moves between networks.
 
 scrDir="$(dirname "$(dirname "$(realpath "$0")")")"
-source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+source "${scrDir}/global_fn.sh" || {
+    echo "Error: unable to source ${scrDir}/global_fn.sh"
+    ls -la "${scrDir}/global_fn.sh" 2>&1
+    exit 1
+}
 
 if ! command -v firewall-cmd &>/dev/null; then
     print_log "firewalld not installed — install it first: sudo pacman -S firewalld"

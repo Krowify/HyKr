@@ -2,7 +2,11 @@
 # Installs Configs/sddm/pixel-sakura as the active SDDM theme (system-wide, needs sudo).
 
 scrDir="$(dirname "$(dirname "$(realpath "$0")")")"
-source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+source "${scrDir}/global_fn.sh" || {
+    echo "Error: unable to source ${scrDir}/global_fn.sh"
+    ls -la "${scrDir}/global_fn.sh" 2>&1
+    exit 1
+}
 
 themeName="pixel-sakura"
 themeSrc="${repoDir}/Configs/sddm/${themeName}"

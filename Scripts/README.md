@@ -5,7 +5,11 @@ Conventions (following [HyDE](https://github.com/HyDE-Project/HyDE/tree/master/S
 - Every script computes its own dir and sources the shared lib first:
   ```bash
   scrDir="$(dirname "$(realpath "$0")")"
-  source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
+  source "${scrDir}/global_fn.sh" || {
+      echo "Error: unable to source ${scrDir}/global_fn.sh"
+      ls -la "${scrDir}/global_fn.sh" 2>&1
+      exit 1
+  }
   ```
 - [`global_fn.sh`](global_fn.sh) is the shared lib — common vars (`repoDir`, `dotsDir`, `confDir`) and helper functions (`print_log`, `link_dot`, …) live there, not duplicated per script.
 - Naming: `snake_case`, verb first (`link_dots.sh`), `.sh` for scripts. A script's data file (if any) shares its base name with a different extension (e.g. `dots/waybar.toml`).
