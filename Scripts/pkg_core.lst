@@ -53,6 +53,7 @@ hypridle                                               # idle daemon commonly pa
 # --------------------------------------------------- // Nvim
 neovim
 git                                                    # plugin manager (lazy.nvim) + gitsigns
+less                                                    # pager git/man/etc. expect — not in base pacstrap, so those fail without it
 ripgrep                                                # telescope live_grep
 unzip                                                  # mason LSP/tool installer
 nodejs                                                 # required by the bashls language server (installed via mason)
