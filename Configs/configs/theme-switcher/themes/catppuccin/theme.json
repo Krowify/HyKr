@@ -10,7 +10,7 @@
   "hypr": {
     "border_size": 3,
     "gaps_out": 20,
-    "rounding": 16,
+    "rounding": 20,
 
     "blur": {
       "enabled": true,
