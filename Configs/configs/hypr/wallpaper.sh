@@ -7,6 +7,13 @@
 # deliberately not used here: its GtkFlowBox click-to-activate is flaky
 # (same reason apply-theme.sh's dynamic-theme picker prefers rofi's grid
 # and only falls back to a plain wofi list).
+#
+# kitty and starship both get overwritten here with pywal's actual
+# per-wallpaper colors (via Configs/configs/wal/templates/) rather than
+# whatever theme-switcher theme is nominally active, same as fastfetch's
+# ASCII art (colored through the terminal's own pywal-set ANSI palette) --
+# so picking a wallpaper here always matches what you see in the terminal,
+# even if it diverges from the last theme-switcher theme you applied.
 WALLPAPER_DIR="$HOME/wallpapers"
 ROFI_GRID_THEME="$HOME/.config/rofi/wallpaper-grid.rasi"
 
@@ -48,6 +55,7 @@ main() {
 
     swaync-client --reload-css
     cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
+    [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
 
     command -v pywalfox &>/dev/null && pywalfox update
 

@@ -1,0 +1,63 @@
+add_newline = false
+command_timeout = 1000
+
+format = """
+$time$os$username$hostname$directory$git_branch$git_status$character
+"""
+
+# ---------------- TIME ----------------
+[time]
+disabled = false
+time_format = "%H:%M"
+style = "bg:{color4} fg:{background}"
+format = "[](fg:{color4})[  $time ]($style)[](fg:{color4} bg:{color0})"
+
+# ---------------- OS ----------------
+[os]
+disabled = false
+style = "bg:{color0} fg:{color4}"
+format = "[ $symbol ]($style)"
+
+[os.symbols]
+Arch = ""
+
+# ---------------- USER ----------------
+[username]
+show_always = true
+style_user = "bg:{color0} fg:{foreground}"
+format = "[ $user ]($style)"
+
+# ---------------- HOST ----------------
+[hostname]
+ssh_only = false
+style = "bg:{color0} fg:{color4}"
+format = "[@$hostname ]($style)[](fg:{color0} bg:{color8})"
+
+# ---------------- DIRECTORY ----------------
+[directory]
+home_symbol = "~"
+truncation_length = 3
+truncation_symbol = "…/"
+style = "bg:{color8} fg:{color4}"
+format = "[ $path ]($style)[](fg:{color8})"
+
+# ---------------- GIT ----------------
+[git_branch]
+symbol = ""
+style = "bg:{color8} fg:{color2}"
+format = "[ $symbol $branch ]($style)"
+
+[git_status]
+style = "bg:{color8} fg:{color3}"
+format = "[ $all_status$ahead_behind ]($style)[](fg:{color8} bg:{background})"
+
+# ---------------- PROMPT ----------------
+[character]
+success_symbol = "[ ❯](fg:{color4})"
+error_symbol = "[ ❯](fg:{color1})"
+
+# ---------------- CLEAN ----------------
+[package]
+disabled = true
+[cmd_duration]
+disabled = true
