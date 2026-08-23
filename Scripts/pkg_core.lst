@@ -84,11 +84,15 @@ cliphist                                                # clipboard history, Sup
 matugen                                                 # generates colors.json from wallpaper for theme-switcher's "dynamic" theme
 
 # --------------------------------------------------- // Apps
-thunar                                                  # file manager, Super+E
+dolphin                                                 # file manager, Super+E — matches HyDE's own choice, pairs with kate (both KDE)
+ark                                                     # archive tool, Dolphin's native extract/compress integration (HyDE uses this too, not file-roller)
+kde-cli-tools                                           # file type default associations for Dolphin
+qt5-imageformats                                        # image thumbnails in Dolphin
+ffmpegthumbs                                            # video thumbnails in Dolphin
 kate                                                     # text editor, Super+C
 brave-bin                                                # web browser, Super+B (AUR — Brave has no official Arch package)
-swayimg                                                  # image viewer, Wayland-native — Thunar's Open With target for images
-celluloid                                                # video player (GTK frontend for mpv) — Thunar's Open With target for video
+swayimg                                                  # image viewer, Wayland-native — Dolphin's Open With target for images
+celluloid                                                # video player (GTK frontend for mpv) — Dolphin's Open With target for video
 
 # --------------------------------------------------- // SDDM (pixel-sakura theme)
 sddm

@@ -40,7 +40,7 @@ syntax, see `hyprland.conf` directly — this page is the human-readable index.
 | Keybind | Action |
 | --- | --- |
 | `Super+Tab` | App launcher (Wofi) |
-| `Super+E` | File manager (Thunar) |
+| `Super+E` | File manager (Dolphin) |
 | `Super+C` | Text editor (Kate) |
 | `Super+B` | Web browser (Brave) |
 | `Super+V` | Clipboard history (Cliphist + Wofi) |
