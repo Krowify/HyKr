@@ -1,0 +1,3 @@
+[quickshell]
+source = "Configs/configs/quickshell"
+target = "~/.config/quickshell"

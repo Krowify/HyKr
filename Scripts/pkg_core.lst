@@ -71,7 +71,7 @@ wl-clipboard                                            # wl-copy, screenshots g
 pamixer                                                 # volume keys (F10/F11/F12), also the quick-settings volume slider
 brightnessctl                                           # quick-settings brightness slider
 hyprsunset                                              # blue light filter, Super+Shift+N
-eww                                                      # widget panel, Super+M — no eww config in this repo yet, keybind is a stub
+quickshell                                              # widget panel, Super+M — see Configs/configs/quickshell/hykr/shell.qml
 wlogout                                                 # logout menu, Super+Escape
 swayosd                                                  # on-screen volume/brightness display, used by wallpaper.sh if present (guarded, optional)
 cliphist                                                # clipboard history, Super+V

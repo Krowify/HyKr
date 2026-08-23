@@ -49,9 +49,12 @@ repo doesn't have (Docker, zoxide, ncspot, custom sound-effect hooks).
 
 ## Quick Settings
 
-`Configs/configs/eww/` (widget panel, `Super+M`) and
+`Configs/configs/quickshell/hykr/shell.qml` (widget panel, `Super+M`) and
 `Configs/configs/hypr/quick_settings.sh` (wofi menu, `Super+S`) are
 original — written for this repo, not sourced from any of the repos above.
+The panel was originally built in Eww, then rebuilt in Quickshell — see
+[end-4/dots-hyprland](https://github.com/end-4/dots-hyprland), whose own
+shell explicitly replaced an earlier Eww/AGS attempt with Quickshell.
 
 ## Tools & Packages
 
