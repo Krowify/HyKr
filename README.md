@@ -9,7 +9,7 @@
 <a href="#structure"><kbd> <br> Structure <br> </kbd></a>&ensp;&ensp;
 <a href="#installation"><kbd> <br> Installation <br> </kbd></a>&ensp;&ensp;
 <a href="Source/wallpapers"><kbd> <br> Wallpapers <br> </kbd></a>&ensp;&ensp;
-<a href="Configs/configs/hypr/hyprland.conf"><kbd> <br> Keybinds <br> </kbd></a>&ensp;&ensp;
+<a href="Configs/configs/hypr/KEYBINDS.md"><kbd> <br> Keybinds <br> </kbd></a>&ensp;&ensp;
 <a href="Source/CREDITS.md"><kbd> <br> Credits <br> </kbd></a>
 
 </div>

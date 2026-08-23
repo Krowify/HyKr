@@ -33,3 +33,6 @@ Not from elifouts:
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
+- `hypr/KEYBINDS.md` — every bind in `hyprland.conf`, grouped and in
+  copy-pasteable blocks. Same format as [Krowify/arch-install's KEYBINDINGS.md](https://github.com/Krowify/arch-install/blob/main/KEYBINDINGS.md),
+  built from this repo's own binds (not arch-install's — different app stack).
