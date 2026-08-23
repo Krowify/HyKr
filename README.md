@@ -23,12 +23,13 @@
 HyKr/
 ├── Configs/
 │   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml)
-│   └── .local/    # dotfiles → ~/.local
+│   ├── .local/    # dotfiles → ~/.local
+│   └── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
 ├── Scripts/
 │   ├── global_fn.sh  # shared lib, sourced by every script
 │   ├── link_dots.sh  # symlinks Configs/configs/* into $HOME per Scripts/dots manifest
 │   ├── dots/         # one .toml manifest per app (source → target)
-│   └── extra/        # optional/secondary scripts
+│   └── extra/        # optional/secondary scripts (e.g. install_sddm_theme.sh)
 └── Source/
     ├── wallpapers/  # shipped wallpapers
     └── CREDITS.md   # attribution
