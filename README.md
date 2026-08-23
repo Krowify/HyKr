@@ -57,7 +57,7 @@ HyKr/
 ---
 
 ```shell
-sudo pacman -S --needed git base-devel
+sudo pacman -Syu --needed git base-devel
 git clone --depth 1 https://github.com/krowify/HyKr ~/HyKr
 cd ~/HyKr/Scripts
 ./install.sh

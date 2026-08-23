@@ -75,7 +75,7 @@ fi
 
 if ! command -v yay &>/dev/null; then
     print_log "yay (AUR helper) not found — installing it"
-    sudo pacman -S --needed --noconfirm git base-devel
+    sudo pacman -Syu --needed --noconfirm git base-devel
     git clone https://aur.archlinux.org/yay.git /tmp/hykr-yay
     (cd /tmp/hykr-yay && makepkg -si --noconfirm)
     rm -rf /tmp/hykr-yay
