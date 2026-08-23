@@ -30,7 +30,8 @@ HyKr/
 │   ├── link_dots.sh  # symlinks Configs/configs/* into $HOME per Scripts/dots manifest
 │   ├── dots/         # one .toml manifest per app (source → target)
 │   ├── extra/        # optional/secondary scripts (e.g. install_sddm_theme.sh)
-│   └── pkg_core.lst  # packages needed to run what's in Configs/
+│   ├── pkg_core.lst  # packages needed to run what's in Configs/
+│   └── pkg_extra.lst # optional apps (vesktop, spotify, proton mail)
 └── Source/
     ├── wallpapers/  # shipped wallpapers (elifouts/Dotfiles + 9 themed packs from dharmx/walls)
     └── CREDITS.md   # attribution

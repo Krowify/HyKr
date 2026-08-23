@@ -1,0 +1,4 @@
+# --------------------------------------------------- // Apps
+vesktop-bin                                            # Discord client with Vencord (mod) built in — AUR, precompiled
+spotify-launcher                                       # lightweight Spotify installer/launcher — same package elifouts/Dotfiles uses
+proton-mail-bin                                        # Proton Mail desktop client — unofficial AUR build, precompiled (Proton doesn't publish an Arch package)
