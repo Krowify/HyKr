@@ -8,7 +8,9 @@ xorg-xwayland                                          # runs X11-only apps insi
 pipewire                                               # audio/video server
 pipewire-alsa                                          # pipewire alsa client
 pipewire-pulse                                         # pipewire pulseaudio client
+pipewire-audio                                         # pipewire audio meta-package (pulls in the pipewire audio session bits)
 wireplumber                                            # pipewire session manager
+alsa-utils                                             # alsamixer/amixer -- low-level ALSA control, useful when PipeWire's own mixer isn't picking up hardware
 networkmanager                                         # network manager, used by waybar's network module + wofi's nmtui
 bluez                                                  # bluetooth protocol stack
 bluez-utils                                            # bluetooth utility cli
