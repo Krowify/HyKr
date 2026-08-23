@@ -61,6 +61,7 @@ hyprsunset                                              # blue light filter, Sup
 eww                                                      # widget panel, Super+M — no eww config in this repo yet, keybind is a stub
 wlogout                                                 # logout menu, Super+Escape
 swayosd                                                  # on-screen volume/brightness display, used by wallpaper.sh if present (guarded, optional)
+cliphist                                                # clipboard history, Super+V
 
 # --------------------------------------------------- // Apps
 thunar                                                  # file manager, Super+E
