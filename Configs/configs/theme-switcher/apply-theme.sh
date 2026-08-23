@@ -44,7 +44,7 @@ de_symlink() {
 }
 for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
          "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
-         "$HOME/.config/fastfetch" "$HOME/.config/starship.toml"; do
+         "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0"; do
   de_symlink "$p"
 done
 
@@ -139,6 +139,13 @@ hex_to_rgba_ff() {
   local h="${1#\#}"
   [[ "$h" =~ ^[0-9a-fA-F]{6}$ ]] || { echo "Invalid hex: $1" >&2; exit 1; }
   echo "rgba(${h}ff)"
+}
+
+# qt5ct/qt6ct color scheme files want #AARRGGBB, alpha first.
+hex_to_argb() {
+  local h="${1#\#}" alpha="${2:-ff}"
+  [[ "$h" =~ ^[0-9a-fA-F]{6}$ ]] || { echo "Invalid hex: $1" >&2; exit 1; }
+  echo "#${alpha}${h}"
 }
 
 hex_to_rgba_css() {
@@ -738,6 +745,76 @@ if [[ -f "$VSCODE_TPL" ]]; then
     -e "s/{{border_active}}/${border_active_hex:-$accent_hex}/g" \
     -e "s/{{border_inactive}}/${border_inactive_hex:-$surface_hex}/g" \
     "$VSCODE_TPL" > "$VSCODE_OUT"
+fi
+
+# --------- Qt6ct (dolphin, kate, other Qt6 apps) ----------
+QT6CT_TPL="$BASE/templates/qt6ct-colors.conf.tpl"
+QT6CT_DIR="$HOME/.config/qt6ct"
+QT6CT_COLORS_DIR="$QT6CT_DIR/colors"
+QT6CT_COLORS_OUT="$QT6CT_COLORS_DIR/hykr.conf"
+QT6CT_CONF_OUT="$QT6CT_DIR/qt6ct.conf"
+
+if [[ -f "$QT6CT_TPL" ]]; then
+  mkdir -p "$QT6CT_COLORS_DIR"
+
+  argb_fg="$(hex_to_argb "$fg_hex")"
+  argb_bg="$(hex_to_argb "$bg_hex")"
+  argb_bg_alt="$(hex_to_argb "$bg_alt_hex")"
+  argb_surface="$(hex_to_argb "$surface_hex")"
+  argb_surface2="$(hex_to_argb "$surface2_hex")"
+  argb_shadow="$(hex_to_argb "$shadow_hex")"
+  argb_accent="$(hex_to_argb "$accent_hex")"
+  argb_accent_alt="$(hex_to_argb "${accent_alt_hex:-$accent_hex}")"
+  argb_overlay="$(hex_to_argb "${overlay_hex:-$surface2_hex}")"
+  argb_overlay_50="$(hex_to_argb "${overlay_hex:-$surface2_hex}" "80")"
+
+  sed \
+    -e "s/{{argb_fg}}/$argb_fg/g" \
+    -e "s/{{argb_bg}}/$argb_bg/g" \
+    -e "s/{{argb_bg_alt}}/$argb_bg_alt/g" \
+    -e "s/{{argb_surface}}/$argb_surface/g" \
+    -e "s/{{argb_surface2}}/$argb_surface2/g" \
+    -e "s/{{argb_shadow}}/$argb_shadow/g" \
+    -e "s/{{argb_accent}}/$argb_accent/g" \
+    -e "s/{{argb_accent_alt}}/$argb_accent_alt/g" \
+    -e "s/{{argb_overlay}}/$argb_overlay/g" \
+    -e "s/{{argb_overlay_50}}/$argb_overlay_50/g" \
+    "$QT6CT_TPL" > "$QT6CT_COLORS_OUT"
+
+  # qt6ct.conf's [Appearance] block is theme-independent (only the color
+  # scheme file it points at changes above), and needs $HOME baked in for
+  # real -- a repo-committed default can't know each user's home
+  # directory, so this is written directly here instead of symlinked.
+  if [[ ! -f "$QT6CT_CONF_OUT" ]]; then
+    cat > "$QT6CT_CONF_OUT" <<EOF
+[Appearance]
+style=Fusion
+custom_palette=true
+color_scheme_path=$QT6CT_COLORS_OUT
+standard_dialogs=default
+EOF
+  fi
+fi
+
+# --------- GTK4 / libadwaita (hyprmod, other GTK4 apps) ----------
+GTK4_TPL="$BASE/templates/gtk4-colors.css.tpl"
+GTK4_OUT="$HOME/.config/gtk-4.0/gtk.css"
+
+if [[ -f "$GTK4_TPL" ]]; then
+  mkdir -p "$(dirname "$GTK4_OUT")"
+
+  sed \
+    -e "s/{{bg}}/$bg_hex/g" \
+    -e "s/{{bg_alt}}/$bg_alt_hex/g" \
+    -e "s/{{surface}}/$surface_hex/g" \
+    -e "s/{{surface2}}/$surface2_hex/g" \
+    -e "s/{{fg}}/$fg_hex/g" \
+    -e "s/{{accent}}/$accent_hex/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    -e "s/{{green}}/$green_hex/g" \
+    -e "s/{{yellow}}/$yellow_hex/g" \
+    -e "s/{{shadow}}/$shadow_hex/g" \
+    "$GTK4_TPL" > "$GTK4_OUT"
 fi
 
 hyprctl reload >/dev/null 2>&1 || true
