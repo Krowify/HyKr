@@ -1,0 +1,3 @@
+[hypr]
+source = "Configs/configs/hypr"
+target = "~/.config/hypr"

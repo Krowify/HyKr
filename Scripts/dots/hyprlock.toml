@@ -1,3 +1,0 @@
-[hyprlock]
-source = "Configs/configs/hypr/hyprlock.conf"
-target = "~/.config/hypr/hyprlock.conf"

@@ -51,6 +51,22 @@ base-devel                                             # C toolchain for treesit
 # --------------------------------------------------- // Starship
 starship
 
+# --------------------------------------------------- // Hyprland keybinds
+jq                                                      # parses hyprctl -j output for the force-kill and per-monitor screenshot binds
+grim                                                    # screenshots
+slurp                                                   # region select for screenshots
+wl-clipboard                                            # wl-copy, screenshots go to clipboard
+pamixer                                                 # volume keys (F10/F11/F12)
+hyprsunset                                              # blue light filter, Super+Shift+N
+eww                                                      # widget panel, Super+M — no eww config in this repo yet, keybind is a stub
+wlogout                                                 # logout menu, Super+Escape
+swayosd                                                  # on-screen volume/brightness display, used by wallpaper.sh if present (guarded, optional)
+
+# --------------------------------------------------- // Apps
+thunar                                                  # file manager, Super+E
+kate                                                     # text editor, Super+C
+brave-bin                                                # web browser, Super+B (AUR — Brave has no official Arch package)
+
 # --------------------------------------------------- // SDDM (pixel-sakura theme)
 sddm
 qt6-declarative

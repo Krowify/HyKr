@@ -22,7 +22,7 @@
 ```
 HyKr/
 ├── Configs/
-│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml, wal)
+│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml, wal, wlogout)
 │   ├── .local/    # dotfiles → ~/.local
 │   └── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
 ├── Scripts/
@@ -50,9 +50,9 @@ HyKr/
 ---
 
 > [!IMPORTANT]
-> This repo is still in its scaffolding stage — keybinds haven't been set
-> up yet, and there's no full install script. `Scripts/link_dots.sh`
-> symlinks the current app configs into place:
+> There's no full install script yet (packages in `Scripts/pkg_*.lst`
+> still need installing manually). `Scripts/link_dots.sh` symlinks the
+> current app configs into place, keybinds included:
 
 ```shell
 sudo pacman -S --needed git base-devel

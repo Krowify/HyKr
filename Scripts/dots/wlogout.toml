@@ -1,0 +1,3 @@
+[wlogout]
+source = "Configs/configs/wlogout"
+target = "~/.config/wlogout"
