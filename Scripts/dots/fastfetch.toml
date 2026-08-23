@@ -1,0 +1,3 @@
+[fastfetch]
+source = "Configs/configs/fastfetch"
+target = "~/.config/fastfetch"

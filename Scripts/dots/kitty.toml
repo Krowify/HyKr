@@ -1,0 +1,3 @@
+[kitty]
+source = "Configs/configs/kitty"
+target = "~/.config/kitty"

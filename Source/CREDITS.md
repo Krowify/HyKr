@@ -15,6 +15,7 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 - [Darkkal44/qylock](https://github.com/Darkkal44/qylock) (GPLv3) — source of the `pixel-sakura` SDDM theme.
 - [dharmx/walls](https://github.com/dharmx/walls) — source of the themed wallpaper packs (no license file upstream; kept for personal desktop use, per-image credit unknown/unlisted upstream).
 - [Hyprland](https://hyprland.org/) — the Wayland compositor this setup is built around.
+- [tiesen243/dotfiles](https://github.com/tiesen243/dotfiles) — reference for the `firewalld` hardening posture in `Scripts/extra/setup_firewall.sh` (deny incoming / allow outgoing / log denials), adapted from their `ufw` setup since this repo uses `firewalld` instead.
 
 ## Wallpapers
 
@@ -33,9 +34,18 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 Widget theme `Materia-dark` and icon theme `Qogir-dark` are
 [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles)' documented
 preference — installed as packages (`materia-gtk-theme`,
-`qogir-icon-theme` in [`pkg_core.lst`](../Scripts/pkg_core.lst)), not
-bundled config files, since the upstream repo doesn't ship theme files
-itself.
+`qogir-icon-theme`), activated by `Configs/configs/gtk-{3,4}.0/settings.ini`
+(ours — elifouts doesn't ship theme config files itself). Cursor theme
+`illogical-impulse-bibata-modern-classic-bin` is from elifouts'
+`fullinstall.sh` package list.
+
+## Terminal / Shell
+
+`Configs/configs/kitty/kitty.conf` keeps only elifouts' actual settings
+(font, padding, tab style) — their file was mostly kitty's own stock
+95KB default config template, not anything they wrote. `Configs/configs/bash/.bashrc`
+is ours, not elifouts' — their `.bashrc` was built around tools this
+repo doesn't have (Docker, zoxide, ncspot, custom sound-effect hooks).
 
 ## Tools & Packages
 

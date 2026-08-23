@@ -22,14 +22,16 @@
 ```
 HyKr/
 ├── Configs/
-│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml, wal, wlogout)
+│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml,
+│   │               #   wal, wlogout, kitty, gtk-3.0, gtk-4.0, fastfetch) + bash/.bashrc → ~/.bashrc
 │   ├── .local/    # dotfiles → ~/.local
 │   └── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
 ├── Scripts/
+│   ├── install.sh    # single entrypoint: preflight -> packages -> link_dots -> SDDM/firewall (optional)
 │   ├── global_fn.sh  # shared lib, sourced by every script
 │   ├── link_dots.sh  # symlinks Configs/configs/* into $HOME per Scripts/dots manifest
 │   ├── dots/         # one .toml manifest per app (source → target)
-│   ├── extra/        # optional/secondary scripts (e.g. install_sddm_theme.sh)
+│   ├── extra/        # optional/secondary scripts (install_sddm_theme.sh, setup_firewall.sh)
 │   ├── pkg_core.lst  # packages needed to run what's in Configs/
 │   └── pkg_extra.lst # optional apps (vesktop, spotify, proton mail)
 └── Source/
@@ -49,17 +51,20 @@ HyKr/
 
 ---
 
-> [!IMPORTANT]
-> There's no full install script yet (packages in `Scripts/pkg_*.lst`
-> still need installing manually). `Scripts/link_dots.sh` symlinks the
-> current app configs into place, keybinds included:
-
 ```shell
 sudo pacman -S --needed git base-devel
 git clone --depth 1 https://github.com/krowify/HyKr ~/HyKr
 cd ~/HyKr/Scripts
-./link_dots.sh
+./install.sh
 ```
+
+> [!IMPORTANT]
+> `install.sh` installs `yay` if missing, installs everything in
+> `pkg_core.lst`, optionally `pkg_extra.lst`, links the dotfiles, then
+> asks before installing the SDDM theme and hardening the firewall.
+> The firewall step denies all incoming by default — if you SSH into
+> this machine or use LAN file sharing, re-add what you need afterward:
+> `sudo firewall-cmd --zone=public --add-service=ssh --permanent && sudo firewall-cmd --reload`
 
 <div align="right">
   <sub><a href="#hykr">🡅 back to top</a></sub>

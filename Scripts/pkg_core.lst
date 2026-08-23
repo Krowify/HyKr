@@ -20,8 +20,14 @@ awww                                                    # wallpaper daemon, pair
 kitty                                                  # terminal, opened by waybar's network widget (nmtui) and wofi
 nerd-fonts                                             # glyphs used by waybar, wofi, and starship
 fd                                                      # used by wofi's wallpaper picker and nvim's telescope
-materia-gtk-theme                                      # GTK widget theme (Materia-dark) — elifouts/Dotfiles' preference, apply via nwg-look
-qogir-icon-theme                                       # icon theme (Qogir-dark) — elifouts/Dotfiles' preference, apply via nwg-look
+materia-gtk-theme                                      # GTK widget theme (Materia-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
+qogir-icon-theme                                       # icon theme (Qogir-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
+illogical-impulse-bibata-modern-classic-bin            # cursor theme — from elifouts/Dotfiles' fullinstall.sh package list
+nwg-look                                                # GUI to apply/preview the GTK theme (also reads gtk-{3,4}.0/settings.ini)
+qt5ct                                                   # Qt5 theming, needed for kate/qt apps to match
+qt6ct                                                   # Qt6 theming
+kvantum                                                 # svg-based Qt6 theme engine
+kvantum-qt5                                             # svg-based Qt5 theme engine
 
 # --------------------------------------------------- // Waybar
 waybar
@@ -52,7 +58,10 @@ base-devel                                             # C toolchain for treesit
 starship
 
 # --------------------------------------------------- // Fastfetch
-fastfetch                                              # system info fetch tool — package only, not yet wired to auto-run (no kitty.conf/.bashrc in this repo yet)
+fastfetch                                              # system info fetch tool, runs on every interactive shell via .bashrc
+
+# --------------------------------------------------- // Firewall
+firewalld                                              # hardened via Scripts/extra/setup_firewall.sh
 
 # --------------------------------------------------- // Hyprland keybinds
 jq                                                      # parses hyprctl -j output for the force-kill and per-monitor screenshot binds

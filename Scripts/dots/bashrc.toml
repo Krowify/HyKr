@@ -1,0 +1,3 @@
+[bashrc]
+source = "Configs/configs/bash/.bashrc"
+target = "~/.bashrc"

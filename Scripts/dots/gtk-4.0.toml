@@ -1,0 +1,3 @@
+[gtk-4.0]
+source = "Configs/configs/gtk-4.0"
+target = "~/.config/gtk-4.0"
