@@ -20,6 +20,8 @@ awww                                                    # wallpaper daemon, pair
 kitty                                                  # terminal, opened by waybar's network widget (nmtui) and wofi
 nerd-fonts                                             # glyphs used by waybar, wofi, and starship
 fd                                                      # used by wofi's wallpaper picker and nvim's telescope
+materia-gtk-theme                                      # GTK widget theme (Materia-dark) — elifouts/Dotfiles' preference, apply via nwg-look
+qogir-icon-theme                                       # icon theme (Qogir-dark) — elifouts/Dotfiles' preference, apply via nwg-look
 
 # --------------------------------------------------- // Waybar
 waybar

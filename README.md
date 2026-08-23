@@ -22,7 +22,7 @@
 ```
 HyKr/
 ├── Configs/
-│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml)
+│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml, wal)
 │   ├── .local/    # dotfiles → ~/.local
 │   └── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
 ├── Scripts/

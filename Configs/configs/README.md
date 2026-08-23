@@ -6,5 +6,5 @@ of the application it configures, so it can be symlinked directly into
 
 Currently sourced from [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles):
 
-- `waybar/`, `wofi/`, `swaync/`, `nvim/`, `starship.toml`
+- `waybar/`, `wofi/`, `swaync/`, `nvim/`, `starship.toml`, `wal/`
 - `hypr/hyprlock.conf` (just the lock screen config, not the rest of `hypr/`)

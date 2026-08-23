@@ -1,0 +1,3 @@
+[wal]
+source = "Configs/configs/wal"
+target = "~/.config/wal"
