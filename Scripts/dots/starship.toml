@@ -1,0 +1,3 @@
+[starship]
+source = "Configs/configs/starship.toml"
+target = "~/.config/starship.toml"

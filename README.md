@@ -22,11 +22,13 @@
 ```
 HyKr/
 ├── Configs/
-│   ├── configs/   # dotfiles → ~/.config
+│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml)
 │   └── .local/    # dotfiles → ~/.local
 ├── Scripts/
-│   ├── dots/      # install/linking scripts
-│   └── extra/     # optional/supporting scripts
+│   ├── global_fn.sh  # shared lib, sourced by every script
+│   ├── link_dots.sh  # symlinks Configs/configs/* into $HOME per Scripts/dots manifest
+│   ├── dots/         # one .toml manifest per app (source → target)
+│   └── extra/        # optional/secondary scripts
 └── Source/
     ├── wallpapers/  # shipped wallpapers
     └── CREDITS.md   # attribution
@@ -45,14 +47,15 @@ HyKr/
 ---
 
 > [!IMPORTANT]
-> This repo is in its scaffolding stage — `Scripts/dots/` doesn't have an
-> install script yet. Once one exists, install will look like:
+> This repo is still in its scaffolding stage — keybinds haven't been set
+> up yet, and there's no full install script. `Scripts/link_dots.sh`
+> symlinks the current app configs into place:
 
 ```shell
 sudo pacman -S --needed git base-devel
 git clone --depth 1 https://github.com/krowify/HyKr ~/HyKr
-cd ~/HyKr/Scripts/dots
-./install.sh
+cd ~/HyKr/Scripts
+./link_dots.sh
 ```
 
 <div align="right">
