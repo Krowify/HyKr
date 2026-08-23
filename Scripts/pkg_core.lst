@@ -1,0 +1,62 @@
+# --------------------------------------------------- // Session
+hyprland                                               # wlroots-based wayland compositor (required by everything below)
+pipewire                                               # audio/video server
+pipewire-alsa                                          # pipewire alsa client
+pipewire-pulse                                         # pipewire pulseaudio client
+wireplumber                                            # pipewire session manager
+networkmanager                                         # network manager, used by waybar's network module + wofi's nmtui
+bluez                                                  # bluetooth protocol stack
+bluez-utils                                            # bluetooth utility cli
+blueman                                                # bluetooth manager gui, launched from waybar's bluetooth module
+pacman-contrib                                         # provides checkupdates, used by waybar's custom/pacman module
+xdg-desktop-portal-hyprland                            # xdg desktop portal for hyprland
+xdg-desktop-portal-gtk                                 # file picker / dbus integration
+qt5-wayland                                            # wayland support for qt5 apps
+qt6-wayland                                            # wayland support for qt6 apps
+
+# --------------------------------------------------- // Theming
+python-pywal                                           # generates the colors waybar/wofi/swaync style.css all @import — nothing themes correctly without this
+swww                                                   # wallpaper daemon, paired with pywal by wofi's wallpaper picker
+kitty                                                  # terminal, opened by waybar's network widget (nmtui) and wofi
+nerd-fonts                                             # glyphs used by waybar, wofi, and starship
+fd                                                      # used by wofi's wallpaper picker and nvim's telescope
+
+# --------------------------------------------------- // Waybar
+waybar
+hyprpicker                                             # backs waybar's custom/colorpicker widget
+
+# --------------------------------------------------- // Wofi
+wofi
+
+# --------------------------------------------------- // Swaync
+swaync
+gvfs                                                   # needed for swaync's file actions
+libnotify                                              # provides notify-send, used across the stack
+
+# --------------------------------------------------- // Hyprlock
+hyprlock
+hypridle                                               # idle daemon commonly paired with hyprlock (not included in this repo yet)
+
+# --------------------------------------------------- // Nvim
+neovim
+git                                                    # plugin manager (lazy.nvim) + gitsigns
+ripgrep                                                # telescope live_grep
+unzip                                                  # mason LSP/tool installer
+nodejs                                                 # required by the bashls language server (installed via mason)
+npm
+base-devel                                             # C toolchain for treesitter parser compilation
+
+# --------------------------------------------------- // Starship
+starship
+
+# --------------------------------------------------- // SDDM (pixel-sakura theme)
+sddm
+qt6-declarative
+qt6-5compat
+qt6-svg
+qt6-multimedia
+qt6-multimedia-ffmpeg
+gst-plugins-base
+gst-plugins-good
+gst-plugins-bad
+gst-plugins-ugly
