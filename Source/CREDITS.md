@@ -16,7 +16,7 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 - [dharmx/walls](https://github.com/dharmx/walls) — source of the themed wallpaper packs (no license file upstream; kept for personal desktop use, per-image credit unknown/unlisted upstream).
 - [Hyprland](https://hyprland.org/) — the Wayland compositor this setup is built around.
 - [tiesen243/dotfiles](https://github.com/tiesen243/dotfiles) — reference for the `firewalld` hardening posture in `Scripts/extra/setup_firewall.sh` (deny incoming / allow outgoing / log denials), adapted from their `ufw` setup since this repo uses `firewalld` instead.
-- [Krowify/arch-install](https://github.com/Krowify/arch-install) — the previous, proven install this repo replaces. The sysctl anti-spoofing rules, `/etc/host.conf`, and `fail2ban` jail in `setup_firewall.sh` are carried over from its stage 4 (firewall-agnostic, so they apply regardless of ufw vs firewalld).
+- [Krowify/arch-install](https://github.com/Krowify/arch-install) — the previous, proven install this repo replaces. The sysctl anti-spoofing rules, `/etc/host.conf`, and `fail2ban` jail in `setup_firewall.sh` are carried over from its stage 4 (firewall-agnostic, so they apply regardless of ufw vs firewalld). `install.sh`'s root-to-regular-user handoff (create-user-if-missing, `visudo`-validated sudoers edits) and `install_gpu_drivers.sh`'s lspci-based GPU detection follow the same patterns as its `install.sh`/stage 1, adapted to run non-interactively and as a single re-exec rather than per-stage `su -c` calls.
 
 ## Wallpapers
 

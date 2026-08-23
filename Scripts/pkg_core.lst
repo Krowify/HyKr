@@ -1,5 +1,10 @@
 # --------------------------------------------------- // Session
+# NOTE: no mesa/nvidia-* here on purpose — Scripts/install_gpu_drivers.sh
+# auto-detects the GPU and installs the matching one. Not a static list
+# entry since exactly one of mesa-only vs mesa+nvidia-open is correct
+# per machine, not "install all of these."
 hyprland                                               # wlroots-based wayland compositor (required by everything below)
+xorg-xwayland                                          # runs X11-only apps inside the Wayland session — not a hard dep of hyprland itself
 pipewire                                               # audio/video server
 pipewire-alsa                                          # pipewire alsa client
 pipewire-pulse                                         # pipewire pulseaudio client
