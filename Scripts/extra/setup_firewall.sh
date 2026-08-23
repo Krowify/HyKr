@@ -23,8 +23,17 @@ enable_service firewalld
 # firewall-cmd is only a client to the running firewalld daemon -- every
 # invocation below (including --permanent ones) needs to reach it over
 # D-Bus, which isn't possible inside arch-chroot pre-reboot (nothing
-# started it). Configuring the live zone has to wait until then.
-if systemd_is_live; then
+# started it there -- systemctl itself detects the chroot and silently
+# no-ops "start" requests rather than erroring, so enable_service above
+# can't tell us whether firewalld is actually up). Ask firewalld directly
+# instead of inferring it, since a wrong guess here is a hard failure,
+# not just a skipped step.
+FIREWALLD_LIVE=false
+if sudo firewall-cmd --state &>/dev/null; then
+    FIREWALLD_LIVE=true
+fi
+
+if "${FIREWALLD_LIVE}"; then
     print_log "Setting default zone to 'public' (applies to any network firewalld hasn't been told to trust)"
     sudo firewall-cmd --set-default-zone=public
 
@@ -40,7 +49,7 @@ if systemd_is_live; then
     print_log "Reloading firewalld"
     sudo firewall-cmd --reload
 else
-    print_log "Skipping live firewalld zone config — no live systemd here (chroot) to reach the daemon."
+    print_log "Skipping live firewalld zone config — firewalld isn't reachable yet (normal pre-reboot in a chroot)."
     print_log "Re-run this script after your first reboot to finish configuring firewalld."
 fi
 
@@ -85,7 +94,7 @@ enabled = true
 EOF
 enable_service fail2ban
 
-if systemd_is_live; then
+if "${FIREWALLD_LIVE}"; then
     print_log "Firewall hardened. Current zone config:"
     sudo firewall-cmd --list-all
 else

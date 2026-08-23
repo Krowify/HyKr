@@ -17,12 +17,20 @@ print_log() {
     echo -e "[HyKr] $*"
 }
 
-# True when a live systemd manager is actually running (PID 1) -- false
-# inside arch-chroot before the first boot into the new system. This is
-# systemd's own canonical marker for that (used by distro packaging
-# scripts to decide the same enable-vs-enable+start question).
+# True when NOT running inside a chroot -- false inside arch-chroot before
+# the first boot into the new system. Checking for /run/systemd/system
+# directly is NOT reliable here: arch-chroot sets up /run as part of
+# entering the chroot (bind-mounted from the live ISO host, which is
+# itself running systemd), so that directory can exist even though nothing
+# is managing services for the new install yet. systemd-detect-virt
+# --chroot is systemd's own purpose-built check for this (compares / to
+# /proc/1/root), unaffected by that mount.
 systemd_is_live() {
-    [[ -d /run/systemd/system ]]
+    if command -v systemd-detect-virt &>/dev/null; then
+        ! systemd-detect-virt --chroot --quiet
+    else
+        [[ -d /run/systemd/system ]]
+    fi
 }
 
 # Enable a systemd service, starting it now only if a live systemd manager
