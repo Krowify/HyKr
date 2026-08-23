@@ -1,0 +1,3 @@
+[theme-switcher]
+source = "Configs/configs/theme-switcher"
+target = "~/.config/theme-switcher"

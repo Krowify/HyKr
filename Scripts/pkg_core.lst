@@ -81,6 +81,7 @@ quickshell                                              # widget panel, Super+M 
 wlogout                                                 # logout menu, Super+Escape
 swayosd                                                  # on-screen volume/brightness display, used by wallpaper.sh if present (guarded, optional)
 cliphist                                                # clipboard history, Super+V
+matugen                                                 # generates colors.json from wallpaper for theme-switcher's "dynamic" theme
 
 # --------------------------------------------------- // Apps
 thunar                                                  # file manager, Super+E

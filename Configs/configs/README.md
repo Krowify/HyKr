@@ -38,3 +38,23 @@ Not from elifouts:
   not copy-pasteable syntax (see `hyprland.conf` directly for that).
   Grouping mirrors [Krowify/arch-install's KEYBINDINGS.md](https://github.com/Krowify/arch-install/blob/main/KEYBINDINGS.md),
   built from this repo's own binds (not arch-install's — different app stack).
+- `theme-switcher/` — from [enes-less/theme-switcher](https://github.com/enes-less/theme-switcher)
+  (no LICENSE file upstream; kept for personal desktop use). Bound to
+  `Super+Shift+T`, finally giving that keybind a real target. Patched
+  `swww` → `awww` throughout (same rename every other script in this
+  repo already accounts for). Its own `install.sh` wasn't used — it
+  would've replaced `~/.config/hypr` wholesale with its own bundled
+  config; only `theme-switcher/` (the actual theming engine) and
+  `scripts/theme-picker.sh` were pulled in.
+
+  **Important, HyKr-specific fix**: `apply-theme.sh` writes directly
+  into `hypr/`, `wofi/`, `kitty/`, `waybar/`, `swaync/`, `wlogout/`,
+  `fastfetch/`, and `starship.toml` — all paths `link_dots.sh` symlinks
+  *whole-directory* from this repo. Applying a theme unmodified would
+  write straight through those symlinks and silently overwrite this
+  repo's own tracked files on disk. Added a `de_symlink` step at the top
+  of `apply-theme.sh` that converts each target from "symlink into the
+  repo" to a real, independent copy the first time a theme is applied —
+  after that, theme-switcher owns those live configs, same as it would
+  for anyone installing this tool standalone, and the repo's own copies
+  stay untouched.

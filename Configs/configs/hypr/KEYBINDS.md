@@ -52,7 +52,7 @@ syntax, see `hyprland.conf` directly — this page is the human-readable index.
 | `Super+Ctrl+Right`/`Left` | Next/previous workspace (relative) |
 | `Super+Ctrl+Down` | Go to nearest empty workspace |
 | `Super+Shift+W` | Wallpaper picker (Wofi + awww + pywal) |
-| `Super+Shift+T` | Theme picker (`theme.sh` menu) — **stub, no `theme.sh` yet** |
+| `Super+Shift+T` | Theme picker (Wofi) — switches Hyprland, Waybar, Wofi, Kitty, Fastfetch, Starship, Hyprlock, SwayNC, and Wlogout to one of the bundled themes |
 
 ## Alt
 
