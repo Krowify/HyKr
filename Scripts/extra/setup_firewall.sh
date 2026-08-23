@@ -14,22 +14,31 @@ if ! command -v firewall-cmd &>/dev/null; then
 fi
 
 print_log "Enabling firewalld"
-sudo systemctl enable --now firewalld
+enable_service firewalld
 
-print_log "Setting default zone to 'public' (applies to any network firewalld hasn't been told to trust)"
-sudo firewall-cmd --set-default-zone=public
+# firewall-cmd is only a client to the running firewalld daemon -- every
+# invocation below (including --permanent ones) needs to reach it over
+# D-Bus, which isn't possible inside arch-chroot pre-reboot (nothing
+# started it). Configuring the live zone has to wait until then.
+if systemd_is_live; then
+    print_log "Setting default zone to 'public' (applies to any network firewalld hasn't been told to trust)"
+    sudo firewall-cmd --set-default-zone=public
 
-print_log "Removing default-enabled services from the public zone (ssh, mdns, samba-client, dhcpv6-client)"
-print_log "If you SSH into this machine or use LAN file sharing, re-add what you need — see the README note"
-for svc in ssh mdns samba-client dhcpv6-client; do
-    sudo firewall-cmd --zone=public --remove-service="$svc" --permanent 2>/dev/null
-done
+    print_log "Removing default-enabled services from the public zone (ssh, mdns, samba-client, dhcpv6-client)"
+    print_log "If you SSH into this machine or use LAN file sharing, re-add what you need — see the README note"
+    for svc in ssh mdns samba-client dhcpv6-client; do
+        sudo firewall-cmd --zone=public --remove-service="$svc" --permanent 2>/dev/null
+    done
 
-print_log "Logging denied packets"
-sudo firewall-cmd --set-log-denied=all
+    print_log "Logging denied packets"
+    sudo firewall-cmd --set-log-denied=all
 
-print_log "Reloading firewalld"
-sudo firewall-cmd --reload
+    print_log "Reloading firewalld"
+    sudo firewall-cmd --reload
+else
+    print_log "Skipping live firewalld zone config — no live systemd here (chroot) to reach the daemon."
+    print_log "Re-run this script after your first reboot to finish configuring firewalld."
+fi
 
 # --- sysctl anti-spoofing hardening (firewall-agnostic, ported from
 # arch-install's stage 4)
@@ -70,10 +79,15 @@ maxretry = 5
 [sshd]
 enabled = true
 EOF
-sudo systemctl enable --now fail2ban
+enable_service fail2ban
 
-print_log "Firewall hardened. Current zone config:"
-sudo firewall-cmd --list-all
+if systemd_is_live; then
+    print_log "Firewall hardened. Current zone config:"
+    sudo firewall-cmd --list-all
+else
+    print_log "firewalld/fail2ban are enabled and will start on first real boot;"
+    print_log "live zone config isn't available until then (see note above)."
+fi
 
 print_log "NOTE: 'public' (restrictive) is the default for any network firewalld"
 print_log "hasn't been told to trust. On the laptop, once connected to a network"

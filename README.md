@@ -65,9 +65,10 @@ cd ~/HyKr/Scripts
 
 > [!IMPORTANT]
 > Run as root right after `pacstrap` (fresh install, no user yet)? `install.sh`
-> prompts for a username, creates it if needed, and re-execs the rest of
-> itself as that user — everything past that point runs as a regular user
-> with `sudo`, not as root.
+> prompts for a username, creates it if needed, moves this repo into their
+> home directory (it was cloned as root, under `/root`), and re-execs the
+> rest of itself as that user — everything past that point runs as a
+> regular user with `sudo`, not as root.
 >
 > `install.sh` auto-detects your GPU and installs the matching driver,
 > installs `yay` if missing, installs everything in `pkg_core.lst`,
@@ -79,6 +80,13 @@ cd ~/HyKr/Scripts
 > incoming by default on any untrusted network — if you SSH into this
 > machine or use LAN file sharing, re-add what you need afterward:
 > `sudo firewall-cmd --zone=public --add-service=ssh --permanent && sudo firewall-cmd --reload`
+>
+> Running this **inside `arch-chroot`, before your first reboot**? Services
+> get `enable`d but not started (nothing's running yet to start them
+> against), and firewalld's live zone config is skipped since it needs its
+> own daemon running to talk to — both finish automatically after your
+> first real boot, except firewalld: re-run `Scripts/extra/setup_firewall.sh`
+> once you've rebooted to apply the zone/logging config.
 
 <div align="right">
   <sub><a href="#hykr">🡅 back to top</a></sub>

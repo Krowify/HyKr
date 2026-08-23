@@ -8,10 +8,10 @@ scrDir="$(dirname "$(realpath "$0")")"
 source "${scrDir}/global_fn.sh" || { echo "Error: unable to source global_fn.sh"; exit 1; }
 
 print_log "Enabling SDDM (login manager)"
-sudo systemctl enable --now sddm.service
+enable_service sddm.service
 
 print_log "Enabling NetworkManager"
-sudo systemctl enable --now NetworkManager.service
+enable_service NetworkManager.service
 
 print_log "Enabling Bluetooth"
-sudo systemctl enable --now bluetooth.service
+enable_service bluetooth.service
