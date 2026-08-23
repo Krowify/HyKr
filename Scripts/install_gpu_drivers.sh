@@ -4,7 +4,7 @@
 # proprietary driver on top. Detection logic and package choices match
 # Krowify/arch-install's stage 1, made non-interactive.
 
-scrDir="$(dirname "$(dirname "$(realpath "$0")")")"
+scrDir="$(dirname "$(realpath "$0")")"
 source "${scrDir}/global_fn.sh" || {
     echo "Error: unable to source ${scrDir}/global_fn.sh"
     ls -la "${scrDir}/global_fn.sh" 2>&1
