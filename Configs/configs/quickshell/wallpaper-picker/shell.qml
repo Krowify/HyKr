@@ -14,6 +14,14 @@ import Quickshell.Wayland
 PanelWindow {
     id: main
 
+    // Required in multi-monitor setups: PanelWindow needs an explicit
+    // screen or it can silently fail to attach to any output at all
+    // (clean init, no error, process just exits -- exactly what this was
+    // doing on a 3-monitor machine before this was added). Defaults to
+    // the first detected screen; not necessarily the one you're looking
+    // at, but "shows up somewhere" beats "never shows up."
+    screen: Quickshell.screens[0]
+
     // ---- Easy-to-edit settings ----
     property int speed: 5000          // scroll animation speed
     property int animDuration: 100    // ms for scroll animation
