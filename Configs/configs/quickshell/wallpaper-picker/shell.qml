@@ -266,7 +266,7 @@ PanelWindow {
                 onClicked: list.activateCurrent()
 
                 onWheel: function(wheel) {
-                    list.flick(-wheel.angleDelta.y * 8, 0)
+                    list.flick(-wheel.angleDelta.y * 24, 0)
                     wheel.accepted = true
                 }
             }
