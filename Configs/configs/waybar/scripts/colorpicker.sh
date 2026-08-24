@@ -37,7 +37,7 @@ EOF
 }
 
 check hyprpicker || {
-  notify "hyprpicker is not installed"
+  notify-send "Color Picker" "hyprpicker is not installed"
   exit
 }
 killall -q hyprpicker

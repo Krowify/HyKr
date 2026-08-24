@@ -17,6 +17,7 @@ bluez                                                  # bluetooth protocol stac
 bluez-utils                                            # bluetooth utility cli
 blueman                                                # bluetooth manager gui, launched from waybar's bluetooth module
 pacman-contrib                                         # provides checkupdates, used by waybar's custom/pacman module
+psmisc                                                 # provides killall, used unconditionally by waybar's colorpicker.sh to stop any stale hyprpicker before relaunching it — was never listed as a dependency
 xdg-desktop-portal-hyprland                            # xdg desktop portal for hyprland
 xdg-desktop-portal-gtk                                 # file picker / dbus integration
 qt5-wayland                                            # wayland support for qt5 apps
