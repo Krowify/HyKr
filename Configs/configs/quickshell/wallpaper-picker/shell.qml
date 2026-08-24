@@ -7,8 +7,8 @@
 // (kitty/starship/swaync/pywalfox), same as the picker it replaces.
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 import QtQuick
-import Qt.labs.folderlistmodel
 import Quickshell.Wayland
 
 PanelWindow {
@@ -17,10 +17,11 @@ PanelWindow {
     // Required in multi-monitor setups: PanelWindow needs an explicit
     // screen or it can silently fail to attach to any output at all
     // (clean init, no error, process just exits -- exactly what this was
-    // doing on a 3-monitor machine before this was added). Defaults to
-    // the first detected screen; not necessarily the one you're looking
-    // at, but "shows up somewhere" beats "never shows up."
-    screen: Quickshell.screens[0]
+    // doing on a 3-monitor machine before this was added). Picks whichever
+    // screen Hyprland currently has focused (same match-by-id pattern
+    // end-4/dots-hyprland's Overview.qml uses), falling back to the first
+    // detected screen if that lookup ever comes back empty.
+    screen: Quickshell.screens.find(s => Hyprland.monitorFor(s)?.id === Hyprland.focusedMonitor?.id) ?? Quickshell.screens[0]
 
     // ---- Easy-to-edit settings ----
     property int speed: 5000          // scroll animation speed
@@ -60,12 +61,29 @@ PanelWindow {
         }
     }
 
-    FolderListModel {
+    // Qt.labs.folderlistmodel's FolderListModel only lists a folder's
+    // immediate contents, not subdirectories -- with wallpapers organized
+    // into subfolders (matching hypr/wallpaper.sh's own recursive `find`),
+    // that silently limited the picker to whatever loose files sat at the
+    // top level. Shelling out to the same find+sort wallpaper.sh already
+    // uses instead.
+    ListModel {
         id: folderModel
-        folder: "file://" + configs.wallpaper_path
-        showDirs: false
-        nameFilters: ["*.png", "*.jpg"]
-        sortField: FolderListModel.Name
+    }
+
+    Process {
+        id: findProc
+        running: configs.wallpaper_path.length > 0
+        command: ["sh", "-c",
+            `find -L "${configs.wallpaper_path}" -type f \\( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \\) | sort`]
+        stdout: SplitParser {
+            onRead: data => {
+                if (data.length === 0)
+                    return
+                const parts = data.split("/")
+                folderModel.append({ filePath: data, fileName: parts[parts.length - 1] })
+            }
+        }
     }
 
     ListView {
@@ -92,7 +110,7 @@ PanelWindow {
         }
 
         function activateCurrent() {
-            const path = folderModel.get(selectedIndex, "filePath")
+            const path = folderModel.get(selectedIndex).filePath
             Quickshell.execDetached(["bash", Quickshell.shellPath("commands.sh"), path])
             Qt.quit()
         }
