@@ -45,6 +45,10 @@ PanelWindow {
 
     Component.onCompleted: {
         Quickshell.execDetached(["bash", Quickshell.shellPath("cache.sh"), Quickshell.shellDir])
+        // Covers wallpaper_path already being populated by the time this
+        // fires (see the Connections block below for the other case).
+        if (configs.wallpaper_path.length > 0)
+            findProc.running = true
     }
 
     FileView {
@@ -61,6 +65,19 @@ PanelWindow {
         }
     }
 
+    // Explicit signal handler instead of `Process { running: <binding> }`
+    // -- that binding produced zero evidence of ever running (nothing in
+    // the log at all, no error either), so rather than guess further at
+    // whether Process.running re-evaluates as a live binding, trigger it
+    // imperatively once wallpaper_path actually changes.
+    Connections {
+        target: configs
+        function onWallpaper_pathChanged() {
+            if (configs.wallpaper_path.length > 0)
+                findProc.running = true
+        }
+    }
+
     // Qt.labs.folderlistmodel's FolderListModel only lists a folder's
     // immediate contents, not subdirectories -- with wallpapers organized
     // into subfolders (matching hypr/wallpaper.sh's own recursive `find`),
@@ -73,7 +90,6 @@ PanelWindow {
 
     Process {
         id: findProc
-        running: configs.wallpaper_path.length > 0
         command: ["sh", "-c",
             `find -L "${configs.wallpaper_path}" -type f \\( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \\) | sort`]
         stdout: SplitParser {
