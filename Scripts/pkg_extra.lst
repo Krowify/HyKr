@@ -3,7 +3,8 @@ vesktop-bin                                            # Discord client with Ven
 spotify-launcher                                       # lightweight Spotify installer/launcher — same package elifouts/Dotfiles uses
 spicetify-cli                                          # Spotify client theming CLI — themed via Configs/configs/spicetify/color.ini, regenerated per-theme/per-wallpaper same as everything else. Run `spicetify config color_scheme HyKr && spicetify apply` once after installing spotify + this.
 proton-mail-bin                                        # Proton Mail desktop client — unofficial AUR build, precompiled (Proton doesn't publish an Arch package)
-code                                                    # VS Code OSS (extra repo, MIT build) — apply-theme.sh already targets "~/.config/Code - OSS/User/settings.json", which is this package's config dir, not Microsoft's branded build
+visual-studio-code-bin                                 # Microsoft's official branded VS Code build (AUR, precompiled) — apply-theme.sh targets "~/.config/Code/User/settings.json", this package's config dir (was "Code - OSS" for the code/MIT-build package this replaces)
+dotnet-sdk                                              # .NET SDK — extra repo, always tracks the latest supported version
 hyprmod                                                # GTK4/libadwaita live settings GUI for Hyprland — AUR, community-maintained and still in active development; writes its own hypr/hyprland-gui.conf, doesn't touch hyprland.conf
 obsidian                                               # Notes app — AUR, precompiled. apply-theme.sh already themes it (templates/obsidian.css.tpl -> ~/obsidian/.obsidian/snippets/obsidian.css), assuming the vault lives at ~/obsidian
 

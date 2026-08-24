@@ -721,7 +721,7 @@ fi
 # --------- VS Code ----------
 # MAKE SURE TO EDIT THE OUT PATH IF YOU USE A DIFFERENT VSCODE, LIKE VSCODEIUM OR SOMETHING.
 VSCODE_TPL="$BASE/templates/vscode/settings.json.tpl"
-VSCODE_OUT="$HOME/.config/Code - OSS/User/settings.json"
+VSCODE_OUT="$HOME/.config/Code/User/settings.json"
 
 if [[ -f "$VSCODE_TPL" ]]; then
   mkdir -p "$(dirname "$VSCODE_OUT")"
