@@ -1,4 +1,9 @@
 #!/bin/bash
+# No longer bound to Super+Shift+W -- that's the quickshell wallpaper
+# picker now (Configs/configs/quickshell/wallpaper-picker/). Left in
+# place as a manual/fallback picker: a plain rofi/wofi dmenu list,
+# useful if quickshell itself is ever unavailable.
+#
 # Wallpaper picker: rofi's icon grid if installed (reliable click-to-select),
 # else wofi's plain text list as a fallback -> awww + pywal. Adapted from
 # elifouts/Dotfiles (cava color sync removed — no cava config in this repo;
@@ -8,12 +13,15 @@
 # (same reason apply-theme.sh's dynamic-theme picker prefers rofi's grid
 # and only falls back to a plain wofi list).
 #
-# kitty and starship both get overwritten here with pywal's actual
-# per-wallpaper colors (via Configs/configs/wal/templates/) rather than
-# whatever theme-switcher theme is nominally active, same as fastfetch's
-# ASCII art (colored through the terminal's own pywal-set ANSI palette) --
-# so picking a wallpaper here always matches what you see in the terminal,
-# even if it diverges from the last theme-switcher theme you applied.
+# The actual "apply this wallpaper" step (awww + pywal + kitty/starship/
+# swaync/pywalfox propagation) lives in apply_wallpaper.sh, shared with
+# the quickshell wallpaper-picker (Super+Shift+W) so both pickers drive
+# the same color pipeline instead of duplicating it. That pipeline uses
+# pywal's actual per-wallpaper colors rather than whatever theme-switcher
+# theme is nominally active, same as fastfetch's ASCII art (colored
+# through the terminal's own pywal-set ANSI palette) -- so picking a
+# wallpaper always matches what you see in the terminal, even if it
+# diverges from the last theme-switcher theme you applied.
 WALLPAPER_DIR="$HOME/wallpapers"
 ROFI_GRID_THEME="$HOME/.config/rofi/wallpaper-grid.rasi"
 
@@ -45,21 +53,7 @@ main() {
     fi
     [ -z "$selected_wallpaper" ] && exit 0
 
-    awww img "$selected_wallpaper" --transition-type any --transition-fps 60 --transition-duration .5
-    wal -i "$selected_wallpaper" -n --cols16
-
-    if command -v swayosd-server &>/dev/null; then
-        pkill swayosd-server
-        swayosd-server &
-    fi
-
-    swaync-client --reload-css
-    cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
-    [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
-
-    command -v pywalfox &>/dev/null && pywalfox update
-
-    source ~/.cache/wal/colors.sh && cp "$wallpaper" ~/wallpapers/pywallpaper.jpg
+    "$(dirname "$(realpath "$0")")/apply_wallpaper.sh" "$selected_wallpaper"
 }
 
 main

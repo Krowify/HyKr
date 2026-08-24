@@ -1,0 +1,22 @@
+{
+  "name": "Minimal",
+  "id": "minimal",
+  "default_wallpaper": "wallpapers/minimal.jpg",
+  "fonts": {
+    "family": "JetBrainsMono Nerd Font",
+    "family_bold": "JetBrainsMono Nerd Font Bold"
+  },
+
+  "hypr": {
+    "border_size": 0,
+    "gaps_out": 3,
+    "rounding": 8,
+
+    "blur": {
+      "enabled": true,
+      "size": 5,
+      "passes": 1,
+      "vibrancy": 0.2
+    }
+  }
+}
