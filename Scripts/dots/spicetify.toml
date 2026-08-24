@@ -1,0 +1,3 @@
+[spicetify]
+source = "Configs/configs/spicetify"
+target = "~/.config/spicetify"

@@ -44,7 +44,8 @@ de_symlink() {
 }
 for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
          "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
-         "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0"; do
+         "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
+         "$HOME/.config/spicetify"; do
   de_symlink "$p"
 done
 
@@ -819,6 +820,33 @@ if [[ -f "$GTK4_TPL" ]]; then
     -e "s/{{yellow}}/$yellow_hex/g" \
     -e "s/{{shadow}}/$shadow_hex/g" \
     "$GTK4_TPL" > "$GTK4_OUT"
+fi
+
+# --------- Spicetify ----------
+SPICETIFY_TPL="$BASE/templates/spicetify-color.ini.tpl"
+SPICETIFY_INI="$HOME/.config/spicetify/color.ini"
+SPICETIFY_CONF="$HOME/.config/spicetify/config-xpui.ini"
+
+if [[ -f "$SPICETIFY_TPL" ]]; then
+  mkdir -p "$(dirname "$SPICETIFY_INI")"
+
+  sed \
+    -e "s/{{accent}}/${accent_hex#\#}/g" \
+    -e "s/{{surface}}/${surface_hex#\#}/g" \
+    -e "s/{{surface2}}/${surface2_hex#\#}/g" \
+    -e "s/{{bg}}/${bg_hex#\#}/g" \
+    -e "s/{{fg}}/${fg_hex#\#}/g" \
+    -e "s/{{fg_dim}}/${fg_dim_hex#\#}/g" \
+    -e "s/{{red}}/${red_hex#\#}/g" \
+    "$SPICETIFY_TPL" > "$SPICETIFY_INI"
+
+  # config-xpui.ini is spicetify's own file (paths auto-detected by
+  # `spicetify config`), not something this repo ships -- only patch the
+  # color_scheme selection if spicetify has already been set up.
+  if [[ -f "$SPICETIFY_CONF" ]]; then
+    sed -i -E "s/^color_scheme(\s*)=.*/color_scheme\1= HyKr/" "$SPICETIFY_CONF"
+    command -v spicetify >/dev/null 2>&1 && spicetify apply >/dev/null 2>&1 || true
+  fi
 fi
 
 hyprctl reload >/dev/null 2>&1 || true

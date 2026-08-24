@@ -21,6 +21,15 @@ swaync-client --reload-css
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
 [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
 
+if [ -f ~/.cache/wal/spicetify-color.ini ]; then
+    mkdir -p ~/.config/spicetify
+    cat ~/.cache/wal/spicetify-color.ini > ~/.config/spicetify/color.ini
+    if [ -f ~/.config/spicetify/config-xpui.ini ]; then
+        sed -i -E "s/^color_scheme(\s*)=.*/color_scheme\1= HyKr/" ~/.config/spicetify/config-xpui.ini
+        command -v spicetify &>/dev/null && spicetify apply &>/dev/null
+    fi
+fi
+
 command -v pywalfox &>/dev/null && pywalfox update
 
 source ~/.cache/wal/colors.sh && cp "$wallpaper" ~/wallpapers/pywallpaper.jpg
