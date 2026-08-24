@@ -41,6 +41,7 @@ kvantum-qt5                                             # svg-based Qt5 theme en
 # --------------------------------------------------- // Waybar
 waybar
 hyprpicker                                             # backs waybar's custom/colorpicker widget
+nvtop                                                  # backs the Minimal theme's waybar custom/gpu module (scripts/gpu_usage.sh) -- GPU-agnostic despite the name, works with the RTX 3060 same as Intel/AMD
 
 # --------------------------------------------------- // Wofi
 wofi

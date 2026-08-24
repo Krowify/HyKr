@@ -1,62 +1,69 @@
 {
-  "layer": "top",
-  "position": "top",
-  "margin-top": 10,
-  "height": 34,
-  "spacing": 10,
-  "modules-left": [],
-  "modules-center": [
-    "hyprland/workspaces",
-    "pulseaudio",
-    "network",
-    "bluetooth",
-    "clock",
-    "tray",
-    "custom/notification"
-  ],
-  "modules-right": [],
-  "hyprland/workspaces": {
-    "format": "{name}",
-    "on-click": "activate"
-  },
-  "pulseaudio": {
-    "format": "{icon}  {volume}%",
-    "format-muted": "󰝟  Muted",
-    "format-icons": {
-      "default": [
-        "",
-        "",
-        ""
-      ]
+    "layer": "top",
+    "position": "top",
+    "exclusive": true,
+    "spacing": 0,
+
+    "modules-left": ["cpu", "custom/gpu", "memory", "temperature"],
+    "modules-center": ["clock"],
+    "modules-right": ["mpris", "pulseaudio", "custom/power"],
+
+    "cpu": {
+        "format": "CPU {usage}%",
+        "interval": 2
     },
-    "on-click": "pavucontrol",
-    "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
-    "tooltip": false
-  },
-  "network": {
-    "format-wifi": "  {essid}",
-    "format-ethernet": "󰈀 Wired",
-    "format-disconnected": "󰖪  Offline",
-    "tooltip": false
-  },
-  "bluetooth": {
-    "format": " BT",
-    "format-disabled": "󰂲 BT",
-    "format-connected": " BT",
-    "on-click": "blueman-manager",
-    "on-click-right": "bluetoothctl power toggle",
-    "tooltip": false
-  },
-  "clock": {
-    "format": "  {:%d %b %Y |   %H:%M}",
-    "tooltip": false
-  },
-  "tray": {
-    "spacing": 10
-  },
-  "custom/notification": {
-    "format": "󰂚",
-    "on-click": "swaync-client -t -sw",
-    "tooltip": false
-  }
+
+    "memory": {
+        "format": "RAM {percentage}%",
+        "tooltip-format": "{used} / {total}GiB",
+        "interval": 2
+    },
+
+    "custom/gpu": {
+        "exec": "~/.config/waybar/scripts/gpu_usage.sh",
+        "interval": 2,
+        "format": "GPU {}%",
+        "tooltip-format": "GPU usage"
+    },
+
+    "temperature": {
+        "thermal-zone": 0,
+        "critical-threshold": 80,
+        "format": " {temperatureC}°C",
+        "format-critical": " {temperatureC}°C",
+        "tooltip": true,
+        "tooltip-format": "CPU Temp: {temperatureC}°C",
+        "interval": 2,
+        "on-click": "pkill hyprsunset || hyprsunset"
+    },
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip-format": "<tt>{:%a %d %b %Y}</tt>"
+    },
+
+    "mpris": {
+        "format": "{title} - {artist}",
+        "format-paused": "{title} - {artist}",
+        "max-length": 50,
+        "tooltip": false,
+        "interval": 2
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "Muted",
+        "format-icons": {
+            "default": ["", "", ""]
+        },
+        "tooltip": false,
+        "on-click": "pavucontrol",
+        "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+    },
+
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "on-click": "wlogout"
+    }
 }

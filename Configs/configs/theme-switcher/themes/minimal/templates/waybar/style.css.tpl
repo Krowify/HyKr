@@ -1,104 +1,112 @@
-/* Minimal: near-black translucent pills, white text, a single restrained
-   accent for the active workspace. Modeled on 43PR/dotfiles' waybar (dark
-   rgba(20,20,20) pill modules, pure white text, one muted accent). */
+/* Minimal: ported from 43PR/dotfiles' actual waybar/style.css
+   (github.com/43PR/dotfiles) -- three near-black translucent pills
+   (left/center/right), plain white text, red only for a critical
+   temperature reading. */
 
 * {
-  border: none;
+  font-family: {{font_family}}, "Symbols Nerd Font Mono", monospace;
+  font-size: 11px;
   min-height: 0;
-  font-family: {{font_family}};
-  font-size: 12px;
-  margin: 0;
 }
 
 window#waybar {
-  background: transparent;
-}
-
-#waybar {
-  background: transparent;
-  margin: 0;
-}
-
-.modules-center {
-  background: alpha({{bg}}, 0.5);
+  min-height: 10px;
+  background-color: transparent;
   color: {{fg}};
-  margin: 0;
-  padding: 6px 6px;
+}
+
+/* LEFT */
+.modules-left {
+  background-color: alpha({{bg}}, 0.5);
   border-radius: 10px;
+  margin: 4px 0 2px 6px;
 }
 
-.modules-left,
+/* CENTER */
+.modules-center {
+  background-color: alpha({{bg}}, 0.5);
+  border-radius: 10px;
+  margin: 4px 0 2px;
+}
+
+/* RIGHT */
 .modules-right {
-  background: transparent;
+  background-color: alpha({{bg}}, 0.5);
+  border-radius: 10px;
+  margin: 4px 6px 2px 0;
 }
 
-#pulseaudio,
-#network,
-#bluetooth,
+/* Module spacing */
+#cpu,
+#memory,
+#custom-gpu,
 #clock,
-#tray,
-#custom-notification {
-  background: transparent;
+#pulseaudio,
+#mpris,
+#custom-power,
+#temperature {
+  padding: 0 10px;
+  margin: 0 2px;
   color: {{fg}};
-  padding: 0 0 0 10px;
-  margin: 0;
 }
 
-#custom-notification {
-  padding: 0 10px 0 10px;
+/* Power */
+#custom-power {
+  color: {{fg}};
+  font-size: 15px;
+  margin-right: 10px;
 }
 
+/* MPRIS */
+#mpris {
+  min-width: 0;
+}
+
+/* Clock */
 #clock {
   font-weight: bold;
 }
 
-/* Workspace container */
-#workspaces {
-  padding: 0 4px;
+/* Temperature */
+#temperature.critical {
+  color: {{red}};
 }
 
-/* Default workspaces (inactive) */
-#workspaces button {
-  min-width: 10px;
-  min-height: 10px;
-
-  margin: 0 2px;
-  padding: 0 4px;
-
-  background: transparent;
-  border: 2px solid {{surface2}};
-  border-radius: 8px;
-
+/* Tooltip */
+tooltip {
+  background-color: alpha({{bg}}, 0.4);
   color: {{fg}};
+  font-weight: bold;
+  border: 1px solid rgba(255, 255, 255, 0);
+  border-radius: 25px;
 }
 
-/* Active workspace: the one deliberate accent in an otherwise monochrome bar */
-#workspaces button.active {
-  min-width: 32px;
-  min-height: 12px;
-
-  background: {{accent}};
-  border-radius: 8px;
-  border: none;
-
-  color: {{bg}};
+tooltip label {
+  color: {{fg}};
+  font-size: 11px;
+  padding: 0;
+  margin: 0;
 }
 
-#workspaces button:hover {
-  background: {{surface}};
-}
-
-#workspaces button.active:hover {
-  background: {{accent}};
-}
-
-/* Subtle separators inside the pill */
-#pulseaudio,
-#network,
-#bluetooth,
+/* Interactive hover effect */
+#cpu,
+#memory,
+#custom-gpu,
+#temperature,
 #clock,
-#tray,
-#custom-notification {
-  border-left: 1px solid {{surface}};
-  padding-left: 12px;
+#pulseaudio,
+#mpris,
+#custom-power {
+  transition: font-size 0.15s ease;
+}
+
+#cpu:hover,
+#memory:hover,
+#custom-gpu:hover,
+#temperature:hover,
+#clock:hover,
+#pulseaudio:hover,
+#mpris:hover,
+#custom-power:hover {
+  font-size: 14px;
 }
