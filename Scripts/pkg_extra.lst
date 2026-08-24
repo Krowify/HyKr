@@ -4,6 +4,7 @@ spotify-launcher                                       # lightweight Spotify ins
 proton-mail-bin                                        # Proton Mail desktop client — unofficial AUR build, precompiled (Proton doesn't publish an Arch package)
 code                                                    # VS Code OSS (extra repo, MIT build) — apply-theme.sh already targets "~/.config/Code - OSS/User/settings.json", which is this package's config dir, not Microsoft's branded build
 hyprmod                                                # GTK4/libadwaita live settings GUI for Hyprland — AUR, community-maintained and still in active development; writes its own hypr/hyprland-gui.conf, doesn't touch hyprland.conf
+obsidian                                               # Notes app — AUR, precompiled. apply-theme.sh already themes it (templates/obsidian.css.tpl -> ~/obsidian/.obsidian/snippets/obsidian.css), assuming the vault lives at ~/obsidian
 
 # --------------------------------------------------- // Utilities
 imagemagick                                            # provides `magick`, used (soft-guarded, so silently skipped without it) by waybar's colorpicker.sh to generate a swatch preview thumbnail
