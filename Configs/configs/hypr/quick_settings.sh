@@ -32,7 +32,7 @@ case "$chosen" in
         pkill hypridle || hypridle
         ;;
     *"Wallpaper"*)
-        pkill -9 -f 'quickshell -c wallpaper-picker'; ~/.config/quickshell/wallpaper-picker/launch.sh
+        pkill -9 -x -f 'quickshell -c wallpaper-picker'; ~/.config/quickshell/wallpaper-picker/launch.sh
         ;;
     *"Lock Screen"*)
         hyprlock
