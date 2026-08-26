@@ -12,6 +12,7 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 
 - [HyDE-Project/HyDE](https://github.com/HyDE-Project/HyDE) — repo/Scripts layout and README style this project follows.
 - [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles) (GPLv3) — source of the wallpapers, and the waybar, wofi, swaync, hyprlock, nvim, starship, pywal (`wal/`), and wlogout configs, plus `hypr/wallpaper.sh` and `hypr/hypridle.conf` (both adapted — see `Configs/configs/README.md`). `hypr/hyprland.lua` is original, written for this repo.
+- [43PR/dotfiles](https://github.com/43PR/dotfiles) (no license file upstream; kept for personal desktop use) — reference for the `minimal` theme (waybar module layout, wallpaper) and the quickshell wallpaper picker (`Configs/configs/quickshell/wallpaper-picker/`, adapted from their `hyprquickpaper`). Spicetify theming was rebuilt from scratch as original `color.ini`-based recoloring (spicetify's own stock-theme mechanism) rather than reusing their vendored CSS theme, which is a separate third-party author's work with no visible license.
 - [Darkkal44/qylock](https://github.com/Darkkal44/qylock) (GPLv3) — source of the `pixel-sakura` SDDM theme.
 - [dharmx/walls](https://github.com/dharmx/walls) — source of the themed wallpaper packs (no license file upstream; kept for personal desktop use, per-image credit unknown/unlisted upstream).
 - [Hyprland](https://hyprland.org/) — the Wayland compositor this setup is built around.
