@@ -110,7 +110,7 @@ hl.bind(var_mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("~/.config/theme-switcher
 -- --------------------------------------------------- // Alt
 hl.bind("ALT + P", hl.dsp.window.pseudo())
 hl.bind("ALT + TAB", hl.dsp.window.cycle_next())
-hl.bind("ALT + SHIFT + TAB", hl.dsp.window.cycle_next())
+hl.bind("ALT + SHIFT + TAB", hl.dsp.window.cycle_next({ next = false }))
 
 -- --------------------------------------------------- // Window movement
 hl.bind(var_mainMod .. " + CTRL + H", hl.dsp.group.prev())
@@ -152,7 +152,7 @@ for i = 1, 10 do
     local key = i % 10
     hl.bind(var_mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
     hl.bind(var_mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
-    hl.bind(var_mainMod .. " + ALT + " .. key, hl.dsp.window.move({ workspace = i, silent = true }))
+    hl.bind(var_mainMod .. " + ALT + " .. key, hl.dsp.window.move({ workspace = i, follow = false }))
 end
 
 -- --------------------------------------------------- // Screenshot
