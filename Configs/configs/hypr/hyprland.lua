@@ -44,6 +44,10 @@ hl.on("hyprland.start", function()
     -- Secret storage (VS Code, browsers, etc. need this via libsecret --
     -- Hyprland has no keyring daemon of its own, unlike GNOME/KDE sessions)
     hl.exec_cmd("gnome-keyring-daemon --start --components=pkcs11,secrets,ssh")
+    -- Polkit agent -- Hyprland has no polkit agent of its own either, so
+    -- privilege-escalation prompts (mounting a drive from Dolphin, some
+    -- NetworkManager/Bluetooth actions) silently fail or hang without one.
+    hl.exec_cmd("hyprpolkitagent")
     hl.exec_cmd("waybar")
     hl.exec_cmd("swaync")
     hl.exec_cmd("hypridle")

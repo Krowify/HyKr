@@ -10,3 +10,5 @@ obsidian                                               # Notes app — AUR, prec
 
 # --------------------------------------------------- // Utilities
 imagemagick                                            # provides `magick`, used (soft-guarded, so silently skipped without it) by waybar's colorpicker.sh to generate a swatch preview thumbnail
+lazygit                                                # terminal git UI, run from kitty
+fzf                                                    # fuzzy history/file search (Ctrl+R and friends) -- works from bash today, and zsh too if you ever switch
