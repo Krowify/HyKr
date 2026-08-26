@@ -1,7 +1,0 @@
-[Desktop Entry]
-Name=Hyprland (HyKr)
-Comment=Hyprland, guarded against hyprmod's Lua config shadowing hyprland.conf
-Exec=/usr/local/bin/start-hyprland-hykr
-Type=Application
-DesktopNames=Hyprland
-Keywords=tiling;wayland;compositor;

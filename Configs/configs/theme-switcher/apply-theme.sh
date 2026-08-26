@@ -7,8 +7,8 @@ THEME_PATH="$BASE/themes/$THEME"
 
 COLORS="$THEME_PATH/colors.json"
 THEME_JSON="$THEME_PATH/theme.json"
-TPL="$THEME_PATH/templates/hyprland.conf.tpl"
-OUT="$HOME/.config/hypr/generated-theme.conf"
+TPL="$THEME_PATH/templates/hyprland.lua.tpl"
+OUT="$HOME/.config/hypr/generated-theme.lua"
 
 # Set theme. This will allow all components load the theme earlier.
 [[ -z "$THEME" ]] && { echo "Usage: apply-theme.sh <theme>"; exit 1; }
@@ -282,15 +282,15 @@ border_inactive="$bg"
 active_opacity="0.9"
 inactive_opacity="0.85"
 
-shadow_enabled="1"
+shadow_enabled="true"
 shadow_range="4"
 shadow_power="3"
 shadow_color="rgba(1a1a1aee)"
 
 if [[ "$blur_enabled_bool" == "true" ]]; then
-  blur_enabled="1"
+  blur_enabled="true"
 else
-  blur_enabled="0"
+  blur_enabled="false"
 fi
 
 tmp_out="$(mktemp)"
@@ -320,6 +320,22 @@ sed \
 
 mkdir -p "$(dirname "$OUT")"
 mv "$tmp_out" "$OUT"
+
+# --------- Pywal border-color bridge ----------
+# hyprland.lua does require("colors-hyprland") unconditionally -- unlike
+# the old hyprlang `source = ...`, a missing require() target is a hard
+# error that would stop the whole config (and Hyprland) from loading. If
+# wal has already run at least once, use its live colors (matches the
+# "last write wins" convention every other pywal-driven surface follows);
+# otherwise fall back to this theme's own border colors so a completely
+# fresh install still boots.
+WAL_HYPR_LUA="$HOME/.cache/wal/colors-hyprland.lua"
+GEN_HYPR_LUA="$HOME/.config/hypr/colors-hyprland.lua"
+if [[ -f "$WAL_HYPR_LUA" ]]; then
+  cp "$WAL_HYPR_LUA" "$GEN_HYPR_LUA"
+elif [[ ! -f "$GEN_HYPR_LUA" ]]; then
+  printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
+fi
 
 # --------- Wallpaper - SWWW ----------
 wp_rel=""

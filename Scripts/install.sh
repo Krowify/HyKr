@@ -133,9 +133,6 @@ print_log "Linking dotfiles (also seeds a default pywal theme if needed)"
 # --------------------------------------------------- // Services
 "${scrDir}/enable_services.sh"
 
-# --------------------------------------------------- // Lua-config guard
-"${scrDir}/extra/install_lua_guard_session.sh"
-
 # --------------------------------------------------- // SDDM theme
 read -rp "Install the pixel-sakura SDDM theme? [Y/n] " sddm_choice
 if [[ "${sddm_choice,,}" != "n" ]]; then

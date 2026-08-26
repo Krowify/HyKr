@@ -1,8 +1,8 @@
 # Keybinds
 
-Every bind in [`hyprland.conf`](hyprland.conf), grouped the same way the
+Every bind in [`hyprland.lua`](hyprland.lua), grouped the same way the
 file itself groups them. `Super` = `$mainMod`. For the exact copy-pasteable
-syntax, see `hyprland.conf` directly — this page is the human-readable index.
+syntax, see `hyprland.lua` directly — this page is the human-readable index.
 
 ## Terminal
 

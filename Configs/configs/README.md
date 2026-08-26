@@ -7,7 +7,7 @@ of the application it configures, so it can be symlinked directly into
 Currently sourced from [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles):
 
 - `waybar/`, `wofi/`, `swaync/`, `nvim/`, `starship.toml`, `wal/`, `wlogout/`
-- `hypr/` — `hyprlock.conf` as-is; `hyprland.conf` is ours (keybinds); `hypridle.conf`
+- `hypr/` — `hyprlock.conf` as-is; `hyprland.lua` is ours (keybinds); `hypridle.conf`
   and `wallpaper.sh` are adapted (dropped references to things not in this repo:
   a `cava` config, an unrecognized `hyprdvd` tool, a hardcoded Spotify path)
 - `kitty/kitty.conf` — trimmed to just elifouts' actual settings (font, padding,
@@ -33,9 +33,9 @@ Not from elifouts:
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
-- `hypr/KEYBINDS.md` — every bind in `hyprland.conf`, grouped the same
+- `hypr/KEYBINDS.md` — every bind in `hyprland.lua`, grouped the same
   way the file is, as Keybind/Action tables — a human-readable index,
-  not copy-pasteable syntax (see `hyprland.conf` directly for that).
+  not copy-pasteable syntax (see `hyprland.lua` directly for that).
   Grouping mirrors [Krowify/arch-install's KEYBINDINGS.md](https://github.com/Krowify/arch-install/blob/main/KEYBINDINGS.md),
   built from this repo's own binds (not arch-install's — different app stack).
 - `theme-switcher/` — from [enes-less/theme-switcher](https://github.com/enes-less/theme-switcher)

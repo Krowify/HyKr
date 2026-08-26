@@ -21,6 +21,10 @@ swaync-client --reload-css
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
 [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
 
+# hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
+# ~/.cache -- require() only resolves modules under the config root.
+[ -f ~/.cache/wal/colors-hyprland.lua ] && cat ~/.cache/wal/colors-hyprland.lua > ~/.config/hypr/colors-hyprland.lua
+
 if [ -f ~/.cache/wal/spicetify-color.ini ]; then
     mkdir -p ~/.config/spicetify
     cat ~/.cache/wal/spicetify-color.ini > ~/.config/spicetify/color.ini

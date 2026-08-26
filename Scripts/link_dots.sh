@@ -22,13 +22,21 @@ done
 # nothing else populates -- link it to the repo's bundled wallpaper set.
 link_dot "${repoDir}/Source/wallpapers" "$HOME/wallpapers"
 
-# hyprland.conf sources ~/.cache/wal/colors-hyprland — seed it so a fresh
-# install doesn't hand Hyprland a config that fails to parse.
-if [ ! -f "$HOME/.cache/wal/colors-hyprland" ]; then
+# hyprland.lua does require("colors-hyprland") and require("generated-theme")
+# unconditionally -- unlike the old hyprlang `source = ...` line, a missing
+# require() target is a hard error that stops Hyprland's config from loading
+# at all. Seed a pywal theme and apply the default HyKr theme now so both
+# exist before Hyprland ever starts.
+if [ ! -f "$HOME/.cache/wal/colors-hyprland.lua" ]; then
     if command -v wal >/dev/null 2>&1; then
         print_log "No pywal theme yet — generating one from the default wallpaper"
         wal -i "${repoDir}/Source/wallpapers/pywallpaper.jpg" -n --cols16
     else
         print_log "python-pywal not installed yet — install it, then run: wal -i <wallpaper> -n"
     fi
+fi
+
+if [ ! -f "$HOME/.config/hypr/generated-theme.lua" ]; then
+    print_log "Applying the default HyKr theme (minimal) so hyprland.lua has something to load"
+    "${repoDir}/Configs/configs/theme-switcher/apply-theme.sh" minimal || true
 fi
