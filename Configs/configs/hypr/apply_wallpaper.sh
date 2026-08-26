@@ -26,7 +26,11 @@ if [ -f ~/.cache/wal/spicetify-color.ini ]; then
     cat ~/.cache/wal/spicetify-color.ini > ~/.config/spicetify/color.ini
     if [ -f ~/.config/spicetify/config-xpui.ini ]; then
         sed -i -E "s/^color_scheme(\s*)=.*/color_scheme\1= HyKr/" ~/.config/spicetify/config-xpui.ini
-        command -v spicetify &>/dev/null && spicetify apply &>/dev/null
+        # Only reapply (which restarts/launches Spotify) if it's already
+        # running -- picking a wallpaper shouldn't pop Spotify open.
+        if pgrep -x spotify &>/dev/null && command -v spicetify &>/dev/null; then
+            spicetify apply &>/dev/null
+        fi
     fi
 fi
 

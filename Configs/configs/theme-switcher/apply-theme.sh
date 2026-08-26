@@ -845,7 +845,12 @@ if [[ -f "$SPICETIFY_TPL" ]]; then
   # color_scheme selection if spicetify has already been set up.
   if [[ -f "$SPICETIFY_CONF" ]]; then
     sed -i -E "s/^color_scheme(\s*)=.*/color_scheme\1= HyKr/" "$SPICETIFY_CONF"
-    command -v spicetify >/dev/null 2>&1 && spicetify apply >/dev/null 2>&1 || true
+    # spicetify apply restarts/launches Spotify to show the new theme --
+    # only do that if it's already running, so switching your desktop
+    # theme doesn't unexpectedly pop Spotify open.
+    if pgrep -x spotify >/dev/null 2>&1 && command -v spicetify >/dev/null 2>&1; then
+      spicetify apply >/dev/null 2>&1 || true
+    fi
   fi
 fi
 
