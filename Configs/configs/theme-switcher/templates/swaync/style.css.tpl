@@ -12,7 +12,7 @@
    ========================= */
 
 .control-center {
-  background: @cc_bg;
+  background: alpha(@cc_bg, 0.6);
   color: @cc_fg;
   border-radius: 16px;
   padding: 12px;
@@ -104,11 +104,19 @@
 
 /* notification card */
 .control-center .control-center-list .notification {
-  background: shade(@cc_bg, 1.08);
+  background: alpha(shade(@cc_bg, 1.08), 0.6);
   border-radius: 14px;
-  padding: 4px 10px; 
+  padding: 4px 10px;
   margin: 2px 0;
   box-shadow: none;
+}
+
+/* floating popup notification card -- distinct from the control-center's
+   history list above; had no background rule of its own, so it was
+   falling through to swaync's stock (fully opaque) default styling */
+.notification-row .notification-background {
+  background: alpha(shade(@cc_bg, 1.08), 0.6);
+  border-radius: 14px;
 }
 
 .control-center .control-center-list .notification box,
