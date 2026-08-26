@@ -13,8 +13,6 @@ general {
 
 decoration {
   rounding = {{rounding}}
-  active_opacity = {{active_opacity}}
-  inactive_opacity = {{inactive_opacity}}
 
   shadow {
     enabled = {{shadow_enabled}}
@@ -30,6 +28,14 @@ decoration {
     vibrancy = {{blur_vibrancy}}
   }
 }
+
+# decoration:active_opacity/inactive_opacity silently no-ops on this
+# Hyprland version (confirmed live: hyprctl getoption kept reporting
+# set: false / 1.0 no matter what, and `hyprctl keyword` itself errors
+# with "can't work with non-legacy parsers" here) -- global opacity has
+# to go through the windowrule system instead, the same mechanism
+# already used for dolphin's per-app opacity rule.
+windowrule = match:class ^(.*)$, opacity {{active_opacity}} {{inactive_opacity}}
 
 # Layer rules
 layerrule = blur on, match:namespace waybar
