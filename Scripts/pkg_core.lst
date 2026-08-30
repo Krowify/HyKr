@@ -70,11 +70,17 @@ nodejs                                                 # required by the bashls 
 npm
 base-devel                                             # C toolchain for treesitter parser compilation
 
+# --------------------------------------------------- // Shell
+zsh                                                    # default login shell -- set for the target user by install.sh
+zsh-autosuggestions                                    # ghost-text completion from history, sourced in Configs/configs/zsh/.zshrc
+zsh-syntax-highlighting                                # colors valid/invalid commands as you type, sourced last in .zshrc (wraps zle widgets)
+zsh-completions                                        # better tab-completion (git, systemctl, docker, ...) than zsh's own default set
+
 # --------------------------------------------------- // Starship
 starship
 
 # --------------------------------------------------- // Fastfetch
-fastfetch                                              # system info fetch tool, runs on every interactive shell via .bashrc
+fastfetch                                              # system info fetch tool, runs on every interactive shell via .zshrc
 
 # --------------------------------------------------- // Firewall
 firewalld                                              # hardened via Scripts/extra/setup_firewall.sh

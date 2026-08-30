@@ -25,7 +25,7 @@ HyKr/
 ├── Configs/
 │   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml,
 │   │               #   wal, wlogout, kitty, gtk-3.0, gtk-4.0, fastfetch, quickshell,
-│   │               #   theme-switcher) + bash/.bashrc → ~/.bashrc
+│   │               #   theme-switcher) + zsh/.zshrc → ~/.zshrc
 │   ├── .local/    # dotfiles → ~/.local
 │   └── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
 ├── Scripts/

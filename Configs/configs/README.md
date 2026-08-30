@@ -13,9 +13,10 @@ Currently sourced from [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles)
 - `kitty/kitty.conf` — trimmed to just elifouts' actual settings (font, padding,
   tab style); their `kitty.conf` was mostly kitty's own 95KB stock template,
   not worth carrying over. `current-theme.conf` ships a fallback pywal theme.
-- `bash/.bashrc` — ours, not elifouts'. Their `.bashrc` was full of aliases and
-  tools we don't have (Docker, zoxide, ncspot, sound-effect-on-error hooks);
-  this one just activates starship and runs fastfetch.
+- `zsh/.zshrc` — ours, not elifouts' (they're on bash anyway, with aliases and
+  tools we don't have: Docker, zoxide, ncspot, sound-effect-on-error hooks).
+  Activates starship, runs fastfetch, wires up fzf plus the zsh-autosuggestions/
+  zsh-syntax-highlighting/zsh-completions plugins from `pkg_core.lst`.
 
 Not from elifouts:
 

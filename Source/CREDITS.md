@@ -46,9 +46,10 @@ preference — installed as packages (`materia-gtk-theme`,
 
 `Configs/configs/kitty/kitty.conf` keeps only elifouts' actual settings
 (font, padding, tab style) — their file was mostly kitty's own stock
-95KB default config template, not anything they wrote. `Configs/configs/bash/.bashrc`
-is ours, not elifouts' — their `.bashrc` was built around tools this
-repo doesn't have (Docker, zoxide, ncspot, custom sound-effect hooks).
+95KB default config template, not anything they wrote. `Configs/configs/zsh/.zshrc`
+is ours, not elifouts' — their dotfiles are built around bash, and around
+tools this repo doesn't have anyway (Docker, zoxide, ncspot, custom
+sound-effect hooks).
 
 ## Quick Settings
 

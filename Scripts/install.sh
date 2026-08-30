@@ -130,6 +130,12 @@ yay -S --needed --noconfirm "${extra_pkgs[@]}"
 print_log "Linking dotfiles (also seeds a default pywal theme if needed)"
 "${scrDir}/link_dots.sh"
 
+# --------------------------------------------------- // Default shell
+if [[ "$(getent passwd "${USER}" | cut -d: -f7)" != *zsh ]]; then
+    print_log "Setting zsh as the default login shell for ${USER}"
+    sudo chsh -s "$(command -v zsh)" "${USER}"
+fi
+
 # --------------------------------------------------- // Services
 "${scrDir}/enable_services.sh"
 
