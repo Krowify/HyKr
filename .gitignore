@@ -1,0 +1,5 @@
+# hyprmod (pkg_extra.lst) writes its own live-settings config here, separate
+# from hyprland.lua on purpose -- it's runtime state for a WIP GUI tool, not
+# something this repo should ever track or accidentally commit.
+Configs/configs/hypr/hyprland-gui.conf
+Configs/configs/hypr/hyprland-gui.lua

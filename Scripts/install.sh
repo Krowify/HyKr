@@ -131,9 +131,12 @@ print_log "Linking dotfiles (also seeds a default pywal theme if needed)"
 "${scrDir}/link_dots.sh"
 
 # --------------------------------------------------- // Default shell
-if [[ "$(getent passwd "${USER}" | cut -d: -f7)" != *zsh ]]; then
-    print_log "Setting zsh as the default login shell for ${USER}"
-    sudo chsh -s "$(command -v zsh)" "${USER}"
+# `id -un` instead of $USER -- the latter isn't guaranteed to be set
+# depending on how this script got invoked (e.g. no pam_env in the chain).
+CURRENT_USER="$(id -un)"
+if [[ "$(getent passwd "${CURRENT_USER}" | cut -d: -f7)" != *zsh ]]; then
+    print_log "Setting zsh as the default login shell for ${CURRENT_USER}"
+    sudo chsh -s "$(command -v zsh)" "${CURRENT_USER}"
 fi
 
 # --------------------------------------------------- // Services

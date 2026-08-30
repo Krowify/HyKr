@@ -192,7 +192,9 @@ hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
 hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))
-hl.bind(var_mainMod .. " + O", function() hl.plugin.hyprexpo.expo("toggle") end)
+hl.bind(var_mainMod .. " + O", function()
+    if is_plugin_loaded("hyprexpo") then hl.plugin.hyprexpo.expo("toggle") end
+end)
 
 -- --------------------------------------------------- // Launchers and apps
 hl.bind(var_mainMod .. " + TAB", hl.dsp.exec_cmd(var_menu))

@@ -5,7 +5,7 @@ spicetify-cli                                          # Spotify client theming 
 proton-mail-bin                                        # Proton Mail desktop client — unofficial AUR build, precompiled (Proton doesn't publish an Arch package)
 visual-studio-code-bin                                 # Microsoft's official branded VS Code build (AUR, precompiled) — apply-theme.sh targets "~/.config/Code/User/settings.json", this package's config dir (was "Code - OSS" for the code/MIT-build package this replaces)
 dotnet-sdk                                              # .NET SDK — extra repo, always tracks the latest supported version
-hyprmod                                                # GTK4/libadwaita live settings GUI for Hyprland — AUR, community-maintained and still in active development; writes its own hypr/hyprland-gui.conf, doesn't touch hyprland.conf
+hyprmod                                                # GTK4/libadwaita live settings GUI for Hyprland — AUR, community-maintained and still in active development; writes its own hypr/hyprland-gui.conf and hyprland-gui.lua, doesn't touch hyprland.lua (gitignored — see .gitignore)
 obsidian                                               # Notes app — AUR, precompiled. apply-theme.sh already themes it (templates/obsidian.css.tpl -> ~/obsidian/.obsidian/snippets/obsidian.css), assuming the vault lives at ~/obsidian
 
 # --------------------------------------------------- // Utilities
