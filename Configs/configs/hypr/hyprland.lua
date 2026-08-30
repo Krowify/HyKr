@@ -1,8 +1,13 @@
--- Monitors: pinned explicitly (name/resolution/refresh/position) so this
--- survives reboots instead of Hyprland re-guessing a layout each time.
+-- Monitors: pinned explicitly (name/resolution/refresh/position/transform)
+-- so this survives reboots and config reloads instead of Hyprland
+-- re-guessing a layout each time -- transform is NOT one of the things
+-- that survives a reload on its own: a rotation set live (hyprmod, or a
+-- one-off `hyprctl keyword monitor ...`) never gets written back here, so
+-- without pinning it explicitly every `hyprctl reload` silently reset both
+-- of these back to unrotated.
 -- From `hyprctl monitors`:
-hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "0x370", scale = 1 })
-hl.monitor({ output = "DP-2", mode = "2560x1440@240", position = "1080x0", scale = 1 })
+hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "0x370", scale = 1, transform = 1 }) -- 90 deg
+hl.monitor({ output = "DP-2", mode = "2560x1440@240", position = "1080x0", scale = 1, transform = 2 }) -- 180 deg
 hl.monitor({ output = "DP-3", mode = "1920x1080@239.96", position = "1080x1440", scale = 1 })
 -- Fallback for any monitor not listed above
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
