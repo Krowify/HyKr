@@ -62,6 +62,8 @@ shell explicitly replaced an earlier Eww/AGS attempt with Quickshell.
 ## Tools & Packages
 
 - [eylles/pywal16](https://github.com/eylles/pywal16) — 16-color fork of [dylanaraps/pywal](https://github.com/dylanaraps/pywal), installed (`python-pywal16`) instead of plain `python-pywal` because it's what provides the `--cols16` flag used in `wallpaper.sh`/`link_dots.sh` to guarantee a full 16-color palette from any wallpaper.
+- [sandwichfarm/hyprexpo](https://github.com/sandwichfarm/hyprexpo) — Mission Control-style workspace overview (`Super+O`), installed via `hyprpm` by `Scripts/extra/setup_hypr_gestures.sh`. Continues the original `hyprexpo` plugin after it was [retired from the official hyprwm/hyprland-plugins repo](https://github.com/hyprwm/hyprland-plugins/pull/663).
+- [horriblename/hyprgrass](https://github.com/horriblename/hyprgrass) — touchpad tap/pinch gesture bindings, installed the same way, gated behind the `has_trackpad()` check in `hypr/hyprland.lua` so a desktop with no touchpad doesn't load them.
 
 ---
 

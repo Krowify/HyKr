@@ -145,4 +145,10 @@ if [[ "${fw_choice,,}" != "n" ]]; then
     "${scrDir}/extra/setup_firewall.sh"
 fi
 
+# --------------------------------------------------- // Hyprland gesture plugins
+read -rp "Install hyprexpo (Mission Control-style overview) + hyprgrass (touchpad gestures)? [Y/n] " gestures_choice
+if [[ "${gestures_choice,,}" != "n" ]]; then
+    "${scrDir}/extra/setup_hypr_gestures.sh"
+fi
+
 print_log "Install complete. Reboot to start SDDM / Hyprland."

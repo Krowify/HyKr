@@ -39,6 +39,76 @@ hl.config({
     },
 })
 
+-- --------------------------------------------------- // Trackpad gestures & Mission Control
+-- hyprexpo was retired from the official hyprwm/hyprland-plugins repo
+-- (github.com/hyprwm/hyprland-plugins/pull/663) -- sandwichfarm/hyprexpo is
+-- the actively maintained continuation this repo tracks instead. Both it
+-- and hyprgrass are hyprpm-managed plugins (installed by
+-- Scripts/extra/setup_hypr_gestures.sh), not pacman packages, so neither
+-- shows up in pkg_core.lst/pkg_extra.lst.
+local function has_trackpad()
+    local f = io.open("/proc/bus/input/devices", "r")
+    if not f then return false end
+    local contents = f:read("*a")
+    f:close()
+    return contents:lower():find("touchpad") ~= nil
+end
+
+-- hyprexpo works fine driven by mouse/keyboard alone, so its config and
+-- O keybind (below, with var_mainMod) always load -- only the touchpad
+-- swipe *trigger* for it is hardware-gated below.
+hl.config({
+    plugin = {
+        hyprexpo = {
+            columns = 3,
+            gaps_in = 5,
+            gaps_out = 10,
+            workspace_method = "center current",
+            gesture_distance = 200,
+            cancel_key = "escape",
+            show_cursor = 1,
+            keynav_enable = 1,
+        },
+    },
+})
+
+-- Desktop has no touchpad, laptop does -- same repo, same file, no
+-- per-machine config branch needed.
+if has_trackpad() then
+    -- Native 3-finger horizontal swipe between workspaces
+    hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
+
+    -- 4-finger swipe up opens the hyprexpo overview -- hyprexpo handles
+    -- this gesture itself, no need to route it through hyprgrass
+    hl.plugin.hyprexpo.gesture({ fingers = 4, direction = "up", action = "expo" })
+
+    -- hyprgrass covers the gestures neither native `hl.gesture` nor
+    -- hyprexpo's own gesture hook do
+    hl.config({
+        plugin = {
+            hyprgrass = {
+                sensitivity = 1.0,
+                long_press_delay = 400,
+                resize_on_border_long_press = true,
+                edge_margin = 10,
+            },
+        },
+        gestures = {
+            workspace_swipe_touch = true,
+            workspace_swipe_cancel_ratio = 0.15,
+        },
+    })
+
+    hl.plugin.hyprgrass.bind({
+        pattern = { kind = "tap", fingers = 3 },
+        action = hl.dsp.window.float(),
+    })
+    hl.plugin.hyprgrass.bind({
+        pattern = { kind = "pinch", fingers = 3, direction = "pinchin" },
+        action = hl.dsp.window.close(),
+    })
+end
+
 -- Autostart
 hl.on("hyprland.start", function()
     -- Secret storage (VS Code, browsers, etc. need this via libsecret --
@@ -96,6 +166,7 @@ hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
 hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))
+hl.bind(var_mainMod .. " + O", function() hl.plugin.hyprexpo.expo("toggle") end)
 
 -- --------------------------------------------------- // Launchers and apps
 hl.bind(var_mainMod .. " + TAB", hl.dsp.exec_cmd(var_menu))
@@ -158,6 +229,17 @@ for i = 1, 10 do
     hl.bind(var_mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
     hl.bind(var_mainMod .. " + ALT + " .. key, hl.dsp.window.move({ workspace = i, follow = false }))
 end
+
+-- Mission Control keyboard navigation while the hyprexpo overview is open
+-- (hyprexpo enters this submap itself via plugin:hyprexpo:keynav_enable)
+hl.define_submap("hyprexpo", function()
+    hl.bind("h", function() hl.plugin.hyprexpo.kb_focus("left") end)
+    hl.bind("l", function() hl.plugin.hyprexpo.kb_focus("right") end)
+    hl.bind("k", function() hl.plugin.hyprexpo.kb_focus("up") end)
+    hl.bind("j", function() hl.plugin.hyprexpo.kb_focus("down") end)
+    hl.bind("return", function() hl.plugin.hyprexpo.kb_confirm() end)
+    hl.bind("escape", function() hl.plugin.hyprexpo.expo("cancel") end)
+end)
 
 -- --------------------------------------------------- // Screenshot
 hl.bind("Print", hl.dsp.exec_cmd("grim - | wl-copy"))
