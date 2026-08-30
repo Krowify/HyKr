@@ -54,59 +54,80 @@ local function has_trackpad()
     return contents:lower():find("touchpad") ~= nil
 end
 
+-- `hyprpm enable <name>` can succeed while the actual build fails (seen in
+-- practice: hyprgrass's -backlight/-pulse sub-plugins failing to compile
+-- while hyprgrass itself, or hyprexpo, build fine) -- hl.config() for a
+-- plugin category Hyprland doesn't recognize because it never actually
+-- loaded is a hard parse-time error that takes down the WHOLE config file,
+-- every keybind included. Check hl.get_loaded_plugins() before touching
+-- any plugin.* config/function so one failed build can't do that again.
+local function is_plugin_loaded(name)
+    for _, plugin in ipairs(hl.get_loaded_plugins()) do
+        if plugin.name == name then return true end
+    end
+    return false
+end
+
 -- hyprexpo works fine driven by mouse/keyboard alone, so its config and
 -- O keybind (below, with var_mainMod) always load -- only the touchpad
 -- swipe *trigger* for it is hardware-gated below.
-hl.config({
-    plugin = {
-        hyprexpo = {
-            columns = 3,
-            gaps_in = 5,
-            gaps_out = 10,
-            workspace_method = "center current",
-            gesture_distance = 200,
-            cancel_key = "escape",
-            show_cursor = 1,
-            keynav_enable = 1,
+if is_plugin_loaded("hyprexpo") then
+    hl.config({
+        plugin = {
+            hyprexpo = {
+                columns = 3,
+                gaps_in = 5,
+                gaps_out = 10,
+                workspace_method = "center current",
+                gesture_distance = 200,
+                cancel_key = "escape",
+                show_cursor = 1,
+                keynav_enable = 1,
+            },
         },
-    },
-})
+    })
+end
 
 -- Desktop has no touchpad, laptop does -- same repo, same file, no
 -- per-machine config branch needed.
 if has_trackpad() then
-    -- Native 3-finger horizontal swipe between workspaces
+    -- Native 3-finger horizontal swipe between workspaces -- built into
+    -- Hyprland itself, no plugin required
     hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
 
-    -- 4-finger swipe up opens the hyprexpo overview -- hyprexpo handles
-    -- this gesture itself, no need to route it through hyprgrass
-    hl.plugin.hyprexpo.gesture({ fingers = 4, direction = "up", action = "expo" })
+    if is_plugin_loaded("hyprexpo") then
+        -- 4-finger swipe up opens the hyprexpo overview -- hyprexpo handles
+        -- this gesture itself, no need to route it through hyprgrass
+        hl.plugin.hyprexpo.gesture({ fingers = 4, direction = "up", action = "expo" })
+    end
 
-    -- hyprgrass covers the gestures neither native `hl.gesture` nor
-    -- hyprexpo's own gesture hook do
-    hl.config({
-        plugin = {
-            hyprgrass = {
-                sensitivity = 1.0,
-                long_press_delay = 400,
-                resize_on_border_long_press = true,
-                edge_margin = 10,
+    if is_plugin_loaded("hyprgrass") then
+        -- hyprgrass covers the gestures neither native `hl.gesture` nor
+        -- hyprexpo's own gesture hook do
+        hl.config({
+            plugin = {
+                hyprgrass = {
+                    sensitivity = 1.0,
+                    long_press_delay = 400,
+                    resize_on_border_long_press = true,
+                    edge_margin = 10,
+                },
             },
-        },
-        gestures = {
-            workspace_swipe_touch = true,
-            workspace_swipe_cancel_ratio = 0.15,
-        },
-    })
+            gestures = {
+                workspace_swipe_touch = true,
+                workspace_swipe_cancel_ratio = 0.15,
+            },
+        })
 
-    hl.plugin.hyprgrass.bind({
-        pattern = { kind = "tap", fingers = 3 },
-        action = hl.dsp.window.float(),
-    })
-    hl.plugin.hyprgrass.bind({
-        pattern = { kind = "pinch", fingers = 3, direction = "pinchin" },
-        action = hl.dsp.window.close(),
-    })
+        hl.plugin.hyprgrass.bind({
+            pattern = { kind = "tap", fingers = 3 },
+            action = hl.dsp.window.float(),
+        })
+        hl.plugin.hyprgrass.bind({
+            pattern = { kind = "pinch", fingers = 3, direction = "pinchin" },
+            action = hl.dsp.window.close(),
+        })
+    end
 end
 
 -- Autostart
