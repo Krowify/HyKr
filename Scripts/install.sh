@@ -68,8 +68,11 @@ print_logo() {
 
 # gum-backed confirm with a plain read fallback -- if gum's own install
 # below fails for some reason, the rest of the installer's prompts
-# shouldn't become unusable because of it.
+# shouldn't become unusable because of it. Redraws the logo fresh right
+# before every question, since the bulk pacman/yay output in between
+# prompts scrolls the original splash off screen otherwise.
 confirm() {
+    print_logo
     if command -v gum &>/dev/null; then
         gum confirm "$1"
     else
