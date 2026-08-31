@@ -12,6 +12,14 @@ hl.monitor({ output = "DP-3", mode = "1920x1080@239.96", position = "1080x1440",
 -- Fallback for any monitor not listed above
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 
+-- Caps Lock does nothing when pressed -- a Wayland/libinput setting
+-- (xkb_options), not the old X11 setxkbmap approach.
+hl.config({
+    input = {
+        kb_options = "caps:none",
+    },
+})
+
 -- Pywal colors for window borders. wal -i renders
 -- Configs/configs/wal/templates/colors-hyprland.lua into ~/.cache/wal/,
 -- and apply_wallpaper.sh/wallpaper.sh copy it into ~/.config/hypr/ right
