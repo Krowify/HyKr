@@ -27,7 +27,8 @@ HyKr/
 │   │               #   wal, wlogout, kitty, gtk-3.0, gtk-4.0, fastfetch, quickshell,
 │   │               #   theme-switcher) + zsh/.zshrc → ~/.zshrc
 │   ├── .local/    # dotfiles → ~/.local
-│   └── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
+│   ├── sddm/      # SDDM themes → /usr/share/sddm/themes (pixel-sakura)
+│   └── networkmanager/ # conf.d drop-ins → /etc/NetworkManager/conf.d (MAC randomization)
 ├── Scripts/
 │   ├── install.sh            # single entrypoint: root handoff -> GPU drivers -> packages ->
 │   │                          #   link_dots -> enable_services -> SDDM/firewall (optional)

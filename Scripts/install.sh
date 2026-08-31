@@ -160,4 +160,10 @@ if [[ "${gestures_choice,,}" != "n" ]]; then
     "${scrDir}/extra/setup_hypr_gestures.sh"
 fi
 
+# --------------------------------------------------- // MAC randomization
+read -rp "Randomize WiFi MAC address on every connection (privacy on untrusted/private networks)? [Y/n] " mac_choice
+if [[ "${mac_choice,,}" != "n" ]]; then
+    "${scrDir}/extra/setup_mac_randomization.sh"
+fi
+
 print_log "Install complete. Reboot to start SDDM / Hyprland."
