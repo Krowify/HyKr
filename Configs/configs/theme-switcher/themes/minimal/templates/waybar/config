@@ -6,7 +6,7 @@
 
     "modules-left": ["cpu", "custom/gpu", "memory", "temperature"],
     "modules-center": ["clock"],
-    "modules-right": ["mpris", "pulseaudio", "custom/power"],
+    "modules-right": ["mpris", "network", "pulseaudio", "custom/power"],
 
     "cpu": {
         "format": "CPU {usage}%",
@@ -48,6 +48,15 @@
         "max-length": 50,
         "tooltip": false,
         "interval": 2
+    },
+
+    "network": {
+        "format-wifi": " {essid}",
+        "format-ethernet": "󰈀 Wired",
+        "format-disconnected": "󰖪 Offline",
+        "tooltip": true,
+        "on-click": "nm-connection-editor",
+        "on-click-right": "protonvpn-app"
     },
 
     "pulseaudio": {

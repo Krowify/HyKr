@@ -12,7 +12,8 @@ pipewire-audio                                         # pipewire audio meta-pac
 wireplumber                                            # pipewire session manager
 alsa-utils                                             # alsamixer/amixer -- low-level ALSA control, useful when PipeWire's own mixer isn't picking up hardware
 pavucontrol                                            # every theme's waybar pulseaudio module left-click already opens this (see theme-switcher/themes/*/templates/waybar/config), was just never listed as a dependency
-networkmanager                                         # network manager, used by waybar's network module + wofi's nmtui
+networkmanager                                         # network manager
+nm-connection-editor                                   # network manager gui, launched from the minimal theme's waybar network module (left-click)
 bluez                                                  # bluetooth protocol stack
 bluez-utils                                            # bluetooth utility cli
 blueman                                                # bluetooth manager gui, launched from waybar's bluetooth module
@@ -28,7 +29,7 @@ qt6-wayland                                            # wayland support for qt6
 # --------------------------------------------------- // Theming
 python-pywal16                                         # generates the colors waybar/wofi/swaync style.css all @import — 16-color fork of pywal, needed for the --cols16 flag used in wallpaper.sh/link_dots.sh (plain python-pywal doesn't support it, provides/replaces it, same `wal` command)
 awww                                                    # wallpaper daemon, paired with pywal by wofi's wallpaper picker (newer fork of swww, same usage)
-kitty                                                  # terminal, opened by waybar's network widget (nmtui) and wofi
+kitty                                                  # terminal, opened by swaync's nmtui quick action and wofi
 nerd-fonts                                             # glyphs used by waybar, wofi, and starship
 fd                                                      # used by wofi's wallpaper picker and nvim's telescope
 materia-gtk-theme                                      # GTK widget theme (Materia-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini

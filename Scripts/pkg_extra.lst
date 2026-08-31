@@ -7,6 +7,7 @@ visual-studio-code-bin                                 # Microsoft's official br
 dotnet-sdk                                              # .NET SDK — extra repo, always tracks the latest supported version
 hyprmod                                                # GTK4/libadwaita live settings GUI for Hyprland — AUR, community-maintained and still in active development; writes its own hypr/hyprland-gui.conf and hyprland-gui.lua, doesn't touch hyprland.lua (gitignored — see .gitignore)
 obsidian                                               # Notes app — AUR, precompiled. apply-theme.sh already themes it (templates/obsidian.css.tpl -> ~/obsidian/.obsidian/snippets/obsidian.css), assuming the vault lives at ~/obsidian
+proton-vpn-gtk-app                                     # Official ProtonVPN Linux app (official extra repo now, not AUR) — right-click on the minimal theme's waybar network module launches it via its `protonvpn-app` binary. Requires a ProtonVPN account/subscription.
 
 # --------------------------------------------------- // Utilities
 imagemagick                                            # provides `magick`, used (soft-guarded, so silently skipped without it) by waybar's colorpicker.sh to generate a swatch preview thumbnail
