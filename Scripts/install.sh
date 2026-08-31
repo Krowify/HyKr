@@ -14,15 +14,17 @@ pkg_names() {
     grep -vE '^\s*#|^\s*$' "$1" | awk '{print $1}'
 }
 
-# Purple-to-blue gradient wordmark + subtitle, centered to the terminal
-# width -- pure printf/ANSI truecolor, no dependency (unlike the gum
-# prompts below, this needs to work even if gum's install fails).
+# Purple-to-blue gradient wordmark + subtitle, centered both horizontally
+# and vertically in the terminal -- pure printf/ANSI truecolor, no
+# dependency (unlike the gum prompts below, this needs to work even if
+# gum's install fails).
 print_logo() {
     local logo_path="${scrDir}/logo.txt"
     [[ -f "${logo_path}" ]] || return 0
 
-    local term_width
+    local term_width term_height
     term_width=$(tput cols 2>/dev/null || echo 80)
+    term_height=$(tput lines 2>/dev/null || echo 24)
 
     local logo_width=0 line
     while IFS= read -r line; do
@@ -38,8 +40,15 @@ print_logo() {
     local total_lines
     total_lines=$(wc -l < "${logo_path}")
 
+    # Vertical centering: logo rows + a blank line + the subtitle row +
+    # a trailing blank line.
+    local content_height=$(( total_lines + 2 ))
+    local vpad=$(( (term_height - content_height) / 2 ))
+    (( vpad < 0 )) && vpad=0
+
     clear
-    echo
+    for ((v = 0; v < vpad; v++)); do echo; done
+
     local i=0 t r g b
     while IFS= read -r line; do
         t=0
@@ -54,7 +63,7 @@ print_logo() {
     local subtitle="Hyprland by Krowify"
     local sub_pad=$(( (term_width - ${#subtitle}) / 2 ))
     (( sub_pad < 0 )) && sub_pad=0
-    printf '\n%s\033[97m%s\033[0m\n\n' "$(printf '%*s' "${sub_pad}" '')" "${subtitle}"
+    printf '\n%s\033[97m%s\033[0m\n' "$(printf '%*s' "${sub_pad}" '')" "${subtitle}"
 }
 
 # gum-backed confirm with a plain read fallback -- if gum's own install
