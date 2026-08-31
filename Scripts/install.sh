@@ -14,6 +14,62 @@ pkg_names() {
     grep -vE '^\s*#|^\s*$' "$1" | awk '{print $1}'
 }
 
+# Purple-to-blue gradient wordmark + subtitle, centered to the terminal
+# width -- pure printf/ANSI truecolor, no dependency (unlike the gum
+# prompts below, this needs to work even if gum's install fails).
+print_logo() {
+    local logo_path="${scrDir}/logo.txt"
+    [[ -f "${logo_path}" ]] || return 0
+
+    local term_width
+    term_width=$(tput cols 2>/dev/null || echo 80)
+
+    local logo_width=0 line
+    while IFS= read -r line; do
+        (( ${#line} > logo_width )) && logo_width=${#line}
+    done < "${logo_path}"
+
+    local pad=$(( (term_width - logo_width) / 2 ))
+    (( pad < 0 )) && pad=0
+    local pad_str
+    pad_str="$(printf '%*s' "${pad}" '')"
+
+    local purple=(147 51 234) blue=(37 99 235)
+    local total_lines
+    total_lines=$(wc -l < "${logo_path}")
+
+    clear
+    echo
+    local i=0 t r g b
+    while IFS= read -r line; do
+        t=0
+        (( total_lines > 1 )) && t=$(( i * 100 / (total_lines - 1) ))
+        r=$(( purple[0] + (blue[0] - purple[0]) * t / 100 ))
+        g=$(( purple[1] + (blue[1] - purple[1]) * t / 100 ))
+        b=$(( purple[2] + (blue[2] - purple[2]) * t / 100 ))
+        printf '%s\033[38;2;%d;%d;%dm%s\033[0m\n' "${pad_str}" "${r}" "${g}" "${b}" "${line}"
+        (( i++ ))
+    done < "${logo_path}"
+
+    local subtitle="Hyprland by Krowify"
+    local sub_pad=$(( (term_width - ${#subtitle}) / 2 ))
+    (( sub_pad < 0 )) && sub_pad=0
+    printf '\n%s\033[97m%s\033[0m\n\n' "$(printf '%*s' "${sub_pad}" '')" "${subtitle}"
+}
+
+# gum-backed confirm with a plain read fallback -- if gum's own install
+# below fails for some reason, the rest of the installer's prompts
+# shouldn't become unusable because of it.
+confirm() {
+    if command -v gum &>/dev/null; then
+        gum confirm "$1"
+    else
+        local reply
+        read -rp "$1 [Y/n] " reply
+        [[ "${reply,,}" != "n" ]]
+    fi
+}
+
 # --------------------------------------------------- // Preflight
 if ! command -v pacman &>/dev/null; then
     print_log "This installer targets Arch Linux (pacman not found). Aborting."
@@ -106,6 +162,12 @@ if [[ ${EUID} -eq 0 ]]; then
     exit 0
 fi
 
+print_logo
+
+if ! command -v gum &>/dev/null; then
+    sudo pacman -S --needed --noconfirm gum || print_log "gum install failed — prompts below will fall back to plain y/n"
+fi
+
 if ! command -v yay &>/dev/null; then
     print_log "yay (AUR helper) not found — installing it"
     sudo pacman -Syu --needed --noconfirm git base-devel
@@ -143,26 +205,22 @@ fi
 "${scrDir}/enable_services.sh"
 
 # --------------------------------------------------- // SDDM theme
-read -rp "Install the pixel-sakura SDDM theme? [Y/n] " sddm_choice
-if [[ "${sddm_choice,,}" != "n" ]]; then
+if confirm "Install the pixel-sakura SDDM theme?"; then
     "${scrDir}/extra/install_sddm_theme.sh"
 fi
 
 # --------------------------------------------------- // Firewall
-read -rp "Harden the firewall with firewalld? [Y/n] " fw_choice
-if [[ "${fw_choice,,}" != "n" ]]; then
+if confirm "Harden the firewall with firewalld?"; then
     "${scrDir}/extra/setup_firewall.sh"
 fi
 
 # --------------------------------------------------- // Hyprland gesture plugins
-read -rp "Install hyprexpo (Mission Control-style overview) + hyprgrass (touchpad gestures)? [Y/n] " gestures_choice
-if [[ "${gestures_choice,,}" != "n" ]]; then
+if confirm "Install hyprexpo (Mission Control-style overview) + hyprgrass (touchpad gestures)?"; then
     "${scrDir}/extra/setup_hypr_gestures.sh"
 fi
 
 # --------------------------------------------------- // MAC randomization
-read -rp "Randomize WiFi MAC address on every connection (privacy on untrusted/private networks)? [Y/n] " mac_choice
-if [[ "${mac_choice,,}" != "n" ]]; then
+if confirm "Randomize WiFi MAC address on every connection (privacy on untrusted/private networks)?"; then
     "${scrDir}/extra/setup_mac_randomization.sh"
 fi
 
