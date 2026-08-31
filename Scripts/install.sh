@@ -217,14 +217,10 @@ fi
 "${scrDir}/enable_services.sh"
 
 # --------------------------------------------------- // SDDM theme
-if confirm "Install the pixel-sakura SDDM theme?"; then
-    "${scrDir}/extra/install_sddm_theme.sh"
-fi
+"${scrDir}/extra/install_sddm_theme.sh"
 
 # --------------------------------------------------- // Firewall
-if confirm "Harden the firewall with firewalld?"; then
-    "${scrDir}/extra/setup_firewall.sh"
-fi
+"${scrDir}/extra/setup_firewall.sh"
 
 # --------------------------------------------------- // Hyprland gesture plugins
 if confirm "Install hyprexpo (Mission Control-style overview) + hyprgrass (touchpad gestures)?"; then
@@ -232,8 +228,6 @@ if confirm "Install hyprexpo (Mission Control-style overview) + hyprgrass (touch
 fi
 
 # --------------------------------------------------- // MAC randomization
-if confirm "Randomize WiFi MAC address on every connection (privacy on untrusted/private networks)?"; then
-    "${scrDir}/extra/setup_mac_randomization.sh"
-fi
+"${scrDir}/extra/setup_mac_randomization.sh"
 
 print_log "Install complete. Reboot to start SDDM / Hyprland."
