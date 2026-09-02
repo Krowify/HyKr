@@ -4,7 +4,7 @@
     "source": "~/.config/fastfetch/ascii.txt",
     "type": "file",
     "padding": {
-      "top": 2,
+      "top": 3,
       "left": 3
     },
     "color": {
