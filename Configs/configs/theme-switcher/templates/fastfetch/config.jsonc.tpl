@@ -4,11 +4,12 @@
     "source": "~/.config/fastfetch/ascii.txt",
     "type": "file",
     "padding": {
-      "top": 0,
+      "top": 2,
       "left": 3
     },
     "color": {
-      "1": "6"
+      "1": "6",
+      "2": "4"
     }
   },
   "display": {
@@ -69,6 +70,7 @@
     {
       "key": "󰢮 gpu",
       "type": "gpu",
+      "format": "{vendor} {name}",
       "keyColor": "34"
     },
     {
