@@ -193,7 +193,13 @@ hl.bind(var_mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 -- --------------------------------------------------- // Toggle
 hl.bind(var_mainMod .. " + T", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(var_mainMod .. " + G", hl.dsp.group.toggle())
-hl.bind(var_mainMod .. " + J", hl.dsp.layout("togglesplit"))
+-- dwindle's "togglesplit" message is dead in Hyprland 0.56.2 -- hl.dsp.layout
+-- fires clean (confirmed via `hyprctl dispatch 'hl.dsp.layout("togglesplit")'`,
+-- returns ok, no error) but the compositor silently drops that specific
+-- message (github.com/hyprwm/Hyprland/issues/15106, "togglesplit does not
+-- exist"); "swapsplit" on the same call path works fine, so that's what's
+-- bound here until upstream restores togglesplit or ships a replacement.
+hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
 hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr' || quickshell -c hykr"))
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("pkill waybar || waybar"))
 hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
