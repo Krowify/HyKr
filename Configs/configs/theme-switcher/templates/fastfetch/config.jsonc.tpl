@@ -6,9 +6,6 @@
     "padding": {
       "top": 0,
       "left": 3
-    },
-    "color": {
-      "1": "{{fg}}"
     }
   },
   "display": {
