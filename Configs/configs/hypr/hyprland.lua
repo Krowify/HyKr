@@ -259,6 +259,15 @@ hl.define_submap("resize", function()
     hl.bind("escape", hl.dsp.submap("reset"))
 end)
 
+-- Escape hatch: hyprexpo's keynav submap (below) isn't always torn down
+-- cleanly on every overview-close path (upstream sandwichfarm/hyprexpo
+-- #99, #39) -- when that happens every bind outside that submap's own
+-- h/l/k/j/return/escape goes dead, Super+J (togglesplit) included, until
+-- the submap is forced back to global. `hyprctl reload` also clears it
+-- but reparses the whole config and re-pins monitors; this is the same
+-- fix without the extra cost.
+hl.bind(var_mainMod .. " + SHIFT + R", hl.dsp.submap("reset"))
+
 for i = 1, 10 do
     local key = i % 10
     hl.bind(var_mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
