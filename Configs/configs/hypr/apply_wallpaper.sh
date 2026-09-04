@@ -13,7 +13,7 @@ awww img "$selected_wallpaper" --transition-type any --transition-fps 60 --trans
 wal -i "$selected_wallpaper" -n --cols16
 
 if command -v swayosd-server &>/dev/null; then
-    pkill swayosd-server
+    pkill swayosd-server || true
     swayosd-server &
 fi
 
@@ -40,4 +40,4 @@ fi
 
 command -v pywalfox &>/dev/null && pywalfox update
 
-source ~/.cache/wal/colors.sh && cp "$wallpaper" ~/wallpapers/pywallpaper.jpg
+source ~/.cache/wal/colors.sh && cp "$selected_wallpaper" ~/wallpapers/pywallpaper.jpg
