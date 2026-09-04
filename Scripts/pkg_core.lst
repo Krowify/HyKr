@@ -38,8 +38,6 @@ illogical-impulse-bibata-modern-classic-bin            # cursor theme — from e
 nwg-look                                                # GUI to apply/preview the GTK theme (also reads gtk-{3,4}.0/settings.ini)
 qt5ct                                                   # Qt5 theming, needed for kate/qt apps to match
 qt6ct-kde                                              # Qt6 theming, patched fork of qt6ct (AUR) -- plain qt6ct doesn't style KDE Frameworks apps (dolphin) correctly, only generic Qt6 apps. Same config path/format as qt6ct, same QT_QPA_PLATFORMTHEME=qt6ct env value.
-kvantum                                                 # svg-based Qt6 theme engine
-kvantum-qt5                                             # svg-based Qt5 theme engine
 
 # --------------------------------------------------- // Waybar
 waybar
@@ -59,7 +57,7 @@ libnotify                                              # provides notify-send, u
 
 # --------------------------------------------------- // Hyprlock
 hyprlock
-hypridle                                               # idle daemon commonly paired with hyprlock (not included in this repo yet)
+hypridle                                               # idle daemon paired with hyprlock -- autostarted in hyprland.lua, toggled with Super+Shift+I
 
 # --------------------------------------------------- // Nvim
 neovim
