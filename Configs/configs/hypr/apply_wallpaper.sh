@@ -12,6 +12,11 @@ selected_wallpaper="$1"
 awww img "$selected_wallpaper" --transition-type any --transition-fps 60 --transition-duration .5
 wal -i "$selected_wallpaper" -n --cols16
 
+# Sourced early (moved up from the end of this script) so every step
+# below -- rofi included -- has $background/$foreground/$colorN as
+# plain bash variables to render with, not just files under ~/.cache.
+source ~/.cache/wal/colors.sh
+
 if command -v swayosd-server &>/dev/null; then
     pkill swayosd-server || true
     swayosd-server &
@@ -35,6 +40,35 @@ fi
 
 [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
 
+# Rofi (wallpaper-grid.rasi / theme-picker.rasi): apply-theme.sh already
+# renders these two from theme.json's static colors on a theme switch,
+# but nothing re-rendered them on a plain wallpaper pick within the same
+# theme -- same "last write wins" pattern as kitty/starship above, just
+# re-run with wal's colors instead of theme.json's. accent/surface/
+# surface2/fg_dim map onto the same color4/color8/color0/color7 slots
+# starship's own pywal template already uses for the same roles.
+ROFI_TPL_DIR="$HOME/.config/theme-switcher/templates/rofi"
+ROFI_OUT_DIR="$HOME/.config/rofi"
+
+if [ -d "$ROFI_TPL_DIR" ]; then
+    mkdir -p "$ROFI_OUT_DIR"
+
+    for tpl in "$ROFI_TPL_DIR"/*.tpl; do
+        [ -f "$tpl" ] || continue
+        out="$ROFI_OUT_DIR/$(basename "$tpl" .tpl)"
+
+        sed \
+            -e "s/{{bg}}/$background/g" \
+            -e "s/{{fg}}/$foreground/g" \
+            -e "s/{{fg_dim}}/$color7/g" \
+            -e "s/{{surface}}/$color8/g" \
+            -e "s/{{surface2}}/$color0/g" \
+            -e "s/{{accent}}/$color4/g" \
+            -e "s/{{font_family}}/JetBrainsMono Nerd Font/g" \
+            "$tpl" > "$out"
+    done
+fi
+
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
 # ~/.cache -- require() only resolves modules under the config root.
 [ -f ~/.cache/wal/colors-hyprland.lua ] && cat ~/.cache/wal/colors-hyprland.lua > ~/.config/hypr/colors-hyprland.lua
@@ -54,4 +88,4 @@ fi
 
 command -v pywalfox &>/dev/null && pywalfox update
 
-source ~/.cache/wal/colors.sh && cp "$selected_wallpaper" ~/wallpapers/pywallpaper.jpg
+cp "$selected_wallpaper" ~/wallpapers/pywallpaper.jpg
