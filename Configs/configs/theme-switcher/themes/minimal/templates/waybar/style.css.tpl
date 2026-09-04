@@ -44,7 +44,8 @@ window#waybar {
 #pulseaudio,
 #mpris,
 #custom-power,
-#temperature {
+#temperature,
+#battery {
   padding: 0 10px;
   margin: 0 2px;
   color: {{fg}};
@@ -72,6 +73,15 @@ window#waybar {
   color: {{red}};
 }
 
+/* Battery */
+#battery.warning {
+  color: {{yellow}};
+}
+
+#battery.critical {
+  color: {{red}};
+}
+
 /* Tooltip */
 tooltip {
   background-color: alpha({{bg}}, 0.4);
@@ -93,6 +103,7 @@ tooltip label {
 #memory,
 #custom-gpu,
 #temperature,
+#battery,
 #clock,
 #pulseaudio,
 #mpris,
@@ -104,6 +115,7 @@ tooltip label {
 #memory:hover,
 #custom-gpu:hover,
 #temperature:hover,
+#battery:hover,
 #clock:hover,
 #pulseaudio:hover,
 #mpris:hover,

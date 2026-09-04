@@ -9,6 +9,10 @@
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "0x370", scale = 1, transform = 1 }) -- 90 deg
 hl.monitor({ output = "DP-2", mode = "2560x1440@240", position = "1080x0", scale = 1, transform = 2 }) -- 180 deg
 hl.monitor({ output = "DP-3", mode = "1920x1080@239.96", position = "1080x1440", scale = 1 })
+-- MSI Venture A16 AI's internal panel (16" FHD+ touch) -- verify against
+-- `hyprctl monitors` once installed, 1920x1200@60 is MSI's listed spec
+-- but hasn't been confirmed against the actual EDID yet.
+hl.monitor({ output = "eDP-1", mode = "1920x1200@60", position = "0x0", scale = 1 })
 -- Fallback for any monitor not listed above
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 

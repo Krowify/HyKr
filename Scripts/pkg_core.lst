@@ -92,6 +92,7 @@ slurp                                                   # region select for scre
 wl-clipboard                                            # wl-copy, screenshots go to clipboard
 pamixer                                                 # volume keys (F10/F11/F12), also the quick-settings volume slider
 brightnessctl                                           # quick-settings brightness slider
+power-profiles-daemon                                   # CPU power/performance profile switching -- no-op on a desktop with no battery, needed for laptop battery life; enabled in enable_services.sh
 hyprsunset                                              # blue light filter, Super+Shift+N
 quickshell                                              # widget panel, Super+M — see Configs/configs/quickshell/hykr/shell.qml
 wlogout                                                 # logout menu, Super+Escape

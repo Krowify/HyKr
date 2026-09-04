@@ -19,3 +19,6 @@ enable_service NetworkManager.service
 
 print_log "Enabling Bluetooth"
 enable_service bluetooth.service
+
+print_log "Enabling power-profiles-daemon"
+enable_service power-profiles-daemon.service
