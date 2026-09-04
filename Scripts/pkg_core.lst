@@ -109,7 +109,7 @@ qt5-imageformats                                        # image thumbnails in Do
 ffmpegthumbs                                            # video thumbnails in Dolphin
 kate                                                     # text editor, Super+C
 brave-bin                                                # web browser, Super+B (AUR — Brave has no official Arch package)
-swayimg                                                  # image viewer, Wayland-native — Dolphin's Open With target for images
+mirage                                                   # image viewer, GTK3 — Dolphin's Open With target for images; AUR (themed via ~/.config/gtk-3.0, unlike swayimg which ignored GTK theming entirely)
 celluloid                                                # video player (GTK frontend for mpv) — Dolphin's Open With target for video
 
 # --------------------------------------------------- // SDDM (pixel-sakura theme)

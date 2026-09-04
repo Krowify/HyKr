@@ -45,6 +45,7 @@ de_symlink() {
 for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
          "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
          "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
+         "$HOME/.config/gtk-3.0" \
          "$HOME/.config/spicetify"; do
   de_symlink "$p"
 done
@@ -836,6 +837,24 @@ if [[ -f "$GTK4_TPL" ]]; then
     -e "s/{{yellow}}/$yellow_hex/g" \
     -e "s/{{shadow}}/$shadow_hex/g" \
     "$GTK4_TPL" > "$GTK4_OUT"
+fi
+
+# --------- GTK3 (mirage, other GTK3 apps) ----------
+GTK3_TPL="$BASE/templates/gtk3-colors.css.tpl"
+GTK3_OUT="$HOME/.config/gtk-3.0/gtk.css"
+
+if [[ -f "$GTK3_TPL" ]]; then
+  mkdir -p "$(dirname "$GTK3_OUT")"
+
+  sed \
+    -e "s/{{bg}}/$bg_hex/g" \
+    -e "s/{{bg_alt}}/$bg_alt_hex/g" \
+    -e "s/{{surface}}/$surface_hex/g" \
+    -e "s/{{surface2}}/$surface2_hex/g" \
+    -e "s/{{fg}}/$fg_hex/g" \
+    -e "s/{{accent}}/$accent_hex/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    "$GTK3_TPL" > "$GTK3_OUT"
 fi
 
 # --------- Spicetify ----------
