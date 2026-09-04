@@ -19,6 +19,20 @@ fi
 
 swaync-client --reload-css
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
+
+# Recolor every already-open kitty window live too, not just ones
+# opened after this switch -- kitty reads its config once at startup
+# and never watches the file for changes on its own. Needs
+# allow_remote_control in kitty.conf; each window auto-allocates its
+# own socket and exports it via KITTY_LISTEN_ON in its environment, so
+# read that straight out of /proc rather than guessing a shared path.
+if command -v kitty &>/dev/null; then
+    for pid in $(pgrep -x kitty); do
+        sock=$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^KITTY_LISTEN_ON=//p')
+        [ -n "$sock" ] && kitty @ --to "$sock" set-colors --all -- ~/.cache/wal/colors-kitty.conf &>/dev/null || true
+    done
+fi
+
 [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
 
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
