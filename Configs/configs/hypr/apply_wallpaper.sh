@@ -69,6 +69,34 @@ if [ -d "$ROFI_TPL_DIR" ]; then
     done
 fi
 
+# Wofi (Super+Tab launcher): same gap as rofi above -- apply-theme.sh
+# only ever renders wofi's style.css on a theme switch. hex_to_rgba_css
+# mirrors apply-theme.sh's own helper of the same name (bg 0.85, surface
+# 0.70, accent-soft 0.15 alphas, matching what it uses for the same
+# roles there).
+hex_to_rgba_css() {
+    local hex="${1#\#}" alpha="${2:-1}"
+    printf "rgba(%d,%d,%d,%s)" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" "$alpha"
+}
+
+WOFI_TPL="$HOME/.config/theme-switcher/templates/wofi.css.tpl"
+WOFI_OUT="$HOME/.config/wofi/style.css"
+
+if [ -f "$WOFI_TPL" ]; then
+    mkdir -p "$HOME/.config/wofi"
+
+    sed \
+        -e "s/{{bg_rgba}}/$(hex_to_rgba_css "$background" "0.85")/g" \
+        -e "s/{{surface_rgba}}/$(hex_to_rgba_css "$color8" "0.70")/g" \
+        -e "s/{{fg}}/$foreground/g" \
+        -e "s/{{accent}}/$color4/g" \
+        -e "s/{{accent_soft}}/$(hex_to_rgba_css "$color4" "0.15")/g" \
+        -e "s/{{bg}}/$background/g" \
+        -e "s/{{font_family}}/JetBrainsMono Nerd Font/g" \
+        -e "s/{{font_family_bold}}/JetBrainsMono Nerd Font Bold/g" \
+        "$WOFI_TPL" > "$WOFI_OUT"
+fi
+
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
 # ~/.cache -- require() only resolves modules under the config root.
 [ -f ~/.cache/wal/colors-hyprland.lua ] && cat ~/.cache/wal/colors-hyprland.lua > ~/.config/hypr/colors-hyprland.lua
