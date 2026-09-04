@@ -9,6 +9,7 @@ pipewire                                               # audio/video server
 pipewire-alsa                                          # pipewire alsa client
 pipewire-pulse                                         # pipewire pulseaudio client
 pipewire-audio                                         # pipewire audio meta-package (pulls in the pipewire audio session bits)
+sof-firmware                                            # DSP firmware many modern laptops (Intel/AMD SOF audio) need for speakers/mic to work at all -- silent no-op on hardware that doesn't use it, but silent-audio-on-first-boot is a very common gap without it
 wireplumber                                            # pipewire session manager
 alsa-utils                                             # alsamixer/amixer -- low-level ALSA control, useful when PipeWire's own mixer isn't picking up hardware
 pavucontrol                                            # every theme's waybar pulseaudio module left-click already opens this (see theme-switcher/themes/*/templates/waybar/config), was just never listed as a dependency
