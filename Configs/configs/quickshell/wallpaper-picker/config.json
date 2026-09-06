@@ -1,7 +1,7 @@
 {
     "wallpaper_path": "~/wallpapers/",
     "cache_path": "~/.cache/quickshell/wallpaper-picker-thumbs/",
-    "columns": 3,
+    "columns": 4,
     "border_color": "#80FFFFFF",
     "cache_batch_size": 20
 }

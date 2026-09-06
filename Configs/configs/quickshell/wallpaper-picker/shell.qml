@@ -38,8 +38,12 @@ PanelWindow {
 
     property int selectedIndex: -1
 
-    implicitWidth: Screen.width * 0.55
-    implicitHeight: Screen.height * 0.65
+    // Hard pixel ceilings, not just a fraction of Screen.width/height --
+    // on a 1920x1080 screen, Screen.height * 0.65 (702px) ran off the
+    // bottom of the display in practice, so this caps at a size known to
+    // fit comfortably rather than trusting the fraction alone.
+    implicitWidth: Math.min(1040, Screen.width * 0.65)
+    implicitHeight: Math.min(560, Screen.height * 0.6)
     color: "transparent"
 
     aboveWindows: true
@@ -179,7 +183,7 @@ PanelWindow {
                     anchors.fill: parent
                     anchors.margins: 10
                     cellWidth: width / Math.max(1, configs.columns)
-                    cellHeight: cellWidth * 0.62
+                    cellHeight: cellWidth * 0.56
                     model: folderModel
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
