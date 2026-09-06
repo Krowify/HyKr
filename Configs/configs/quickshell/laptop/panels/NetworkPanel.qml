@@ -50,7 +50,7 @@ PanelWindow {
                         ? ("Connected - " + (Services.NetworkService.vpnServer || "unknown server"))
                         : "Not connected"
                     color: "#c8d4d1"
-                    font.pixelSize: 11.5
+                    font.pixelSize: 12
                 }
             }
 
@@ -58,7 +58,7 @@ PanelWindow {
                 visible: !Services.NetworkService.vpnAvailable
                 text: "protonvpn-cli not found"
                 color: "#9fb3ae"
-                font.pixelSize: 11.5
+                font.pixelSize: 12
             }
 
             Row {
@@ -72,7 +72,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: Services.NetworkService.vpnConnected ? "Disconnect" : "Quick Connect"
                         color: "#eaf0ee"
-                        font.pixelSize: 10.5
+                        font.pixelSize: 11
                     }
                     TapHandler {
                         onTapped: Services.NetworkService.vpnConnected
@@ -85,7 +85,7 @@ PanelWindow {
             Text {
                 text: "Right-click the network icon for Network Manager"
                 color: "#6f8985"
-                font.pixelSize: 9.5
+                font.pixelSize: 10
                 wrapMode: Text.WordWrap
                 width: parent.width
             }

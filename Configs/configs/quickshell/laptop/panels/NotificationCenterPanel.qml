@@ -48,7 +48,7 @@ PanelWindow {
 
             RowLayout {
                 Layout.fillWidth: true
-                Text { text: "Do Not Disturb"; color: "#c8d4d1"; font.pixelSize: 11.5; Layout.fillWidth: true }
+                Text { text: "Do Not Disturb"; color: "#c8d4d1"; font.pixelSize: 12; Layout.fillWidth: true }
                 Rectangle {
                     width: 34; height: 18; radius: 10
                     color: Services.NotificationService.doNotDisturb ? "#c8102e" : Qt.rgba(1, 1, 1, 0.12)

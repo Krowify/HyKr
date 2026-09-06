@@ -60,7 +60,7 @@ PanelWindow {
                     spacing: 2
 
                     Text { text: appName; color: "#8fa39f"; font.pixelSize: 10 }
-                    Text { text: summary; color: "#eaf0ee"; font.pixelSize: 12.5; font.weight: Font.DemiBold; width: parent.width; wrapMode: Text.WordWrap }
+                    Text { text: summary; color: "#eaf0ee"; font.pixelSize: 13; font.weight: Font.DemiBold; width: parent.width; wrapMode: Text.WordWrap }
                     Text {
                         visible: body.length > 0
                         text: body; color: "#c8d4d1"; font.pixelSize: 11; width: parent.width; wrapMode: Text.WordWrap

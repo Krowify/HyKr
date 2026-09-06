@@ -57,7 +57,7 @@ PanelWindow {
                 model: Services.BluetoothService.connectedDevices
                 delegate: RowLayout {
                     Layout.fillWidth: true
-                    Text { text: modelData.name; color: "#eaf0ee"; font.pixelSize: 11.5; Layout.fillWidth: true; elide: Text.ElideRight }
+                    Text { text: modelData.name; color: "#eaf0ee"; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
                     Text { text: "connected"; color: "#4ade80"; font.pixelSize: 10 }
                 }
             }
@@ -66,7 +66,7 @@ PanelWindow {
                 model: Services.BluetoothService.pairedDevices
                 delegate: RowLayout {
                     Layout.fillWidth: true
-                    Text { text: modelData.name; color: "#c8d4d1"; font.pixelSize: 11.5; Layout.fillWidth: true; elide: Text.ElideRight }
+                    Text { text: modelData.name; color: "#c8d4d1"; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
                     Text { text: "paired"; color: "#6f8985"; font.pixelSize: 10 }
                 }
             }
@@ -85,7 +85,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 height: 26; radius: 8
                 color: "#c8102e"
-                Text { anchors.centerIn: parent; text: "Open Bluetooth Manager"; color: "#eaf0ee"; font.pixelSize: 10.5 }
+                Text { anchors.centerIn: parent; text: "Open Bluetooth Manager"; color: "#eaf0ee"; font.pixelSize: 11 }
                 TapHandler { onTapped: Services.BluetoothService.openManager() }
             }
         }

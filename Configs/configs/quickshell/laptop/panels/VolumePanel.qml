@@ -71,7 +71,7 @@ PanelWindow {
                         anchors.centerIn: parent
                         text: Services.AudioService.muted ? "Unmute" : "Mute"
                         color: "#eaf0ee"
-                        font.pixelSize: 10.5
+                        font.pixelSize: 11
                     }
                     TapHandler { onTapped: Services.AudioService.toggleMute() }
                 }
