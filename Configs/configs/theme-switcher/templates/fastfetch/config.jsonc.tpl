@@ -1,15 +1,11 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "~/.config/fastfetch/ascii.txt",
-    "type": "file",
+    "source": "~/.config/fastfetch/jirachi.txt",
+    "type": "raw",
     "padding": {
       "top": 2,
       "left": 3
-    },
-    "color": {
-      "1": "cyan",
-      "2": "blue"
     }
   },
   "display": {
