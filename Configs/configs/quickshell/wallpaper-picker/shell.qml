@@ -143,7 +143,7 @@ PanelWindow {
                     Text {
                         text: configs.wallpaper_path + " · " + folderModel.count + " images"
                         color: main.colTextDim
-                        font.pixelSize: 10.5
+                        font.pixelSize: 11
                         font.family: "monospace"
                     }
                 }
