@@ -11,7 +11,7 @@ PanelWindow {
 
     property var anchorScreen
     property real barHeight: 34
-    property real xOffset: 100
+    property real rightOffset: 130
 
     visible: false
     screen: anchorScreen
@@ -22,8 +22,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "laptop-popup"
 
-    anchors { top: true; left: true }
-    margins { top: root.barHeight + 6; left: root.xOffset }
+    anchors { top: true; right: true }
+    margins { top: root.barHeight + 6; right: root.rightOffset }
 
     Rectangle {
         anchors.fill: parent
@@ -56,8 +56,8 @@ PanelWindow {
             }
 
             Text {
-                visible: !Services.NetworkService.vpnAvailable
-                text: "protonvpn-cli not found"
+                visible: !Services.NetworkService.vpnAvailable && !Services.NetworkService.vpnGuiAvailable
+                text: "ProtonVPN not installed"
                 color: "#9fb3ae"
                 font.pixelSize: 12
             }
@@ -80,6 +80,26 @@ PanelWindow {
                             ? Services.NetworkService.vpnDisconnect()
                             : Services.NetworkService.vpnConnect()
                     }
+                }
+            }
+
+            // protonvpn-cli isn't installed everywhere this theme runs --
+            // fall back to opening whatever GUI ProtonVPN client is
+            // actually present rather than leaving the click do nothing.
+            Row {
+                spacing: 8
+                visible: !Services.NetworkService.vpnAvailable && Services.NetworkService.vpnGuiAvailable
+
+                Rectangle {
+                    width: 150; height: 26; radius: 8
+                    color: "#c8102e"
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Open ProtonVPN App"
+                        color: "#eaf0ee"
+                        font.pixelSize: 11
+                    }
+                    TapHandler { onTapped: Services.NetworkService.openVpnApp() }
                 }
             }
 

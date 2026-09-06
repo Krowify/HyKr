@@ -3,7 +3,7 @@
   "display": {
     "separator": "  ",
     "color": {
-      "keys": "#ffffff"
+      "keys": "{{fg}}"
     },
     "key": {
       "width": 14
@@ -22,9 +22,9 @@
     {
       "type": "title",
       "color": {
-        "user": "#FF8282",
-        "at": "#666666",
-        "host": "#FFACF3"
+        "user": "{{red}}",
+        "at": "{{fg_dim}}",
+        "host": "{{pink}}"
       }
     },
     {
@@ -34,63 +34,63 @@
     {
       "type": "os",
       "key": " 󰣇 OS",
-      "keyColor": "#56B6FF",
+      "keyColor": "{{blue}}",
       "format": "{pretty-name}"
     },
     {
       "type": "kernel",
       "key": " 󰌽 Kernel",
-      "keyColor": "#BE8CFF"
+      "keyColor": "{{mauve}}"
     },
     {
       "type": "packages",
       "key": " 󰏖 Packages",
-      "keyColor": "#FF9E64"
+      "keyColor": "{{orange}}"
     },
     {
       "type": "shell",
       "key": "  Shell",
-      "keyColor": "#66E880",
+      "keyColor": "{{green}}",
       "format": "{pretty-name}"
     },
     {
       "type": "wm",
       "key": "  WM",
-      "keyColor": "#E5D142",
+      "keyColor": "{{yellow}}",
       "format": "{pretty-name}"
     },
     {
       "type": "cpu",
       "key": "  CPU",
-      "keyColor": "#45E3CD"
+      "keyColor": "{{teal}}"
     },
     {
       "type": "gpu",
       "key": " 󰢮 GPU",
-      "keyColor": "#E485F6"
+      "keyColor": "{{pink}}"
     },
     {
       "type": "display",
       "key": " 󰍹 Screen",
-      "keyColor": "#7A9CFF",
+      "keyColor": "{{sky}}",
       "format": "{width}x{height} @ {refresh-rate}Hz"
     },    
     {
       "type": "memory",
       "key": "  Ram",
-      "keyColor": "#FF75A0",
+      "keyColor": "{{red}}",
       "format": "{used} / {total}"
     },
     {
       "type": "disk",
       "key": " 󰋊 Disk",
-      "keyColor": "#94F0AD",
+      "keyColor": "{{green}}",
       "format": "{size-used} / {size-total}"
     },
     {
       "type": "uptime",
       "key": " 󰔚 Uptime",
-      "keyColor": "#F7C77E"
+      "keyColor": "{{orange}}"
     },
     "break",
     {

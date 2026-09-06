@@ -478,6 +478,16 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
 
   sed \
     -e "s/{{fg}}/$fg_hex/g" \
+    -e "s/{{fg_dim}}/$fg_dim_hex/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    -e "s/{{green}}/$green_hex/g" \
+    -e "s/{{yellow}}/$yellow_hex/g" \
+    -e "s/{{blue}}/$blue_hex/g" \
+    -e "s/{{orange}}/${orange_hex:-$yellow_hex}/g" \
+    -e "s/{{teal}}/${teal_hex:-$green_hex}/g" \
+    -e "s/{{sky}}/${sky_hex:-$blue_hex}/g" \
+    -e "s/{{mauve}}/${magenta_hex:-$accent_hex}/g" \
+    -e "s/{{pink}}/${pink_hex:-$red_hex}/g" \
     "$FASTFETCH_TPL" > "$FASTFETCH_OUT"
 fi
 

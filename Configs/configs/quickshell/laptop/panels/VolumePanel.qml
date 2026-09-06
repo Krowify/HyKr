@@ -8,7 +8,12 @@ PanelWindow {
 
     property var anchorScreen
     property real barHeight: 34
-    property real xOffset: 60
+    // Distance from the bar's right edge to roughly under the volume
+    // icon -- the rightmost trio (volume/network/bluetooth) now sits on
+    // the right side of the bar, so these panels hang from the right
+    // edge instead of the left. See DockBar.qml for the icon order this
+    // mirrors (bell/date/bluetooth/network/volume, right to left).
+    property real rightOffset: 170
 
     visible: false
     screen: anchorScreen
@@ -19,8 +24,8 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "laptop-popup"
 
-    anchors { top: true; left: true }
-    margins { top: root.barHeight + 6; left: root.xOffset }
+    anchors { top: true; right: true }
+    margins { top: root.barHeight + 6; right: root.rightOffset }
 
     Rectangle {
         anchors.fill: parent

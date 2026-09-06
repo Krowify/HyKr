@@ -41,17 +41,17 @@ ShellRoot {
     VolumePanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "volume"
-        xOffset: 60
+        rightOffset: 170
     }
     NetworkPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "network"
-        xOffset: 100
+        rightOffset: 130
     }
     BluetoothPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "bluetooth"
-        xOffset: 140
+        rightOffset: 90
     }
     NotificationCenterPanel {
         anchorScreen: DockState.activeScreen

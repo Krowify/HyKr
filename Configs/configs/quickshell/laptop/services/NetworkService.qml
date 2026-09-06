@@ -13,7 +13,8 @@ Singleton {
 
     property string connectionType: "disconnected" // "wifi" | "ethernet" | "disconnected"
     property string connectionName: ""
-    property bool vpnAvailable: false
+    property bool vpnAvailable: false // protonvpn-cli present
+    property bool vpnGuiAvailable: false // a GUI ProtonVPN client present
     property bool vpnConnected: false
     property string vpnServer: ""
 
@@ -37,6 +38,21 @@ Singleton {
         Quickshell.execDetached(["sh", "-c",
             "command -v protonvpn-cli >/dev/null 2>&1 && protonvpn-cli disconnect"])
         refreshTimer.restart()
+    }
+
+    // protonvpn-cli is confirmed absent on some machines this theme runs
+    // on -- the "Quick Connect" button did nothing there since it only
+    // ever shelled out to the CLI. This is the fallback: launch whatever
+    // GUI ProtonVPN client is actually installed instead (the official
+    // Electron app's binary is `protonvpn-app`; older packaging used
+    // plain `protonvpn`; Flatpak is a last resort). `exec` hands off to
+    // the first one found so the shell doesn't fall through to the rest
+    // once a match runs.
+    function openVpnApp() {
+        Quickshell.execDetached(["sh", "-c",
+            "command -v protonvpn-app >/dev/null 2>&1 && exec protonvpn-app; " +
+            "command -v protonvpn >/dev/null 2>&1 && exec protonvpn; " +
+            "command -v flatpak >/dev/null 2>&1 && exec flatpak run com.protonvpn.www"])
     }
 
     Timer {
@@ -78,9 +94,13 @@ Singleton {
     Process {
         id: vpnProc
         command: ["sh", "-c",
+            "(command -v protonvpn-app >/dev/null 2>&1 || command -v protonvpn >/dev/null 2>&1 || " +
+            "(command -v flatpak >/dev/null 2>&1 && flatpak info com.protonvpn.www >/dev/null 2>&1)) " +
+            "&& echo GUI_AVAILABLE; " +
             "command -v protonvpn-cli >/dev/null 2>&1 && protonvpn-cli status 2>/dev/null || echo NOT_INSTALLED"]
         stdout: StdioCollector {
             onStreamFinished: {
+                root.vpnGuiAvailable = text.includes("GUI_AVAILABLE")
                 if (text.includes("NOT_INSTALLED")) {
                     root.vpnAvailable = false
                     root.vpnConnected = false
