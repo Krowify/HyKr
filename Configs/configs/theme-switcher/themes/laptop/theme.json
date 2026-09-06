@@ -1,0 +1,24 @@
+{
+  "name": "Laptop",
+  "id": "laptop",
+  "default_wallpaper": "wallpapers/japan-artistic-5120x2880-25406.jpg",
+  "dynamic_colors": true,
+  "bar": "quickshell-dock",
+  "fonts": {
+    "family": "JetBrainsMono Nerd Font",
+    "family_bold": "JetBrainsMono Nerd Font Bold"
+  },
+
+  "hypr": {
+    "border_size": 2,
+    "gaps_out": 8,
+    "rounding": 14,
+
+    "blur": {
+      "enabled": true,
+      "size": 4,
+      "passes": 2,
+      "vibrancy": 0.2
+    }
+  }
+}

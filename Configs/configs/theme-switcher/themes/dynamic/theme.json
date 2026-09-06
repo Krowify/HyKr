@@ -2,6 +2,7 @@
   "name": "Dynamic - Matugen",
   "id": "dynamic",
   "default_wallpaper": "wallpapers/peakpx.jpg",
+  "dynamic_colors": true,
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"

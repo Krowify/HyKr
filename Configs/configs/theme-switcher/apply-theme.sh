@@ -67,8 +67,17 @@ ensure_swww() {
   return 1
 }
 
-# --------- Dynamic theme: generate colors from wallpaper via matugen ----------
-if [[ "$THEME" == "dynamic" ]]; then
+# Read early: both the matugen branch below and the bar-mode switch near
+# the end of the script need these before any of the per-app sections run.
+dynamic_colors="$(jq -r '.dynamic_colors // false' "$THEME_JSON")"
+bar_mode="$(jq -r '.bar // "waybar"' "$THEME_JSON")"
+
+# --------- Dynamic-color themes: generate colors from wallpaper via matugen ----------
+# Originally hardcoded to `$THEME == "dynamic"`; generalized to any theme
+# that opts in via theme.json's "dynamic_colors" flag (e.g. "laptop"),
+# while "dynamic" itself keeps working the same way now that its own
+# theme.json carries the flag too.
+if [[ "$dynamic_colors" == "true" ]]; then
   WP="${2:-}"
 
   if [[ -z "$WP" ]]; then
@@ -123,10 +132,16 @@ if [[ "$THEME" == "dynamic" ]]; then
       >/dev/null 2>&1 || true
   fi
 
-  # Generate colors.json via matugen
+  # Generate colors.json via matugen. Its own config.toml hardcodes
+  # themes/dynamic/colors.json as the output path (matugen configs aren't
+  # parameterized per invocation) -- for any other dynamic_colors theme,
+  # copy the freshly generated file over to that theme's own colors.json
+  # right after.
   if command -v matugen >/dev/null 2>&1; then
     if ! matugen -c "$BASE/extras/matugen/config.toml" image "$WP" -m dark -t scheme-tonal-spot --source-color-index 0; then
       echo "Warning: matugen failed — using existing colors.json" >&2
+    elif [[ "$THEME" != "dynamic" ]]; then
+      cp "$BASE/themes/dynamic/colors.json" "$COLORS"
     fi
   else
     echo "Warning: matugen not found — using existing colors.json" >&2
@@ -325,14 +340,23 @@ mv "$tmp_out" "$OUT"
 # --------- Pywal border-color bridge ----------
 # hyprland.lua does require("colors-hyprland") unconditionally -- unlike
 # the old hyprlang `source = ...`, a missing require() target is a hard
-# error that would stop the whole config (and Hyprland) from loading. If
-# wal has already run at least once, use its live colors (matches the
-# "last write wins" convention every other pywal-driven surface follows);
-# otherwise fall back to this theme's own border colors so a completely
-# fresh install still boots.
+# error that would stop the whole config (and Hyprland) from loading.
+#
+# For a dynamic_colors theme, the whole point is that the border tracks
+# the wallpaper-derived accent that was just computed above -- so that
+# takes priority unconditionally, rather than letting a stale pywal
+# history (from whatever wallpaper was last picked through the
+# wallpaper-picker, unrelated to this theme) override it.
+#
+# Otherwise: if wal has already run at least once, use its live colors
+# (matches the "last write wins" convention every other pywal-driven
+# surface follows); fall back to this theme's own border colors so a
+# completely fresh install still boots.
 WAL_HYPR_LUA="$HOME/.cache/wal/colors-hyprland.lua"
 GEN_HYPR_LUA="$HOME/.config/hypr/colors-hyprland.lua"
-if [[ -f "$WAL_HYPR_LUA" ]]; then
+if [[ "$dynamic_colors" == "true" ]]; then
+  printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
+elif [[ -f "$WAL_HYPR_LUA" ]]; then
   cp "$WAL_HYPR_LUA" "$GEN_HYPR_LUA"
 elif [[ ! -f "$GEN_HYPR_LUA" ]]; then
   printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
@@ -887,6 +911,29 @@ if [[ -f "$SPICETIFY_TPL" ]]; then
       spicetify apply >/dev/null 2>&1 || true
     fi
   fi
+fi
+
+# --------- Bar mode: waybar+swaync vs a Quickshell shell ----------
+# A theme can replace the waybar+swaync pair entirely with one Quickshell
+# process (bar, native notification daemon, and its quick panels) by
+# setting "bar": "quickshell-dock" in theme.json. Nothing else supervises
+# these processes, so switching themes has to explicitly tear down
+# whichever pair was running and bring up the other.
+if [[ "$bar_mode" == "quickshell-dock" ]]; then
+  pkill waybar >/dev/null 2>&1 || true
+  pkill -x swaync >/dev/null 2>&1 || true
+  pkill -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+
+  if command -v quickshell >/dev/null 2>&1; then
+    nohup quickshell -c laptop >/dev/null 2>&1 &
+    disown
+  else
+    echo "Warning: quickshell not found — laptop bar/notifications not started" >&2
+  fi
+else
+  pkill -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
+  pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
 fi
 
 hyprctl reload >/dev/null 2>&1 || true
