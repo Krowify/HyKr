@@ -1,7 +1,12 @@
+// Rewritten without QtQuick.Layouts (ColumnLayout/RowLayout) -- this
+// file and NotificationCenterPanel.qml were the only two laptop-shell
+// files using it, and both intermittently failed to load ("X is not a
+// type") on real hardware while the plain-Column/Row panels never did.
+// Whatever the root cause, plain Column/Row + anchors sidesteps it and
+// matches VolumePanel/NetworkPanel's already-working approach.
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import QtQuick.Layouts
 import "../services" as Services
 
 PanelWindow {
@@ -32,42 +37,44 @@ PanelWindow {
         border.color: Qt.rgba(1, 1, 1, 0.08)
         clip: true
 
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 14
-            spacing: 6
+        Row {
+            id: header
+            anchors { top: parent.top; left: parent.left; right: parent.right; margins: 14 }
+            Text { text: "Bluetooth"; color: "#eaf0ee"; font.pixelSize: 13; font.weight: Font.DemiBold }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Text { text: "Bluetooth"; color: "#eaf0ee"; font.pixelSize: 13; font.weight: Font.DemiBold }
-                Item { Layout.fillWidth: true }
-                Rectangle {
-                    width: 52; height: 20; radius: 8
-                    color: Services.BluetoothService.powered ? "#c8102e" : Qt.rgba(1, 1, 1, 0.08)
-                    Text {
-                        anchors.centerIn: parent
-                        text: Services.BluetoothService.powered ? "On" : "Off"
-                        color: "#eaf0ee"
-                        font.pixelSize: 10
-                    }
-                    TapHandler { onTapped: Services.BluetoothService.togglePower() }
+            Item { width: parent.width - 74 - 52; height: 1 } // spacer
+
+            Rectangle {
+                width: 52; height: 20; radius: 8
+                color: Services.BluetoothService.powered ? "#c8102e" : Qt.rgba(1, 1, 1, 0.08)
+                Text {
+                    anchors.centerIn: parent
+                    text: Services.BluetoothService.powered ? "On" : "Off"
+                    color: "#eaf0ee"
+                    font.pixelSize: 10
                 }
+                TapHandler { onTapped: Services.BluetoothService.togglePower() }
             }
+        }
+
+        Column {
+            anchors { top: header.bottom; left: parent.left; right: parent.right; topMargin: 8; leftMargin: 14; rightMargin: 14 }
+            spacing: 6
 
             Repeater {
                 model: Services.BluetoothService.connectedDevices
-                delegate: RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: modelData.name; color: "#eaf0ee"; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
+                delegate: Row {
+                    width: parent.width
+                    Text { text: modelData.name; color: "#eaf0ee"; font.pixelSize: 12; width: parent.width - 70; elide: Text.ElideRight }
                     Text { text: "connected"; color: "#4ade80"; font.pixelSize: 10 }
                 }
             }
 
             Repeater {
                 model: Services.BluetoothService.pairedDevices
-                delegate: RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: modelData.name; color: "#c8d4d1"; font.pixelSize: 12; Layout.fillWidth: true; elide: Text.ElideRight }
+                delegate: Row {
+                    width: parent.width
+                    Text { text: modelData.name; color: "#c8d4d1"; font.pixelSize: 12; width: parent.width - 70; elide: Text.ElideRight }
                     Text { text: "paired"; color: "#6f8985"; font.pixelSize: 10 }
                 }
             }
@@ -79,16 +86,14 @@ PanelWindow {
                 color: "#6f8985"
                 font.pixelSize: 11
             }
+        }
 
-            Item { Layout.fillHeight: true }
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 26; radius: 8
-                color: "#c8102e"
-                Text { anchors.centerIn: parent; text: "Open Bluetooth Manager"; color: "#eaf0ee"; font.pixelSize: 11 }
-                TapHandler { onTapped: Services.BluetoothService.openManager() }
-            }
+        Rectangle {
+            anchors { bottom: parent.bottom; left: parent.left; right: parent.right; margins: 14 }
+            height: 26; radius: 8
+            color: "#c8102e"
+            Text { anchors.centerIn: parent; text: "Open Bluetooth Manager"; color: "#eaf0ee"; font.pixelSize: 11 }
+            TapHandler { onTapped: Services.BluetoothService.openManager() }
         }
     }
 }
