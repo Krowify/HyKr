@@ -1,39 +1,45 @@
-// Dock-style animated wallpaper picker, adapted from 43PR/dotfiles'
-// hyprquickpaper (github.com/43PR/dotfiles), replacing HyKr's previous
-// rofi/wofi wallpaper picker (still in hypr/wallpaper.sh, now unbound).
-// On selection this calls commands.sh, which -- unlike the upstream
-// version's bare `awww img` -- runs hypr/apply_wallpaper.sh so picking a
-// wallpaper here still drives HyKr's full pywal color pipeline
-// (kitty/starship/swaync/pywalfox), same as the picker it replaces.
+// Grid-style wallpaper picker, replacing the previous dock-style scroller
+// (adapted from 43PR/dotfiles' hyprquickpaper). Layout shape -- header with
+// path/count, a card grid, an explicit Apply step -- follows mystiafin/shell's
+// WallpaperPicker.qml/WallpaperCard.qml, but rewritten standalone: that
+// project's version pulls in its own Theme/Typography/Icons/OverlayState
+// singletons (~200 extra lines across 5 files) and renders the wallpaper
+// itself via a custom GPU shader layer instead of a compositor daemon. This
+// keeps a single self-contained file and defers entirely to commands.sh ->
+// apply_wallpaper.sh (awww + pywal + kitty/starship/swaync/pywalfox), same
+// as the picker it replaces.
+//
+// Selecting a card now stages a choice instead of applying immediately --
+// double-click or the Apply button/Enter key commits it -- so an accidental
+// click (or arrow-key drift) can't repaint the whole desktop's color
+// pipeline before you meant it to.
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
+import QtQuick.Layouts
 import Quickshell.Wayland
 
 PanelWindow {
     id: main
 
-    // Required in multi-monitor setups: PanelWindow needs an explicit
-    // screen or it can silently fail to attach to any output at all
-    // (clean init, no error, process just exits -- exactly what this was
-    // doing on a 3-monitor machine before this was added). Picks whichever
-    // screen Hyprland currently has focused (same match-by-id pattern
-    // end-4/dots-hyprland's Overview.qml uses), falling back to the first
-    // detected screen if that lookup ever comes back empty.
+    // Same multi-monitor fix as the previous version: PanelWindow needs an
+    // explicit screen or it can silently fail to attach to any output.
     screen: Quickshell.screens.find(s => Hyprland.monitorFor(s)?.id === Hyprland.focusedMonitor?.id) ?? Quickshell.screens[0]
 
-    // ---- Easy-to-edit settings ----
-    property int speed: 5000          // scroll animation speed
-    property int animDuration: 100    // ms for scroll animation
-    property real zoomScale: 0.8        // scale of the tile at screen center (peak)
-    property real edgeScale: 0.3      // scale of tiles at the screen edges (trough)
-    property real skewFactor: 0   // italic-style shear on tiles
-    property int baseSpacing: 8       // resting gap between tiles (grows automatically as tiles magnify)
-    // --------------------------------
+    // No Theme.qml singleton -- config.json's border_color is the one
+    // color knob (already user-editable), everything else is a fixed
+    // dark neutral so this file has zero external dependency.
+    readonly property color colBgAlt: "#11111b"
+    readonly property color colSurface: "#31324499"
+    readonly property color colText: "#cdd6f4"
+    readonly property color colTextDim: "#9399b2"
+    readonly property color colAccent: configs.border_color
 
-    implicitHeight: 500
-    implicitWidth: Screen.width
+    property int selectedIndex: -1
+
+    implicitWidth: Screen.width * 0.55
+    implicitHeight: Screen.height * 0.65
     color: "transparent"
 
     aboveWindows: true
@@ -45,8 +51,6 @@ PanelWindow {
 
     Component.onCompleted: {
         Quickshell.execDetached(["bash", Quickshell.shellPath("cache.sh"), Quickshell.shellDir])
-        // Covers wallpaper_path already being populated by the time this
-        // fires (see the Connections block below for the other case).
         if (configs.wallpaper_path.length > 0)
             findProc.running = true
     }
@@ -60,16 +64,14 @@ PanelWindow {
             id: configs
             property string wallpaper_path
             property string cache_path
-            property int number_of_pictures
+            property int columns
             property string border_color
         }
     }
 
-    // Explicit signal handler instead of `Process { running: <binding> }`
-    // -- that binding produced zero evidence of ever running (nothing in
-    // the log at all, no error either), so rather than guess further at
-    // whether Process.running re-evaluates as a live binding, trigger it
-    // imperatively once wallpaper_path actually changes.
+    // Same imperative trigger as before -- Process { running: <binding> }
+    // produced no evidence of ever firing, so wallpaper_path changes are
+    // handled explicitly instead of trusted as a live binding.
     Connections {
         target: configs
         function onWallpaper_pathChanged() {
@@ -78,12 +80,11 @@ PanelWindow {
         }
     }
 
-    // Qt.labs.folderlistmodel's FolderListModel only lists a folder's
-    // immediate contents, not subdirectories -- with wallpapers organized
-    // into subfolders (matching hypr/wallpaper.sh's own recursive `find`),
-    // that silently limited the picker to whatever loose files sat at the
-    // top level. Shelling out to the same find+sort wallpaper.sh already
-    // uses instead.
+    // Qt.labs.folderlistmodel only lists a folder's immediate contents, not
+    // subdirectories -- wallpapers are organized into subfolders (matching
+    // hypr/wallpaper.sh's own recursive `find`), so this shells out the
+    // same way that script does instead of silently limiting the grid to
+    // whatever loose files sit at the top level.
     ListModel {
         id: folderModel
     }
@@ -102,204 +103,268 @@ PanelWindow {
         }
     }
 
-    ListView {
-        id: list
+    function clampIndex(i) {
+        return Math.max(0, Math.min(i, folderModel.count - 1))
+    }
+
+    function applySelection() {
+        if (main.selectedIndex < 0 || main.selectedIndex >= folderModel.count)
+            return
+        const path = folderModel.get(main.selectedIndex).filePath
+        Quickshell.execDetached(["bash", Quickshell.shellPath("commands.sh"), path])
+        Qt.quit()
+    }
+
+    Rectangle {
         anchors.fill: parent
-        focus: true
+        radius: 22
+        color: main.colBgAlt
+        opacity: 0.88
+        border.width: 2
+        border.color: main.colAccent
 
-        model: folderModel
-        orientation: ListView.Horizontal
-        spacing: main.baseSpacing
-        clip: true
-        cacheBuffer: 400
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 20
+            spacing: 14
 
-        property int selectedIndex: 0
-        property real tileWidth: width / configs.number_of_pictures - 10
-        property real viewportCenterX: width / 2
+            RowLayout {
+                Layout.fillWidth: true
 
-        function clampIndex(i) {
-            return Math.max(0, Math.min(i, count - 1))
-        }
+                ColumnLayout {
+                    spacing: 2
 
-        function clampX(x) {
-            return Math.max(0, Math.min(x, contentWidth - width))
-        }
-
-        function activateCurrent() {
-            const path = folderModel.get(selectedIndex).filePath
-            Quickshell.execDetached(["bash", Quickshell.shellPath("commands.sh"), path])
-            Qt.quit()
-        }
-
-        function ensureVisibleAnimated(i) {
-            const step = tileWidth + spacing
-            const itemStart = i * step
-            const itemEnd = itemStart + tileWidth + 20
-
-            if (itemStart < contentX)
-                contentX = clampX(itemStart)
-            else if (itemEnd > contentX + width)
-                contentX = clampX(itemStart - (width - step))
-        }
-
-        // Moves the selection by `delta` tiles, animating at `speedMultiplier`x speed
-        function moveSelection(delta, speedMultiplier) {
-            anim.v = main.speed * speedMultiplier
-            selectedIndex = clampIndex(selectedIndex + delta)
-            ensureVisibleAnimated(selectedIndex)
-        }
-
-        Behavior on contentX {
-            SmoothedAnimation {
-                id: anim
-                property int v: main.speed
-                duration: main.animDuration
-            }
-        }
-
-        delegate: Item {
-            id: delegateItem
-            height: 500
-            property bool active: index === list.selectedIndex
-
-            // Base (unscaled) slot width. Used to work out where this tile currently sits
-            // on screen for the magnification curve below. Deliberately NOT derived from
-            // this item's own (dynamic) width - if it were, width would depend on position
-            // which would depend on width, i.e. a binding loop.
-            readonly property real baseWidth: list.tileWidth
-
-            // --- Dock-style magnification: scale depends on on-screen position ---
-            // One binding instead of several chained ones - list.contentX already animates
-            // smoothly (SmoothedAnimation below), so this recomputes every frame during
-            // scroll anyway; no need for extra Behavior/NumberAnimation layered on top of
-            // it (that was two animations fighting over the same value, which is what was
-            // causing the sluggish feel).
-            property real scaleFactor: {
-                const centerX = x - list.contentX + baseWidth / 2
-                const frac = Math.min(1, Math.abs(centerX - list.viewportCenterX) / list.viewportCenterX)
-                const t = 1 - frac * frac * (3 - 2 * frac) // smoothstep falloff
-                return main.edgeScale + (main.zoomScale - main.edgeScale) * t
-            }
-
-            // This IS the delegate's real layout width, so as it grows, ListView pushes
-            // every following tile further along - real spacing, not an overlapping overlay.
-            // No Behavior here: it already tracks contentX's smooth animation 1:1, and tiles
-            // never overlap in this layout, so there's nothing to visually smooth over.
-            width: baseWidth * scaleFactor
-
-            Item {
-                id: content
-                anchors.centerIn: parent
-                width: parent.width
-                // Height scale uses the same factor but caps at 1.0 - the row is already
-                // full window height, so growing past that would just get clipped.
-                height: delegateItem.height * Math.min(1, delegateItem.scaleFactor)
-
-                Text {
-                    id: alt
-                    text: ""
-                    color: configs.border_color
-                    anchors.centerIn: parent
-                    font.pixelSize: 16
-                    transform: Shear { xFactor: main.skewFactor }
+                    Text {
+                        text: "Wallpapers"
+                        color: main.colText
+                        font.pixelSize: 16
+                        font.weight: Font.DemiBold
+                    }
+                    Text {
+                        text: configs.wallpaper_path + " · " + folderModel.count + " images"
+                        color: main.colTextDim
+                        font.pixelSize: 10.5
+                        font.family: "monospace"
+                    }
                 }
 
-                Image {
-                    id: img
+                Item { Layout.fillWidth: true }
+
+                Rectangle {
+                    width: 26; height: 26; radius: 8
+                    color: closeHover.hovered ? Qt.rgba(1, 1, 1, 0.14) : Qt.rgba(1, 1, 1, 0.08)
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "✕"
+                        color: main.colText
+                        font.pixelSize: 12
+                    }
+
+                    HoverHandler { id: closeHover }
+                    TapHandler { onTapped: Qt.quit() }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                radius: 16
+                color: Qt.rgba(0, 0, 0, 0.15)
+                clip: true
+
+                GridView {
+                    id: grid
+
                     anchors.fill: parent
-                    opacity: 0.8
-                    fillMode: Image.PreserveAspectCrop
+                    anchors.margins: 10
+                    cellWidth: width / Math.max(1, configs.columns)
+                    cellHeight: cellWidth * 0.62
+                    model: folderModel
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    focus: true
 
-                    asynchronous: true
-                    cache: false
-                    smooth: true
+                    delegate: Item {
+                        id: card
+                        required property int index
+                        required property string filePath
+                        required property string fileName
 
-                    source: "file://" + configs.cache_path + fileName
+                        width: grid.cellWidth
+                        height: grid.cellHeight
 
-                    // Decode once at the largest size this image will ever be shown at
-                    // (the active/zoomed size), rather than tracking the animating
-                    // width/height - that would re-decode on every animation frame
-                    // and cause a visible blink.
-                    sourceSize.width: delegateItem.baseWidth * main.zoomScale
-                    sourceSize.height: delegateItem.height
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 5
+                            radius: 14
+                            clip: true
+                            color: main.colSurface
+                            border.width: main.selectedIndex === card.index ? 3 : 0
+                            border.color: main.colAccent
 
-                    transform: Shear { xFactor: main.skewFactor }
+                            Image {
+                                id: thumb
+                                anchors.fill: parent
+                                source: "file://" + configs.cache_path + card.fileName
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
+                                cache: false
+                                smooth: true
 
-                    Timer {
-                        id: retryTimer
-                        interval: 1000
-                        repeat: false
-                        onTriggered: {
-                            const s = img.source
-                            img.source = ""
-                            img.source = s
+                                Timer {
+                                    id: retryTimer
+                                    interval: 1000
+                                    onTriggered: {
+                                        const s = thumb.source
+                                        thumb.source = ""
+                                        thumb.source = s
+                                    }
+                                }
+                                onStatusChanged: if (status === Image.Error) retryTimer.start()
+                            }
+
+                            Rectangle {
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                height: 22
+                                color: Qt.rgba(0.067, 0.067, 0.106, 0.78)
+
+                                Text {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 8
+                                    anchors.rightMargin: 8
+                                    text: card.fileName
+                                    color: main.colText
+                                    font.pixelSize: 9
+                                    font.family: "monospace"
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideMiddle
+                                }
+                            }
+
+                            Rectangle {
+                                visible: main.selectedIndex === card.index
+                                anchors.top: parent.top
+                                anchors.right: parent.right
+                                anchors.margins: 6
+                                width: 18; height: 18; radius: 6
+                                color: main.colAccent
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "✓"
+                                    color: main.colBgAlt
+                                    font.pixelSize: 10
+                                    font.weight: Font.Bold
+                                }
+                            }
+
+                            HoverHandler { cursorShape: Qt.PointingHandCursor }
+                            TapHandler { onTapped: main.selectedIndex = card.index }
+                            TapHandler {
+                                acceptedButtons: Qt.LeftButton
+                                onDoubleTapped: {
+                                    main.selectedIndex = card.index
+                                    main.applySelection()
+                                }
+                            }
                         }
                     }
 
-                    onStatusChanged: {
-                        if (status === Image.Error) {
-                            alt.text = "Caching"
-                            retryTimer.start()
+                    Keys.onPressed: function(event) {
+                        const cols = Math.max(1, configs.columns)
+                        switch (event.key) {
+                        case Qt.Key_Right:
+                            main.selectedIndex = main.clampIndex((main.selectedIndex < 0 ? -1 : main.selectedIndex) + 1)
+                            break
+                        case Qt.Key_Left:
+                            main.selectedIndex = main.clampIndex((main.selectedIndex < 0 ? 1 : main.selectedIndex) - 1)
+                            break
+                        case Qt.Key_Down:
+                            main.selectedIndex = main.clampIndex((main.selectedIndex < 0 ? -cols : main.selectedIndex) + cols)
+                            break
+                        case Qt.Key_Up:
+                            main.selectedIndex = main.clampIndex((main.selectedIndex < 0 ? cols : main.selectedIndex) - cols)
+                            break
+                        case Qt.Key_Return:
+                        case Qt.Key_Enter:
+                            main.applySelection()
+                            break
+                        case Qt.Key_Escape:
+                            Qt.quit()
+                            break
+                        default:
+                            return
                         }
+                        event.accepted = true
                     }
+                }
+
+                Column {
+                    visible: folderModel.count === 0
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: "No wallpapers found"
+                        color: main.colText
+                        font.pixelSize: 14
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: configs.wallpaper_path
+                        color: main.colTextDim
+                        font.pixelSize: 11
+                        font.family: "monospace"
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10
+
+                Item { Layout.fillWidth: true }
+
+                Rectangle {
+                    width: 78; height: 30; radius: 10
+                    color: "transparent"
+                    border.width: 1
+                    border.color: Qt.rgba(1, 1, 1, 0.15)
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Cancel"
+                        color: main.colTextDim
+                        font.pixelSize: 11
+                        font.family: "monospace"
+                    }
+
+                    TapHandler { onTapped: Qt.quit() }
                 }
 
                 Rectangle {
-                    id: border
-                    z: 10
-                    anchors.fill: parent
-                    visible: delegateItem.active
-                    color: "transparent"
+                    width: 78; height: 30; radius: 10
+                    color: main.selectedIndex >= 0 ? main.colAccent : Qt.rgba(1, 1, 1, 0.08)
 
-                    border.width: 2
-                    border.color: configs.border_color
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Apply"
+                        color: main.selectedIndex >= 0 ? main.colBgAlt : main.colTextDim
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        font.family: "monospace"
+                    }
 
-                    transform: Shear { xFactor: main.skewFactor }
+                    TapHandler {
+                        enabled: main.selectedIndex >= 0
+                        onTapped: main.applySelection()
+                    }
                 }
             }
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-
-                onEntered: list.selectedIndex = index
-                onClicked: list.activateCurrent()
-
-                onWheel: function(wheel) {
-                    list.flick(-wheel.angleDelta.y * 24, 0)
-                    wheel.accepted = true
-                }
-            }
-        }
-
-        Keys.onPressed: function(event) {
-            const big = configs.number_of_pictures
-
-            switch (event.key) {
-            case Qt.Key_J:
-                moveSelection(1, 1)
-                break
-            case Qt.Key_K:
-                moveSelection(-1, 1)
-                break
-            case Qt.Key_D:
-                moveSelection(big, big)
-                break
-            case Qt.Key_U:
-                moveSelection(-big, big)
-                break
-            case Qt.Key_Space:
-            case Qt.Key_Return:
-                activateCurrent()
-                break
-            case Qt.Key_Escape:
-                Qt.quit()
-                break
-            default:
-                return
-            }
-
-            event.accepted = true
         }
     }
 }
