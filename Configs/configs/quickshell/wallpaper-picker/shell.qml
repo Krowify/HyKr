@@ -196,6 +196,17 @@ PanelWindow {
                         policy: ScrollBar.AlwaysOn
                         width: 8
 
+                        // QtQuick Controls docks an attached ScrollBar flush
+                        // to the Flickable's own right edge, i.e. INSIDE the
+                        // GridView's (already right-margined) bounds -- which
+                        // put it right on top of the last column of cards.
+                        // Push it out past that edge into the empty gutter
+                        // the GridView's anchors.rightMargin reserved.
+                        anchors.right: parent.right
+                        anchors.rightMargin: -14
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+
                         contentItem: Rectangle {
                             implicitWidth: 6
                             radius: 3
