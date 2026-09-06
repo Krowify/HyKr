@@ -192,17 +192,17 @@ PanelWindow {
                     // Flickable's own wheel handling moves the content a
                     // small, fixed amount per notch -- fine for a couple of
                     // rows, tedious once there are a few hundred wallpapers.
-                    // Multiplying angleDelta into an explicit flick() (same
-                    // pattern the old dock scroller used for its horizontal
-                    // scroll -- see git history) gives each notch a lot more
-                    // reach; maximumFlickVelocity is raised so that boosted
-                    // flick isn't clamped back down.
-                    maximumFlickVelocity: 20000
-                    flickDeceleration: 3500
-
+                    // A velocity-based flick() didn't produce a felt change
+                    // even at a high multiplier (Flickable's own deceleration/
+                    // velocity clamping likely still won), so this jumps
+                    // contentY directly instead -- a fixed, guaranteed pixel
+                    // distance per notch with no physics in the way.
                     WheelHandler {
                         target: null
-                        onWheel: (event) => grid.flick(0, event.angleDelta.y * 50)
+                        onWheel: (event) => {
+                            const maxY = Math.max(0, grid.contentHeight - grid.height)
+                            grid.contentY = Math.max(0, Math.min(grid.contentY - event.angleDelta.y * 3, maxY))
+                        }
                     }
 
                     delegate: Item {
