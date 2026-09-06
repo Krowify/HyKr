@@ -18,6 +18,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import Quickshell.Wayland
 
 PanelWindow {
@@ -182,12 +183,31 @@ PanelWindow {
 
                     anchors.fill: parent
                     anchors.margins: 10
+                    anchors.rightMargin: 22
                     cellWidth: width / Math.max(1, configs.columns)
                     cellHeight: cellWidth * 0.56
                     model: folderModel
                     clip: true
                     boundsBehavior: Flickable.StopAtBounds
                     focus: true
+
+                    ScrollBar.vertical: ScrollBar {
+                        id: vbar
+                        policy: ScrollBar.AlwaysOn
+                        width: 8
+
+                        contentItem: Rectangle {
+                            implicitWidth: 6
+                            radius: 3
+                            color: main.colAccent
+                            opacity: vbar.pressed ? 1 : 0.7
+                        }
+                        background: Rectangle {
+                            implicitWidth: 6
+                            radius: 3
+                            color: Qt.rgba(1, 1, 1, 0.08)
+                        }
+                    }
 
                     // Flickable's own wheel handling moves the content a
                     // small, fixed amount per notch -- fine for a couple of
