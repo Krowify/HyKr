@@ -42,8 +42,8 @@ PanelWindow {
     // on a 1920x1080 screen, Screen.height * 0.65 (702px) ran off the
     // bottom of the display in practice, so this caps at a size known to
     // fit comfortably rather than trusting the fraction alone.
-    implicitWidth: Math.min(1040, Screen.width * 0.65)
-    implicitHeight: Math.min(560, Screen.height * 0.6)
+    implicitWidth: Math.min(1300, Screen.width * 0.8)
+    implicitHeight: Math.min(700, Screen.height * 0.75)
     color: "transparent"
 
     aboveWindows: true
@@ -200,6 +200,14 @@ PanelWindow {
                     WheelHandler {
                         target: null
                         onWheel: (event) => {
+                            // Temporary: three different speed tunings (flick
+                            // x20, flick x50, direct contentY) all felt
+                            // identical on real hardware, which means this
+                            // handler may not be the thing actually moving
+                            // the grid at all. This line proves whether it's
+                            // even firing -- check launch.sh's terminal output
+                            // while scrolling. Remove once confirmed.
+                            console.log("[wallpaper-picker] wheel angleDelta.y =", event.angleDelta.y, "contentY before =", grid.contentY)
                             const maxY = Math.max(0, grid.contentHeight - grid.height)
                             grid.contentY = Math.max(0, Math.min(grid.contentY - event.angleDelta.y * 3, maxY))
                         }
