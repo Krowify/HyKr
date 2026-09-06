@@ -7,6 +7,12 @@
 // Layout, left to right: workspaces / (centered) clock / volume,
 // network, bluetooth, date, notifications.
 //
+// The four popup panels are NOT declared here anymore -- see shell.qml's
+// header comment: nesting multiple PanelWindows as children of another
+// PanelWindow was unreliable on real hardware (intermittent "X is not a
+// type" errors, always one of the later-declared nested windows). They're
+// now top-level siblings in shell.qml, coordinated through DockState.qml.
+//
 // Same multi-monitor-safe screen pattern as the other HyKr quickshell
 // configs (wallpaper-picker, hykr): PanelWindow needs an explicit
 // screen or it can silently fail to attach to any output at all.
@@ -24,14 +30,12 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import "./services" as Services
-import "./panels"
 
 PanelWindow {
     id: root
 
     required property var modelData
     readonly property var targetScreen: modelData
-    property string activePanel: "" // "" | "volume" | "network" | "bluetooth" | "notifications"
 
     readonly property int barHeight: 34
 
@@ -44,10 +48,6 @@ PanelWindow {
 
     WlrLayershell.layer: WlrLayer.Top
     WlrLayershell.namespace: "laptop-dock"
-
-    function togglePanel(name) {
-        root.activePanel = root.activePanel === name ? "" : name;
-    }
 
     readonly property var workspaceIds: [1, 2, 3, 4, 5]
     readonly property var monitorWorkspaces: Hyprland.workspaces
@@ -110,9 +110,9 @@ PanelWindow {
                         text: Services.AudioService.muted ? "\u{F075F}" : "\u{F057E}"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: root.activePanel === "volume" ? "#c8102e" : "#9fb3ae"
+                        color: DockState.isActive(root.targetScreen, "volume") ? "#c8102e" : "#9fb3ae"
                     }
-                    TapHandler { onTapped: root.togglePanel("volume") }
+                    TapHandler { onTapped: DockState.toggle(root.targetScreen, "volume") }
                 }
 
                 Item {
@@ -120,15 +120,15 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         // nf-fa-wifi / nf-custom-ethernet / nf-md-network_off
-                        text: Services.NetworkService.connectionType === "wifi" ? ""
-                            : Services.NetworkService.connectionType === "ethernet" ? "" : ""
+                        text: Services.NetworkService.connectionType === "wifi" ? ""
+                            : Services.NetworkService.connectionType === "ethernet" ? "" : ""
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: root.activePanel === "network" ? "#c8102e" : "#9fb3ae"
+                        color: DockState.isActive(root.targetScreen, "network") ? "#c8102e" : "#9fb3ae"
                     }
                     TapHandler {
                         acceptedButtons: Qt.LeftButton
-                        onTapped: root.togglePanel("network")
+                        onTapped: DockState.toggle(root.targetScreen, "network")
                     }
                     TapHandler {
                         acceptedButtons: Qt.RightButton
@@ -144,10 +144,10 @@ PanelWindow {
                         text: "\u{F00AF}"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: root.activePanel === "bluetooth" ? "#c8102e"
+                        color: DockState.isActive(root.targetScreen, "bluetooth") ? "#c8102e"
                             : (Services.BluetoothService.powered ? "#9fb3ae" : "#5c6d6a")
                     }
-                    TapHandler { onTapped: root.togglePanel("bluetooth") }
+                    TapHandler { onTapped: DockState.toggle(root.targetScreen, "bluetooth") }
                 }
 
                 Text {
@@ -168,7 +168,7 @@ PanelWindow {
                         text: ""
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: root.activePanel === "notifications" ? "#c8102e" : "#9fb3ae"
+                        color: DockState.isActive(root.targetScreen, "notifications") ? "#c8102e" : "#9fb3ae"
                     }
                     Rectangle {
                         visible: Services.NotificationService.unreadCount > 0
@@ -177,7 +177,7 @@ PanelWindow {
                         anchors.top: parent.top
                         anchors.right: parent.right
                     }
-                    TapHandler { onTapped: root.togglePanel("notifications") }
+                    TapHandler { onTapped: DockState.toggle(root.targetScreen, "notifications") }
                 }
             }
         }
@@ -205,9 +205,4 @@ PanelWindow {
         repeat: true
         onTriggered: now = new Date()
     }
-
-    VolumePanel { anchorScreen: root.targetScreen; visible: root.activePanel === "volume"; barHeight: root.barHeight; xOffset: 60 }
-    NetworkPanel { anchorScreen: root.targetScreen; visible: root.activePanel === "network"; barHeight: root.barHeight; xOffset: 100 }
-    BluetoothPanel { anchorScreen: root.targetScreen; visible: root.activePanel === "bluetooth"; barHeight: root.barHeight; xOffset: 140 }
-    NotificationCenterPanel { anchorScreen: root.targetScreen; visible: root.activePanel === "notifications"; barHeight: root.barHeight }
 }
