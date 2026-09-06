@@ -34,63 +34,63 @@
     {
       "type": "os",
       "key": " 󰣇 OS",
-      "keyColor": "{{blue}}",
+      "keyColor": "{{grad0}}",
       "format": "{pretty-name}"
     },
     {
       "type": "kernel",
       "key": " 󰌽 Kernel",
-      "keyColor": "{{mauve}}"
+      "keyColor": "{{grad1}}"
     },
     {
       "type": "packages",
       "key": " 󰏖 Packages",
-      "keyColor": "{{orange}}"
+      "keyColor": "{{grad2}}"
     },
     {
       "type": "shell",
       "key": "  Shell",
-      "keyColor": "{{green}}",
+      "keyColor": "{{grad3}}",
       "format": "{pretty-name}"
     },
     {
       "type": "wm",
       "key": "  WM",
-      "keyColor": "{{yellow}}",
+      "keyColor": "{{grad4}}",
       "format": "{pretty-name}"
     },
     {
       "type": "cpu",
       "key": "  CPU",
-      "keyColor": "{{teal}}"
+      "keyColor": "{{grad5}}"
     },
     {
       "type": "gpu",
       "key": " 󰢮 GPU",
-      "keyColor": "{{pink}}"
+      "keyColor": "{{grad6}}"
     },
     {
       "type": "display",
       "key": " 󰍹 Screen",
-      "keyColor": "{{sky}}",
+      "keyColor": "{{grad7}}",
       "format": "{width}x{height} @ {refresh-rate}Hz"
     },    
     {
       "type": "memory",
       "key": "  Ram",
-      "keyColor": "{{red}}",
+      "keyColor": "{{grad8}}",
       "format": "{used} / {total}"
     },
     {
       "type": "disk",
       "key": " 󰋊 Disk",
-      "keyColor": "{{green}}",
+      "keyColor": "{{grad9}}",
       "format": "{size-used} / {size-total}"
     },
     {
       "type": "uptime",
       "key": " 󰔚 Uptime",
-      "keyColor": "{{orange}}"
+      "keyColor": "{{grad10}}"
     },
     "break",
     {

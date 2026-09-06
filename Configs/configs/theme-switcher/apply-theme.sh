@@ -194,6 +194,25 @@ hex_to_rgb_csv() {
     $((16#${hex:4:2}))
 }
 
+# Linear-interpolate between two hex colors. pct is an integer 0-100
+# rather than a float, so this stays plain bash arithmetic (no bc/awk
+# dependency) -- used for fastfetch's key-color gradient, since some
+# themes' generated role colors (red/green/blue/etc, especially matugen's
+# dynamic output) can land close enough to each other that picking
+# distinct "named" colors per module reads as an arbitrary jumble rather
+# than a smooth sweep. A pure numeric gradient between two colors that
+# are always present and usually distinct (accent, fg) stays smooth
+# regardless of how sparse or muddy a given theme's role palette is.
+hex_lerp() {
+  local h1="${1#\#}" h2="${2#\#}" pct="$3"
+  local r1=$((16#${h1:0:2})) g1=$((16#${h1:2:2})) b1=$((16#${h1:4:2}))
+  local r2=$((16#${h2:0:2})) g2=$((16#${h2:2:2})) b2=$((16#${h2:4:2}))
+  printf "#%02x%02x%02x" \
+    $(( r1 + (r2 - r1) * pct / 100 )) \
+    $(( g1 + (g2 - g1) * pct / 100 )) \
+    $(( b1 + (b2 - b1) * pct / 100 ))
+}
+
 # ---------------- Cache JSON reads (ONLY 2 jq calls total) ----------------
 
 # colors.json -> one shot
@@ -476,18 +495,34 @@ FASTFETCH_OUT="$FASTFETCH_DIR/config.jsonc"
 if [[ -f "$FASTFETCH_TPL" ]]; then
   mkdir -p "$FASTFETCH_DIR"
 
+  # The 11 module keyColors (OS through Uptime) are a smooth gradient
+  # from accent to fg, rather than a grab-bag of named role colors --
+  # some themes' role colors (particularly matugen's dynamic output)
+  # land close enough to each other that assigning them one per module
+  # read as an arbitrary jumble rather than an intentional sweep. A
+  # numeric interpolation between two colors that are always present
+  # and usually visually distinct stays smooth for every theme.
+  grad_steps=()
+  for i in $(seq 0 10); do
+    grad_steps+=("$(hex_lerp "$accent_hex" "$fg_hex" $((i * 10)))")
+  done
+
   sed \
     -e "s/{{fg}}/$fg_hex/g" \
     -e "s/{{fg_dim}}/$fg_dim_hex/g" \
     -e "s/{{red}}/$red_hex/g" \
-    -e "s/{{green}}/$green_hex/g" \
-    -e "s/{{yellow}}/$yellow_hex/g" \
-    -e "s/{{blue}}/$blue_hex/g" \
-    -e "s/{{orange}}/${orange_hex:-$yellow_hex}/g" \
-    -e "s/{{teal}}/${teal_hex:-$green_hex}/g" \
-    -e "s/{{sky}}/${sky_hex:-$blue_hex}/g" \
-    -e "s/{{mauve}}/${magenta_hex:-$accent_hex}/g" \
     -e "s/{{pink}}/${pink_hex:-$red_hex}/g" \
+    -e "s/{{grad0}}/${grad_steps[0]}/g" \
+    -e "s/{{grad1}}/${grad_steps[1]}/g" \
+    -e "s/{{grad2}}/${grad_steps[2]}/g" \
+    -e "s/{{grad3}}/${grad_steps[3]}/g" \
+    -e "s/{{grad4}}/${grad_steps[4]}/g" \
+    -e "s/{{grad5}}/${grad_steps[5]}/g" \
+    -e "s/{{grad6}}/${grad_steps[6]}/g" \
+    -e "s/{{grad7}}/${grad_steps[7]}/g" \
+    -e "s/{{grad8}}/${grad_steps[8]}/g" \
+    -e "s/{{grad9}}/${grad_steps[9]}/g" \
+    -e "s/{{grad10}}/${grad_steps[10]}/g" \
     "$FASTFETCH_TPL" > "$FASTFETCH_OUT"
 fi
 
