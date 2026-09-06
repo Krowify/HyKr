@@ -58,12 +58,24 @@ PanelWindow {
         return active ? active.id : -1;
     }
 
+    // Background only -- alpha lives in the color itself (not the
+    // Rectangle's opacity property), because opacity cascades to
+    // children in Qt Quick. It was set on this Rectangle while the
+    // RowLayout/clock were declared INSIDE it, so every icon and text
+    // label was also rendering at 90% opacity instead of just the
+    // background showing wallpaper through -- reported as "no
+    // transparency" since a slightly-faded bar reads the same as an
+    // opaque one at a glance. Content now lives as siblings below,
+    // full opacity, on top of this.
     Rectangle {
         anchors.fill: parent
-        color: "#0a1412"
-        opacity: 0.9 // matches hyprland.lua.tpl's active_opacity -- see apply-theme.sh
+        color: Qt.rgba(0.039, 0.078, 0.071, 0.55) // #0a1412 at 55% alpha
         border.width: 1
         border.color: Qt.rgba(1, 1, 1, 0.06)
+    }
+
+    Item {
+        anchors.fill: parent
 
         RowLayout {
             anchors.fill: parent
@@ -120,8 +132,8 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         // nf-fa-wifi / nf-custom-ethernet / nf-md-network_off
-                        text: Services.NetworkService.connectionType === "wifi" ? ""
-                            : Services.NetworkService.connectionType === "ethernet" ? "" : ""
+                        text: Services.NetworkService.connectionType === "wifi" ? ""
+                            : Services.NetworkService.connectionType === "ethernet" ? "" : ""
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
                         color: DockState.isActive(root.targetScreen, "network") ? "#c8102e" : "#9fb3ae"

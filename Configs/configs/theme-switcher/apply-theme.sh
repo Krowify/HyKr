@@ -942,10 +942,25 @@ fi
 # setting "bar": "quickshell-dock" in theme.json. Nothing else supervises
 # these processes, so switching themes has to explicitly tear down
 # whichever pair was running and bring up the other.
+# A plain `pkill` (SIGTERM) followed immediately by launching the
+# replacement raced in practice: the old process hadn't actually
+# released its Wayland layer-shell surface yet by the time the new one
+# started, so both ended up mapped at once (two stacked bars). Force-
+# kill and wait for the process to actually be gone (up to ~2s) before
+# starting the replacement.
+wait_for_exit() {
+  local pattern="$1"
+  for _ in {1..20}; do
+    pgrep -f "$pattern" >/dev/null 2>&1 || return 0
+    sleep 0.1
+  done
+}
+
 if [[ "$bar_mode" == "quickshell-dock" ]]; then
   pkill waybar >/dev/null 2>&1 || true
   pkill -x swaync >/dev/null 2>&1 || true
-  pkill -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  pkill -9 -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  wait_for_exit 'quickshell -c laptop'
 
   if command -v quickshell >/dev/null 2>&1; then
     nohup quickshell -c laptop >/dev/null 2>&1 &
@@ -954,7 +969,8 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
     echo "Warning: quickshell not found — laptop bar/notifications not started" >&2
   fi
 else
-  pkill -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  pkill -9 -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  wait_for_exit 'quickshell -c laptop'
   pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
   pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
 fi
