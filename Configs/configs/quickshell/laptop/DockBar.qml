@@ -94,7 +94,10 @@ PanelWindow {
                     width: 20; height: 20
                     Text {
                         anchors.centerIn: parent
-                        text: Services.AudioService.muted ? "" : ""
+                        // nf-md-volume_high / nf-md-volume_mute -- same
+                        // glyphs swaync's own volume/mute widgets use.
+                        text: Services.AudioService.muted ? "\u{F075F}" : "\u{F057E}"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
                         color: root.activePanel === "volume" ? "#c8102e" : "#9fb3ae"
                     }
@@ -105,8 +108,11 @@ PanelWindow {
                     width: 20; height: 20
                     Text {
                         anchors.centerIn: parent
-                        text: Services.NetworkService.connectionType === "wifi" ? ""
-                            : Services.NetworkService.connectionType === "ethernet" ? "" : ""
+                        // nf-fa-wifi / nf-custom-ethernet / nf-md-network_off
+                        // -- same glyphs the existing waybar network module uses.
+                        text: Services.NetworkService.connectionType === "wifi" ? ""
+                            : Services.NetworkService.connectionType === "ethernet" ? "" : ""
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
                         color: root.activePanel === "network" ? "#c8102e" : "#9fb3ae"
                     }
@@ -124,7 +130,10 @@ PanelWindow {
                     width: 20; height: 20
                     Text {
                         anchors.centerIn: parent
-                        text: ""
+                        // nf-md-bluetooth -- same glyph waybar's bluetooth
+                        // module uses for format-on.
+                        text: "\u{F00AF}"
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
                         color: root.activePanel === "bluetooth" ? "#c8102e"
                             : (Services.BluetoothService.powered ? "#9fb3ae" : "#5c6d6a")
@@ -146,7 +155,10 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        text: ""
+                        // nf-md-bell -- same glyph waybar's
+                        // custom/notification module uses.
+                        text: ""
+                        font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
                         color: root.activePanel === "notifications" ? "#c8102e" : "#9fb3ae"
                     }
