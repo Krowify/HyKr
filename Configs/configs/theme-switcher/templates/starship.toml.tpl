@@ -28,6 +28,16 @@ style = "bg:{{surface}} fg:{{green}}"
 format = "[$symbol$branch ]($style)"
 
 [git_status]
+conflicted = " "
+ahead = " "
+behind = " "
+diverged = " "
+untracked = " "
+stashed = " "
+modified = " "
+staged = " "
+renamed = " "
+deleted = " "
 style = "bg:{{surface}} fg:{{yellow}}"
 format = "([$all_status$ahead_behind ]($style))"
 
