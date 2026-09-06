@@ -39,6 +39,7 @@
     {
       "key": "{icon} distro",
       "type": "os",
+      "format": "HyKr",
       "keyColor": "34"
     },
     {
