@@ -507,6 +507,22 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
     grad_steps+=("$(hex_lerp "$accent_hex" "$fg_hex" $((i * 10)))")
   done
 
+  # The "Color" swatch module (pacman + ghosts) used 7 hardcoded
+  # truecolor ANSI codes -- always the same neon rainbow no matter the
+  # theme, which is what stood out as unthemed against a muted palette
+  # like laptop's red/black. Same idea as the gradient above: pull each
+  # segment's RGB straight from the theme's own role colors instead, as
+  # decimal "R;G;B" (ANSI truecolor's own format) via bash's ${//} to
+  # swap hex_to_rgb_csv's commas for semicolons rather than adding a
+  # second helper just for the separator.
+  swatch1="$(hex_to_rgb_csv "$yellow_hex")"; swatch1="${swatch1//,/;}"
+  swatch2="$(hex_to_rgb_csv "$fg_dim_hex")"; swatch2="${swatch2//,/;}"
+  swatch3="$(hex_to_rgb_csv "$red_hex")"; swatch3="${swatch3//,/;}"
+  swatch4="$(hex_to_rgb_csv "$green_hex")"; swatch4="${swatch4//,/;}"
+  swatch5="$(hex_to_rgb_csv "$blue_hex")"; swatch5="${swatch5//,/;}"
+  swatch6="$(hex_to_rgb_csv "${lavender_hex:-$blue_hex}")"; swatch6="${swatch6//,/;}"
+  swatch7="$(hex_to_rgb_csv "$fg_hex")"; swatch7="${swatch7//,/;}"
+
   sed \
     -e "s/{{fg}}/$fg_hex/g" \
     -e "s/{{fg_dim}}/$fg_dim_hex/g" \
@@ -522,6 +538,13 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
     -e "s/{{grad7}}/${grad_steps[7]}/g" \
     -e "s/{{grad8}}/${grad_steps[8]}/g" \
     -e "s/{{grad9}}/${grad_steps[9]}/g" \
+    -e "s/{{swatch1}}/$swatch1/g" \
+    -e "s/{{swatch2}}/$swatch2/g" \
+    -e "s/{{swatch3}}/$swatch3/g" \
+    -e "s/{{swatch4}}/$swatch4/g" \
+    -e "s/{{swatch5}}/$swatch5/g" \
+    -e "s/{{swatch6}}/$swatch6/g" \
+    -e "s/{{swatch7}}/$swatch7/g" \
     -e "s/{{grad10}}/${grad_steps[10]}/g" \
     "$FASTFETCH_TPL" > "$FASTFETCH_OUT"
 fi
