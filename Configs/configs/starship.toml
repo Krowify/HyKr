@@ -24,7 +24,7 @@ disabled = false
 style = "bg:mauve fg:base"
 
 [os.symbols]
-Arch = " "
+Arch = " "
 Ubuntu = " "
 Debian = " "
 Fedora = " "
