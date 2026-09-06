@@ -4,9 +4,19 @@
 // reads as part of the same translucent-window look rather than a
 // solid, un-transparent strip.
 //
+// Layout, left to right: workspaces / (centered) clock / volume,
+// network, bluetooth, date, notifications.
+//
 // Same multi-monitor-safe screen pattern as the other HyKr quickshell
 // configs (wallpaper-picker, hykr): PanelWindow needs an explicit
 // screen or it can silently fail to attach to any output at all.
+//
+// Every icon glyph below is written as a \u/\u{} JS escape rather than
+// typed directly -- confirmed via byte inspection (od -c) that typing
+// these Nerd Font codepoints directly into this file previously
+// produced literally empty strings, particularly the ones above
+// U+FFFF (volume, bluetooth). Codepoints reused from this repo's own
+// waybar/swaync configs for visual consistency.
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
@@ -61,7 +71,7 @@ PanelWindow {
             anchors.rightMargin: 14
             spacing: 18
 
-            // ---- workspaces ----
+            // ---- left: workspaces ----
             Row {
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 7
@@ -85,7 +95,9 @@ PanelWindow {
                 }
             }
 
-            // ---- quick controls ----
+            Item { Layout.fillWidth: true }
+
+            // ---- right: volume, network, bluetooth, date, notifications ----
             Row {
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 16
@@ -94,8 +106,7 @@ PanelWindow {
                     width: 20; height: 20
                     Text {
                         anchors.centerIn: parent
-                        // nf-md-volume_high / nf-md-volume_mute -- same
-                        // glyphs swaync's own volume/mute widgets use.
+                        // nf-md-volume_high / nf-md-volume_mute
                         text: Services.AudioService.muted ? "\u{F075F}" : "\u{F057E}"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
@@ -109,7 +120,6 @@ PanelWindow {
                     Text {
                         anchors.centerIn: parent
                         // nf-fa-wifi / nf-custom-ethernet / nf-md-network_off
-                        // -- same glyphs the existing waybar network module uses.
                         text: Services.NetworkService.connectionType === "wifi" ? ""
                             : Services.NetworkService.connectionType === "ethernet" ? "" : ""
                         font.family: "JetBrainsMono Nerd Font"
@@ -130,8 +140,7 @@ PanelWindow {
                     width: 20; height: 20
                     Text {
                         anchors.centerIn: parent
-                        // nf-md-bluetooth -- same glyph waybar's bluetooth
-                        // module uses for format-on.
+                        // nf-md-bluetooth
                         text: "\u{F00AF}"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
@@ -140,14 +149,14 @@ PanelWindow {
                     }
                     TapHandler { onTapped: root.togglePanel("bluetooth") }
                 }
-            }
 
-            Item { Layout.fillWidth: true } // pushes the group below to the right end of the bar
-
-            // ---- notifications + clock ----
-            Row {
-                Layout.alignment: Qt.AlignVCenter
-                spacing: 14
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: Qt.formatDateTime(clock.now, "ddd d")
+                    color: "#c8d4d1"
+                    font.pixelSize: 12
+                    font.family: "monospace"
+                }
 
                 Item {
                     width: 20; height: 20
@@ -155,8 +164,7 @@ PanelWindow {
 
                     Text {
                         anchors.centerIn: parent
-                        // nf-md-bell -- same glyph waybar's
-                        // custom/notification module uses.
+                        // nf-md-bell
                         text: ""
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
@@ -171,15 +179,21 @@ PanelWindow {
                     }
                     TapHandler { onTapped: root.togglePanel("notifications") }
                 }
-
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: Qt.formatDateTime(clock.now, "hh:mm") + "  ·  " + Qt.formatDateTime(clock.now, "ddd d")
-                    color: "#eaf0ee"
-                    font.pixelSize: 12
-                    font.family: "monospace"
-                }
             }
+        }
+
+        // ---- center: clock ----
+        // A separate item anchored to the bar's true center, rather than
+        // a RowLayout child -- the left (workspaces) and right (controls)
+        // groups are different widths, so centering this within the
+        // RowLayout's flexible space wouldn't land it in the middle of
+        // the whole bar.
+        Text {
+            anchors.centerIn: parent
+            text: Qt.formatDateTime(clock.now, "hh:mm")
+            color: "#eaf0ee"
+            font.pixelSize: 12
+            font.family: "monospace"
         }
     }
 
