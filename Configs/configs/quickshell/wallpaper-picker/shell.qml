@@ -189,6 +189,22 @@ PanelWindow {
                     boundsBehavior: Flickable.StopAtBounds
                     focus: true
 
+                    // Flickable's own wheel handling moves the content a
+                    // small, fixed amount per notch -- fine for a couple of
+                    // rows, tedious once there are a few hundred wallpapers.
+                    // Multiplying angleDelta into an explicit flick() (same
+                    // pattern the old dock scroller used for its horizontal
+                    // scroll -- see git history) gives each notch a lot more
+                    // reach; maximumFlickVelocity is raised so that boosted
+                    // flick isn't clamped back down.
+                    maximumFlickVelocity: 8000
+                    flickDeceleration: 3500
+
+                    WheelHandler {
+                        target: null
+                        onWheel: (event) => grid.flick(0, event.angleDelta.y * 20)
+                    }
+
                     delegate: Item {
                         id: card
                         required property int index
