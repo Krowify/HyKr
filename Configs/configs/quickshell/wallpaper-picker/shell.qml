@@ -197,12 +197,12 @@ PanelWindow {
                     // scroll -- see git history) gives each notch a lot more
                     // reach; maximumFlickVelocity is raised so that boosted
                     // flick isn't clamped back down.
-                    maximumFlickVelocity: 8000
+                    maximumFlickVelocity: 20000
                     flickDeceleration: 3500
 
                     WheelHandler {
                         target: null
-                        onWheel: (event) => grid.flick(0, event.angleDelta.y * 20)
+                        onWheel: (event) => grid.flick(0, event.angleDelta.y * 50)
                     }
 
                     delegate: Item {
