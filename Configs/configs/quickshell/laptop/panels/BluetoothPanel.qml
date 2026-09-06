@@ -8,7 +8,8 @@ PanelWindow {
     id: root
 
     property var anchorScreen
-    property real topOffset: 160
+    property real barHeight: 34
+    property real xOffset: 140
 
     visible: false
     screen: anchorScreen
@@ -21,7 +22,7 @@ PanelWindow {
     WlrLayershell.namespace: "laptop-popup"
 
     anchors { top: true; left: true }
-    margins { top: root.topOffset; left: 58 }
+    margins { top: root.barHeight + 6; left: root.xOffset }
 
     Rectangle {
         anchors.fill: parent

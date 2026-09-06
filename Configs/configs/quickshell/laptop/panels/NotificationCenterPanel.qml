@@ -8,6 +8,7 @@ PanelWindow {
     id: root
 
     property var anchorScreen
+    property real barHeight: 34
 
     visible: false
     screen: anchorScreen
@@ -18,8 +19,10 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "laptop-popup"
 
-    anchors { top: true; bottom: true; left: true }
-    margins { left: 58; top: 14; bottom: 14 }
+    // Bell icon sits at the right end of the (now horizontal) bar, so
+    // the panel hangs from the top-right instead of the old left rail.
+    anchors { top: true; bottom: true; right: true }
+    margins { right: 14; top: root.barHeight + 6; bottom: 14 }
 
     Rectangle {
         anchors.fill: parent

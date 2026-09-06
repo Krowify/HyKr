@@ -46,7 +46,7 @@ for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
          "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
          "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
          "$HOME/.config/gtk-3.0" \
-         "$HOME/.config/spicetify"; do
+         "$HOME/.config/spicetify" "$HOME/.config/quickshell"; do
   de_symlink "$p"
 done
 
@@ -443,6 +443,29 @@ if [[ -d "$ROFI_TPL_DIR" ]]; then
       -e "s/{{font_family}}/$font_family/g" \
       "$tpl" > "$out"
   done
+fi
+
+# --------- Quickshell wallpaper picker ----------
+# Its shell.qml has no external Theme.qml dependency by design (see its
+# own comments) -- config.json is the single source of color it reads,
+# same idea as wofi/rofi's CSS templates above. Previously that file's
+# color fields were just static hardcoded defaults nobody regenerated,
+# so the picker never matched whatever theme kitty/waybar/etc were
+# actually showing. jq -c so the rewritten file stays one line smaller
+# than a full pretty-print diff would be, matching how this script
+# otherwise avoids reformatting files it only partially owns.
+WPICKER_CONFIG="$HOME/.config/quickshell/wallpaper-picker/config.json"
+
+if [[ -f "$WPICKER_CONFIG" ]]; then
+  wpicker_surface="#99${surface_hex#\#}"
+  tmp_wpicker="$(mktemp)"
+  jq --arg bg "$bg_hex" \
+     --arg surface "$wpicker_surface" \
+     --arg text "$fg_hex" \
+     --arg text_dim "$fg_dim_hex" \
+     --arg accent "$accent_hex" \
+     '.bg = $bg | .surface = $surface | .text = $text | .text_dim = $text_dim | .border_color = $accent' \
+     "$WPICKER_CONFIG" > "$tmp_wpicker" && mv "$tmp_wpicker" "$WPICKER_CONFIG"
 fi
 
 # --------- Fastfetch ----------

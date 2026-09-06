@@ -28,13 +28,15 @@ PanelWindow {
     // explicit screen or it can silently fail to attach to any output.
     screen: Quickshell.screens.find(s => Hyprland.monitorFor(s)?.id === Hyprland.focusedMonitor?.id) ?? Quickshell.screens[0]
 
-    // No Theme.qml singleton -- config.json's border_color is the one
-    // color knob (already user-editable), everything else is a fixed
-    // dark neutral so this file has zero external dependency.
-    readonly property color colBgAlt: "#11111b"
-    readonly property color colSurface: "#31324499"
-    readonly property color colText: "#cdd6f4"
-    readonly property color colTextDim: "#9399b2"
+    // No Theme.qml singleton -- config.json is the one source of color,
+    // no external dependency. apply-theme.sh regenerates these fields
+    // from the active theme's colors.json on every theme switch (same
+    // as kitty/waybar/wofi), so the picker matches whatever's currently
+    // themed instead of a fixed palette baked into this file.
+    readonly property color colBgAlt: configs.bg
+    readonly property color colSurface: configs.surface
+    readonly property color colText: configs.text
+    readonly property color colTextDim: configs.text_dim
     readonly property color colAccent: configs.border_color
 
     property int selectedIndex: -1
@@ -71,6 +73,10 @@ PanelWindow {
             property string cache_path
             property int columns
             property string border_color
+            property string bg
+            property string surface
+            property string text
+            property string text_dim
         }
     }
 

@@ -20,8 +20,10 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "laptop-popup"
 
+    // 34 (DockBar.barHeight) + 10 gap -- toasts sit below the top bar
+    // now instead of flush against the screen edge.
     anchors { top: true; right: true }
-    margins { top: 14; right: 14 }
+    margins { top: 44; right: 14 }
     implicitWidth: 280
     implicitHeight: column.implicitHeight
 
