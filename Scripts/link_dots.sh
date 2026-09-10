@@ -30,7 +30,7 @@ link_dot "${repoDir}/Source/wallpapers" "$HOME/wallpapers"
 if [ ! -f "$HOME/.cache/wal/colors-hyprland.lua" ]; then
     if command -v wal >/dev/null 2>&1; then
         print_log "No pywal theme yet — generating one from the default wallpaper"
-        wal -i "${repoDir}/Source/wallpapers/pywallpaper.jpg" -n --cols16
+        wal -i "${repoDir}/Source/wallpapers/Sunset.jpg" -n --cols16
     else
         print_log "python-pywal not installed yet — install it, then run: wal -i <wallpaper> -n"
     fi
