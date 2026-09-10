@@ -66,20 +66,14 @@ print_logo() {
     printf '\n%s\033[97m%s\033[0m\n' "$(printf '%*s' "${sub_pad}" '')" "${subtitle}"
 }
 
-# gum-backed confirm with a plain read fallback -- if gum's own install
-# below fails for some reason, the rest of the installer's prompts
-# shouldn't become unusable because of it. Redraws the logo fresh right
-# before every question, since the bulk pacman/yay output in between
-# prompts scrolls the original splash off screen otherwise.
+# Plain read-based confirm. Redraws the logo fresh right before every
+# question, since the bulk pacman/yay output in between prompts scrolls
+# the original splash off screen otherwise.
 confirm() {
     print_logo
-    if command -v gum &>/dev/null; then
-        gum confirm "$1"
-    else
-        local reply
-        read -rp "$1 [Y/n] " reply
-        [[ "${reply,,}" != "n" ]]
-    fi
+    local reply
+    read -rp "$1 [Y/n] " reply
+    [[ "${reply,,}" != "n" ]]
 }
 
 # --------------------------------------------------- // Preflight
@@ -175,10 +169,6 @@ if [[ ${EUID} -eq 0 ]]; then
 fi
 
 print_logo
-
-if ! command -v gum &>/dev/null; then
-    sudo pacman -S --needed --noconfirm gum || print_log "gum install failed — prompts below will fall back to plain y/n"
-fi
 
 if ! command -v yay &>/dev/null; then
     print_log "yay (AUR helper) not found — installing it"
