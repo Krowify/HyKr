@@ -67,6 +67,15 @@ ensure_swww() {
   return 1
 }
 
+# waybar, swaync and hyprctl all need a live Wayland session. install.sh
+# applies the default theme from a TTY on a fresh setup, where swaync-client
+# blocks on a session bus that has to be autolaunched and hyprctl waits on a
+# compositor socket that never appears -- neither fails, they just hang, and
+# `|| true` only rescues a bad exit status, not a hang.
+wayland_is_live() {
+  [[ -n "${WAYLAND_DISPLAY:-}" || -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]
+}
+
 # Read early: both the matugen branch below and the bar-mode switch near
 # the end of the script need these before any of the per-app sections run.
 dynamic_colors="$(jq -r '.dynamic_colors // false' "$THEME_JSON")"
@@ -621,8 +630,10 @@ if [[ -d "$WAYBAR_DIR" ]]; then
       "$WAYBAR_DIR/style.css.tpl" > "$WAYBAR_STYLE_OUT"
   fi
 
-  pkill waybar >/dev/null 2>&1 || true
-  waybar >/dev/null 2>&1 &
+  if wayland_is_live; then
+    pkill waybar >/dev/null 2>&1 || true
+    waybar >/dev/null 2>&1 &
+  fi
 fi
 
 # --------- Starship (theme-aware) ----------
@@ -725,7 +736,7 @@ if [[ -d "$SWAYNC_TPL_DIR" ]]; then
   fi
 
   # reload swaync safely
-  if command -v swaync-client >/dev/null 2>&1; then
+  if wayland_is_live && command -v swaync-client >/dev/null 2>&1; then
     swaync-client -R >/dev/null 2>&1 || true
     swaync-client -rs >/dev/null 2>&1 || true
   fi
@@ -1023,6 +1034,11 @@ wait_for_exit() {
     sleep 0.1
   done
 }
+
+if ! wayland_is_live; then
+  echo "No Wayland session — skipping bar/notification restart and hyprctl reload" >&2
+  exit 0
+fi
 
 if [[ "$bar_mode" == "quickshell-dock" ]]; then
   pkill waybar >/dev/null 2>&1 || true

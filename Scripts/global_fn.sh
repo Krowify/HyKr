@@ -52,8 +52,16 @@ link_dot() {
     local src="$1" dst="$2"
 
     if [ -e "$dst" ] && [ ! -L "$dst" ]; then
-        print_log "Backing up existing ${dst} -> ${dst}.bak"
-        mv "$dst" "${dst}.bak"
+        # apply-theme.sh's de_symlink turns these back into real copies, so a
+        # re-run finds a non-symlink here again and backs it up a second time.
+        # Plain `mv $dst $dst.bak` would then move the directory *inside* the
+        # existing backup, and fail outright once that nested path is non-empty.
+        local backup="${dst}.bak"
+        if [ -e "$backup" ]; then
+            backup="${dst}.bak.$(date +%Y%m%d%H%M%S)"
+        fi
+        print_log "Backing up existing ${dst} -> ${backup}"
+        mv "$dst" "$backup"
     fi
 
     mkdir -p "$(dirname "$dst")"
