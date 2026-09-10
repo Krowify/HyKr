@@ -57,7 +57,7 @@ print_logo() {
         g=$(( purple[1] + (blue[1] - purple[1]) * t / 100 ))
         b=$(( purple[2] + (blue[2] - purple[2]) * t / 100 ))
         printf '%s\033[38;2;%d;%d;%dm%s\033[0m\n' "${pad_str}" "${r}" "${g}" "${b}" "${line}"
-        (( i++ ))
+        i=$((i + 1))
     done < "${logo_path}"
 
     local subtitle="Hyprland by Krowify"
