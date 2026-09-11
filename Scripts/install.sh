@@ -230,4 +230,14 @@ fi
 # --------------------------------------------------- // MAC randomization
 "${scrDir}/extra/setup_mac_randomization.sh"
 
+# --------------------------------------------------- // sshd
+"${scrDir}/extra/disable_sshd.sh"
+
+# --------------------------------------------------- // USBGuard
+# Opt-in, unlike the steps above -- a policy generated without your
+# keyboard/trackpad connected can lock out USB input on next boot.
+if confirm "Enable usbguard (USB device allow-listing -- protects against a plugged-in device while the laptop is unattended)?"; then
+    "${scrDir}/extra/setup_usbguard.sh"
+fi
+
 print_log "Install complete. Reboot to start SDDM / Hyprland."
