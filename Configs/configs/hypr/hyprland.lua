@@ -18,9 +18,20 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" 
 
 -- Caps Lock does nothing when pressed -- a Wayland/libinput setting
 -- (xkb_options), not the old X11 setxkbmap approach.
+--
+-- natural_scroll lives in the touchpad sub-category on purpose, NOT as a
+-- bare input:natural_scroll: the global key wins over the per-device one
+-- and would flip the desktop's mouse wheel too (hyprwm/Hyprland#2458).
+-- Nested here it only ever reaches touchpads, so it's a silent no-op on
+-- the desktop and needs no has_trackpad() gate (which isn't defined until
+-- further down this file anyway).
 hl.config({
     input = {
         kb_options = "caps:none",
+
+        touchpad = {
+            natural_scroll = true,
+        },
     },
 })
 
