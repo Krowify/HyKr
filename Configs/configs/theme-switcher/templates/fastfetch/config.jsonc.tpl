@@ -1,92 +1,102 @@
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
-  "logo": {
-    "source": "~/.config/fastfetch/ascii.txt",
-    "type": "file",
-    "padding": {
-      "top": 0,
-      "left": 3
-    },
+  "display": {
+    "separator": "  ",
     "color": {
-      "1": "{{fg}}"
+      "keys": "{{fg}}"
+    },
+    "key": {
+      "width": 14
     }
   },
-  "display": {
-    "separator": "",
-    "key": {
-      "width": 15
+  "logo": {
+    "type": "file",
+    "source": "~/.config/fastfetch/jirachi.txt",
+    "padding": {
+      "top": 2,
+      "left": 2,
+      "right": 4
     }
   },
   "modules": [
     {
-      "key": " user",
       "type": "title",
-      "format": "{user-name}",
-      "keyColor": "31"
+      "color": {
+        "user": "{{red}}",
+        "at": "{{fg_dim}}",
+        "host": "{{pink}}"
+      }
     },
     {
-      "key": "󰇅 hostname",
-      "type": "title",
-      "format": "{host-name}",
-      "keyColor": "32"
+      "type": "custom",
+      "format": "\u001b[90m ───────────────\u001b[0m"
     },
     {
-      "key": "󰅐 uptime",
-      "type": "uptime",
-      "keyColor": "33"
-    },
-    {
-      "key": "{icon} distro",
       "type": "os",
-      "keyColor": "34"
+      "key": " 󰣇 OS",
+      "keyColor": "{{grad0}}",
+      "format": "{pretty-name}"
     },
     {
-      "key": " kernel",
       "type": "kernel",
-      "keyColor": "35"
+      "key": " 󰌽 Kernel",
+      "keyColor": "{{grad1}}"
     },
     {
-      "key": "󰇄 desktop",
-      "type": "de",
-      "keyColor": "36"
+      "type": "packages",
+      "key": " 󰏖 Packages",
+      "keyColor": "{{grad2}}"
     },
     {
-      "key": " terminal",
-      "type": "terminal",
-      "keyColor": "31"
-    },
-    {
-      "key": " shell",
       "type": "shell",
-      "keyColor": "32"
+      "key": "  Shell",
+      "keyColor": "{{grad3}}",
+      "format": "{pretty-name}"
     },
     {
-      "key": "󰍛 cpu",
+      "type": "wm",
+      "key": "  WM",
+      "keyColor": "{{grad4}}",
+      "format": "{pretty-name}"
+    },
+    {
       "type": "cpu",
-      "showPeCoreCount": true,
-      "keyColor": "33"
+      "key": "  CPU",
+      "keyColor": "{{grad5}}"
     },
     {
-      "key": "󰢮 gpu",
       "type": "gpu",
-      "keyColor": "34"
+      "key": " 󰢮 GPU",
+      "keyColor": "{{grad6}}"
     },
     {
-      "key": "󰉉 disk",
-      "type": "disk",
-      "folders": "/",
-      "keyColor": "34"
-    },
+      "type": "display",
+      "key": " 󰍹 Screen",
+      "keyColor": "{{grad7}}",
+      "format": "{width}x{height} @ {refresh-rate}Hz"
+    },    
     {
-      "key": " memory",
       "type": "memory",
-      "keyColor": "35"
+      "key": "  Ram",
+      "keyColor": "{{grad8}}",
+      "format": "{used} / {total}"
     },
     {
-      "key": " colors",
-      "type": "colors",
-      "symbol": "circle",
-      "keyColor": "39"
+      "type": "disk",
+      "key": " 󰋊 Disk",
+      "keyColor": "{{grad9}}",
+      "format": "{size-used} / {size-total}"
+    },
+    {
+      "type": "uptime",
+      "key": " 󰔚 Uptime",
+      "keyColor": "{{grad10}}"
+    },
+    "break",
+    {
+      "type": "custom",
+      "key": " 󰸱 Color",
+      "format": "\u001b[38;2;{{swatch1}}m󰮯 \u001b[38;2;{{swatch2}}m \u001b[38;2;{{swatch3}}m󰊠 \u001b[38;2;{{swatch4}}m󰊠 \u001b[38;2;{{swatch5}}m󰊠 \u001b[38;2;{{swatch6}}m󰊠 \u001b[38;2;{{swatch7}}m󰊠 \u001b[0m"
     }
   ]
 }

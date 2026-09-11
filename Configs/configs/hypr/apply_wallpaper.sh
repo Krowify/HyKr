@@ -12,14 +12,90 @@ selected_wallpaper="$1"
 awww img "$selected_wallpaper" --transition-type any --transition-fps 60 --transition-duration .5
 wal -i "$selected_wallpaper" -n --cols16
 
+# Sourced early (moved up from the end of this script) so every step
+# below -- rofi included -- has $background/$foreground/$colorN as
+# plain bash variables to render with, not just files under ~/.cache.
+source ~/.cache/wal/colors.sh
+
 if command -v swayosd-server &>/dev/null; then
-    pkill swayosd-server
+    pkill swayosd-server || true
     swayosd-server &
 fi
 
 swaync-client --reload-css
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
+
+# Recolor every already-open kitty window live too, not just ones
+# opened after this switch -- kitty reads its config once at startup
+# and never watches the file for changes on its own. Needs
+# allow_remote_control in kitty.conf; each window auto-allocates its
+# own socket and exports it via KITTY_LISTEN_ON in its environment, so
+# read that straight out of /proc rather than guessing a shared path.
+if command -v kitty &>/dev/null; then
+    for pid in $(pgrep -x kitty); do
+        sock=$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^KITTY_LISTEN_ON=//p')
+        [ -n "$sock" ] && kitty @ --to "$sock" set-colors --all -- ~/.cache/wal/colors-kitty.conf &>/dev/null || true
+    done
+fi
+
 [ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
+
+# Rofi (wallpaper-grid.rasi / theme-picker.rasi): apply-theme.sh already
+# renders these two from theme.json's static colors on a theme switch,
+# but nothing re-rendered them on a plain wallpaper pick within the same
+# theme -- same "last write wins" pattern as kitty/starship above, just
+# re-run with wal's colors instead of theme.json's. accent/surface/
+# surface2/fg_dim map onto the same color4/color8/color0/color7 slots
+# starship's own pywal template already uses for the same roles.
+ROFI_TPL_DIR="$HOME/.config/theme-switcher/templates/rofi"
+ROFI_OUT_DIR="$HOME/.config/rofi"
+
+if [ -d "$ROFI_TPL_DIR" ]; then
+    mkdir -p "$ROFI_OUT_DIR"
+
+    for tpl in "$ROFI_TPL_DIR"/*.tpl; do
+        [ -f "$tpl" ] || continue
+        out="$ROFI_OUT_DIR/$(basename "$tpl" .tpl)"
+
+        sed \
+            -e "s/{{bg}}/$background/g" \
+            -e "s/{{fg}}/$foreground/g" \
+            -e "s/{{fg_dim}}/$color7/g" \
+            -e "s/{{surface}}/$color8/g" \
+            -e "s/{{surface2}}/$color0/g" \
+            -e "s/{{accent}}/$color4/g" \
+            -e "s/{{font_family}}/JetBrainsMono Nerd Font/g" \
+            "$tpl" > "$out"
+    done
+fi
+
+# Wofi (Super+Tab launcher): same gap as rofi above -- apply-theme.sh
+# only ever renders wofi's style.css on a theme switch. hex_to_rgba_css
+# mirrors apply-theme.sh's own helper of the same name (bg 0.85, surface
+# 0.70, accent-soft 0.15 alphas, matching what it uses for the same
+# roles there).
+hex_to_rgba_css() {
+    local hex="${1#\#}" alpha="${2:-1}"
+    printf "rgba(%d,%d,%d,%s)" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" "$alpha"
+}
+
+WOFI_TPL="$HOME/.config/theme-switcher/templates/wofi.css.tpl"
+WOFI_OUT="$HOME/.config/wofi/style.css"
+
+if [ -f "$WOFI_TPL" ]; then
+    mkdir -p "$HOME/.config/wofi"
+
+    sed \
+        -e "s/{{bg_rgba}}/$(hex_to_rgba_css "$background" "0.85")/g" \
+        -e "s/{{surface_rgba}}/$(hex_to_rgba_css "$color8" "0.70")/g" \
+        -e "s/{{fg}}/$foreground/g" \
+        -e "s/{{accent}}/$color4/g" \
+        -e "s/{{accent_soft}}/$(hex_to_rgba_css "$color4" "0.15")/g" \
+        -e "s/{{bg}}/$background/g" \
+        -e "s/{{font_family}}/JetBrainsMono Nerd Font/g" \
+        -e "s/{{font_family_bold}}/JetBrainsMono Nerd Font Bold/g" \
+        "$WOFI_TPL" > "$WOFI_OUT"
+fi
 
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
 # ~/.cache -- require() only resolves modules under the config root.
@@ -40,4 +116,4 @@ fi
 
 command -v pywalfox &>/dev/null && pywalfox update
 
-source ~/.cache/wal/colors.sh && cp "$wallpaper" ~/wallpapers/pywallpaper.jpg
+cp "$selected_wallpaper" ~/wallpapers/pywallpaper.jpg

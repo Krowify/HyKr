@@ -45,7 +45,8 @@ de_symlink() {
 for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
          "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
          "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
-         "$HOME/.config/spicetify"; do
+         "$HOME/.config/gtk-3.0" \
+         "$HOME/.config/spicetify" "$HOME/.config/quickshell"; do
   de_symlink "$p"
 done
 
@@ -66,8 +67,26 @@ ensure_swww() {
   return 1
 }
 
-# --------- Dynamic theme: generate colors from wallpaper via matugen ----------
-if [[ "$THEME" == "dynamic" ]]; then
+# waybar, swaync and hyprctl all need a live Wayland session. install.sh
+# applies the default theme from a TTY on a fresh setup, where swaync-client
+# blocks on a session bus that has to be autolaunched and hyprctl waits on a
+# compositor socket that never appears -- neither fails, they just hang, and
+# `|| true` only rescues a bad exit status, not a hang.
+wayland_is_live() {
+  [[ -n "${WAYLAND_DISPLAY:-}" || -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]
+}
+
+# Read early: both the matugen branch below and the bar-mode switch near
+# the end of the script need these before any of the per-app sections run.
+dynamic_colors="$(jq -r '.dynamic_colors // false' "$THEME_JSON")"
+bar_mode="$(jq -r '.bar // "waybar"' "$THEME_JSON")"
+
+# --------- Dynamic-color themes: generate colors from wallpaper via matugen ----------
+# Originally hardcoded to `$THEME == "dynamic"`; generalized to any theme
+# that opts in via theme.json's "dynamic_colors" flag (e.g. "laptop"),
+# while "dynamic" itself keeps working the same way now that its own
+# theme.json carries the flag too.
+if [[ "$dynamic_colors" == "true" ]]; then
   WP="${2:-}"
 
   if [[ -z "$WP" ]]; then
@@ -122,10 +141,16 @@ if [[ "$THEME" == "dynamic" ]]; then
       >/dev/null 2>&1 || true
   fi
 
-  # Generate colors.json via matugen
+  # Generate colors.json via matugen. Its own config.toml hardcodes
+  # themes/dynamic/colors.json as the output path (matugen configs aren't
+  # parameterized per invocation) -- for any other dynamic_colors theme,
+  # copy the freshly generated file over to that theme's own colors.json
+  # right after.
   if command -v matugen >/dev/null 2>&1; then
     if ! matugen -c "$BASE/extras/matugen/config.toml" image "$WP" -m dark -t scheme-tonal-spot --source-color-index 0; then
       echo "Warning: matugen failed — using existing colors.json" >&2
+    elif [[ "$THEME" != "dynamic" ]]; then
+      cp "$BASE/themes/dynamic/colors.json" "$COLORS"
     fi
   else
     echo "Warning: matugen not found — using existing colors.json" >&2
@@ -176,6 +201,25 @@ hex_to_rgb_csv() {
     $((16#${hex:0:2})) \
     $((16#${hex:2:2})) \
     $((16#${hex:4:2}))
+}
+
+# Linear-interpolate between two hex colors. pct is an integer 0-100
+# rather than a float, so this stays plain bash arithmetic (no bc/awk
+# dependency) -- used for fastfetch's key-color gradient, since some
+# themes' generated role colors (red/green/blue/etc, especially matugen's
+# dynamic output) can land close enough to each other that picking
+# distinct "named" colors per module reads as an arbitrary jumble rather
+# than a smooth sweep. A pure numeric gradient between two colors that
+# are always present and usually distinct (accent, fg) stays smooth
+# regardless of how sparse or muddy a given theme's role palette is.
+hex_lerp() {
+  local h1="${1#\#}" h2="${2#\#}" pct="$3"
+  local r1=$((16#${h1:0:2})) g1=$((16#${h1:2:2})) b1=$((16#${h1:4:2}))
+  local r2=$((16#${h2:0:2})) g2=$((16#${h2:2:2})) b2=$((16#${h2:4:2}))
+  printf "#%02x%02x%02x" \
+    $(( r1 + (r2 - r1) * pct / 100 )) \
+    $(( g1 + (g2 - g1) * pct / 100 )) \
+    $(( b1 + (b2 - b1) * pct / 100 ))
 }
 
 # ---------------- Cache JSON reads (ONLY 2 jq calls total) ----------------
@@ -324,14 +368,23 @@ mv "$tmp_out" "$OUT"
 # --------- Pywal border-color bridge ----------
 # hyprland.lua does require("colors-hyprland") unconditionally -- unlike
 # the old hyprlang `source = ...`, a missing require() target is a hard
-# error that would stop the whole config (and Hyprland) from loading. If
-# wal has already run at least once, use its live colors (matches the
-# "last write wins" convention every other pywal-driven surface follows);
-# otherwise fall back to this theme's own border colors so a completely
-# fresh install still boots.
+# error that would stop the whole config (and Hyprland) from loading.
+#
+# For a dynamic_colors theme, the whole point is that the border tracks
+# the wallpaper-derived accent that was just computed above -- so that
+# takes priority unconditionally, rather than letting a stale pywal
+# history (from whatever wallpaper was last picked through the
+# wallpaper-picker, unrelated to this theme) override it.
+#
+# Otherwise: if wal has already run at least once, use its live colors
+# (matches the "last write wins" convention every other pywal-driven
+# surface follows); fall back to this theme's own border colors so a
+# completely fresh install still boots.
 WAL_HYPR_LUA="$HOME/.cache/wal/colors-hyprland.lua"
 GEN_HYPR_LUA="$HOME/.config/hypr/colors-hyprland.lua"
-if [[ -f "$WAL_HYPR_LUA" ]]; then
+if [[ "$dynamic_colors" == "true" ]]; then
+  printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
+elif [[ -f "$WAL_HYPR_LUA" ]]; then
   cp "$WAL_HYPR_LUA" "$GEN_HYPR_LUA"
 elif [[ ! -f "$GEN_HYPR_LUA" ]]; then
   printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
@@ -420,6 +473,29 @@ if [[ -d "$ROFI_TPL_DIR" ]]; then
   done
 fi
 
+# --------- Quickshell wallpaper picker ----------
+# Its shell.qml has no external Theme.qml dependency by design (see its
+# own comments) -- config.json is the single source of color it reads,
+# same idea as wofi/rofi's CSS templates above. Previously that file's
+# color fields were just static hardcoded defaults nobody regenerated,
+# so the picker never matched whatever theme kitty/waybar/etc were
+# actually showing. jq -c so the rewritten file stays one line smaller
+# than a full pretty-print diff would be, matching how this script
+# otherwise avoids reformatting files it only partially owns.
+WPICKER_CONFIG="$HOME/.config/quickshell/wallpaper-picker/config.json"
+
+if [[ -f "$WPICKER_CONFIG" ]]; then
+  wpicker_surface="#99${surface_hex#\#}"
+  tmp_wpicker="$(mktemp)"
+  jq --arg bg "$bg_hex" \
+     --arg surface "$wpicker_surface" \
+     --arg text "$fg_hex" \
+     --arg text_dim "$fg_dim_hex" \
+     --arg accent "$accent_hex" \
+     '.bg = $bg | .surface = $surface | .text = $text | .text_dim = $text_dim | .border_color = $accent' \
+     "$WPICKER_CONFIG" > "$tmp_wpicker" && mv "$tmp_wpicker" "$WPICKER_CONFIG"
+fi
+
 # --------- Fastfetch ----------
 FASTFETCH_TPL="$BASE/templates/fastfetch/config.jsonc.tpl"
 FASTFETCH_DIR="$HOME/.config/fastfetch"
@@ -428,8 +504,57 @@ FASTFETCH_OUT="$FASTFETCH_DIR/config.jsonc"
 if [[ -f "$FASTFETCH_TPL" ]]; then
   mkdir -p "$FASTFETCH_DIR"
 
+  # The 11 module keyColors (OS through Uptime) are a smooth gradient
+  # from accent to fg, rather than a grab-bag of named role colors --
+  # some themes' role colors (particularly matugen's dynamic output)
+  # land close enough to each other that assigning them one per module
+  # read as an arbitrary jumble rather than an intentional sweep. A
+  # numeric interpolation between two colors that are always present
+  # and usually visually distinct stays smooth for every theme.
+  grad_steps=()
+  for i in $(seq 0 10); do
+    grad_steps+=("$(hex_lerp "$accent_hex" "$fg_hex" $((i * 10)))")
+  done
+
+  # The "Color" swatch module (pacman + ghosts) used 7 hardcoded
+  # truecolor ANSI codes -- always the same neon rainbow no matter the
+  # theme, which is what stood out as unthemed against a muted palette
+  # like laptop's red/black. Same idea as the gradient above: pull each
+  # segment's RGB straight from the theme's own role colors instead, as
+  # decimal "R;G;B" (ANSI truecolor's own format) via bash's ${//} to
+  # swap hex_to_rgb_csv's commas for semicolons rather than adding a
+  # second helper just for the separator.
+  swatch1="$(hex_to_rgb_csv "$yellow_hex")"; swatch1="${swatch1//,/;}"
+  swatch2="$(hex_to_rgb_csv "$fg_dim_hex")"; swatch2="${swatch2//,/;}"
+  swatch3="$(hex_to_rgb_csv "$red_hex")"; swatch3="${swatch3//,/;}"
+  swatch4="$(hex_to_rgb_csv "$green_hex")"; swatch4="${swatch4//,/;}"
+  swatch5="$(hex_to_rgb_csv "$blue_hex")"; swatch5="${swatch5//,/;}"
+  swatch6="$(hex_to_rgb_csv "${lavender_hex:-$blue_hex}")"; swatch6="${swatch6//,/;}"
+  swatch7="$(hex_to_rgb_csv "$fg_hex")"; swatch7="${swatch7//,/;}"
+
   sed \
     -e "s/{{fg}}/$fg_hex/g" \
+    -e "s/{{fg_dim}}/$fg_dim_hex/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    -e "s/{{pink}}/${pink_hex:-$red_hex}/g" \
+    -e "s/{{grad0}}/${grad_steps[0]}/g" \
+    -e "s/{{grad1}}/${grad_steps[1]}/g" \
+    -e "s/{{grad2}}/${grad_steps[2]}/g" \
+    -e "s/{{grad3}}/${grad_steps[3]}/g" \
+    -e "s/{{grad4}}/${grad_steps[4]}/g" \
+    -e "s/{{grad5}}/${grad_steps[5]}/g" \
+    -e "s/{{grad6}}/${grad_steps[6]}/g" \
+    -e "s/{{grad7}}/${grad_steps[7]}/g" \
+    -e "s/{{grad8}}/${grad_steps[8]}/g" \
+    -e "s/{{grad9}}/${grad_steps[9]}/g" \
+    -e "s/{{swatch1}}/$swatch1/g" \
+    -e "s/{{swatch2}}/$swatch2/g" \
+    -e "s/{{swatch3}}/$swatch3/g" \
+    -e "s/{{swatch4}}/$swatch4/g" \
+    -e "s/{{swatch5}}/$swatch5/g" \
+    -e "s/{{swatch6}}/$swatch6/g" \
+    -e "s/{{swatch7}}/$swatch7/g" \
+    -e "s/{{grad10}}/${grad_steps[10]}/g" \
     "$FASTFETCH_TPL" > "$FASTFETCH_OUT"
 fi
 
@@ -505,8 +630,10 @@ if [[ -d "$WAYBAR_DIR" ]]; then
       "$WAYBAR_DIR/style.css.tpl" > "$WAYBAR_STYLE_OUT"
   fi
 
-  pkill waybar >/dev/null 2>&1 || true
-  waybar >/dev/null 2>&1 &
+  if wayland_is_live; then
+    pkill waybar >/dev/null 2>&1 || true
+    waybar >/dev/null 2>&1 &
+  fi
 fi
 
 # --------- Starship (theme-aware) ----------
@@ -609,7 +736,7 @@ if [[ -d "$SWAYNC_TPL_DIR" ]]; then
   fi
 
   # reload swaync safely
-  if command -v swaync-client >/dev/null 2>&1; then
+  if wayland_is_live && command -v swaync-client >/dev/null 2>&1; then
     swaync-client -R >/dev/null 2>&1 || true
     swaync-client -rs >/dev/null 2>&1 || true
   fi
@@ -838,6 +965,24 @@ if [[ -f "$GTK4_TPL" ]]; then
     "$GTK4_TPL" > "$GTK4_OUT"
 fi
 
+# --------- GTK3 (mirage, other GTK3 apps) ----------
+GTK3_TPL="$BASE/templates/gtk3-colors.css.tpl"
+GTK3_OUT="$HOME/.config/gtk-3.0/gtk.css"
+
+if [[ -f "$GTK3_TPL" ]]; then
+  mkdir -p "$(dirname "$GTK3_OUT")"
+
+  sed \
+    -e "s/{{bg}}/$bg_hex/g" \
+    -e "s/{{bg_alt}}/$bg_alt_hex/g" \
+    -e "s/{{surface}}/$surface_hex/g" \
+    -e "s/{{surface2}}/$surface2_hex/g" \
+    -e "s/{{fg}}/$fg_hex/g" \
+    -e "s/{{accent}}/$accent_hex/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    "$GTK3_TPL" > "$GTK3_OUT"
+fi
+
 # --------- Spicetify ----------
 SPICETIFY_TPL="$BASE/templates/spicetify-color.ini.tpl"
 SPICETIFY_INI="$HOME/.config/spicetify/color.ini"
@@ -868,6 +1013,50 @@ if [[ -f "$SPICETIFY_TPL" ]]; then
       spicetify apply >/dev/null 2>&1 || true
     fi
   fi
+fi
+
+# --------- Bar mode: waybar+swaync vs a Quickshell shell ----------
+# A theme can replace the waybar+swaync pair entirely with one Quickshell
+# process (bar, native notification daemon, and its quick panels) by
+# setting "bar": "quickshell-dock" in theme.json. Nothing else supervises
+# these processes, so switching themes has to explicitly tear down
+# whichever pair was running and bring up the other.
+# A plain `pkill` (SIGTERM) followed immediately by launching the
+# replacement raced in practice: the old process hadn't actually
+# released its Wayland layer-shell surface yet by the time the new one
+# started, so both ended up mapped at once (two stacked bars). Force-
+# kill and wait for the process to actually be gone (up to ~2s) before
+# starting the replacement.
+wait_for_exit() {
+  local pattern="$1"
+  for _ in {1..20}; do
+    pgrep -f "$pattern" >/dev/null 2>&1 || return 0
+    sleep 0.1
+  done
+}
+
+if ! wayland_is_live; then
+  echo "No Wayland session — skipping bar/notification restart and hyprctl reload" >&2
+  exit 0
+fi
+
+if [[ "$bar_mode" == "quickshell-dock" ]]; then
+  pkill waybar >/dev/null 2>&1 || true
+  pkill -x swaync >/dev/null 2>&1 || true
+  pkill -9 -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  wait_for_exit 'quickshell -c laptop'
+
+  if command -v quickshell >/dev/null 2>&1; then
+    nohup quickshell -c laptop >/dev/null 2>&1 &
+    disown
+  else
+    echo "Warning: quickshell not found — laptop bar/notifications not started" >&2
+  fi
+else
+  pkill -9 -f 'quickshell -c laptop' >/dev/null 2>&1 || true
+  wait_for_exit 'quickshell -c laptop'
+  pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
+  pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
 fi
 
 hyprctl reload >/dev/null 2>&1 || true

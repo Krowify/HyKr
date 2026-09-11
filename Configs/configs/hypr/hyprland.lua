@@ -9,6 +9,10 @@
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "0x370", scale = 1, transform = 1 }) -- 90 deg
 hl.monitor({ output = "DP-2", mode = "2560x1440@240", position = "1080x0", scale = 1, transform = 2 }) -- 180 deg
 hl.monitor({ output = "DP-3", mode = "1920x1080@239.96", position = "1080x1440", scale = 1 })
+-- MSI Venture A16 AI's internal panel (16" FHD+ touch) -- verify against
+-- `hyprctl monitors` once installed, 1920x1200@60 is MSI's listed spec
+-- but hasn't been confirmed against the actual EDID yet.
+hl.monitor({ output = "eDP-1", mode = "1920x1200@60", position = "0x0", scale = 1 })
 -- Fallback for any monitor not listed above
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 
@@ -193,11 +197,17 @@ hl.bind(var_mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 -- --------------------------------------------------- // Toggle
 hl.bind(var_mainMod .. " + T", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(var_mainMod .. " + G", hl.dsp.group.toggle())
-hl.bind(var_mainMod .. " + J", hl.dsp.layout("togglesplit"))
+-- dwindle's "togglesplit" message is dead in Hyprland 0.56.2 -- hl.dsp.layout
+-- fires clean (confirmed via `hyprctl dispatch 'hl.dsp.layout("togglesplit")'`,
+-- returns ok, no error) but the compositor silently drops that specific
+-- message (github.com/hyprwm/Hyprland/issues/15106, "togglesplit does not
+-- exist"); "swapsplit" on the same call path works fine, so that's what's
+-- bound here until upstream restores togglesplit or ships a replacement.
+hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
 hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr' || quickshell -c hykr"))
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("pkill waybar || waybar"))
 hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
-hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset"))
+hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset -t 5000"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
 hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))
 hl.bind(var_mainMod .. " + O", function()
@@ -258,6 +268,15 @@ hl.define_submap("resize", function()
     hl.bind("down", hl.dsp.window.resize({ x = 0, y = 30, relative = true }), { repeating = true })
     hl.bind("escape", hl.dsp.submap("reset"))
 end)
+
+-- Escape hatch: hyprexpo's keynav submap (below) isn't always torn down
+-- cleanly on every overview-close path (upstream sandwichfarm/hyprexpo
+-- #99, #39) -- when that happens every bind outside that submap's own
+-- h/l/k/j/return/escape goes dead, Super+J (togglesplit) included, until
+-- the submap is forced back to global. `hyprctl reload` also clears it
+-- but reparses the whole config and re-pins monitors; this is the same
+-- fix without the extra cost.
+hl.bind(var_mainMod .. " + SHIFT + R", hl.dsp.submap("reset"))
 
 for i = 1, 10 do
     local key = i % 10

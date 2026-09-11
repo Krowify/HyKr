@@ -1,60 +1,50 @@
-add_newline = false
+add_newline = true
 command_timeout = 1000
 
 format = """
-$time$os$username$hostname$directory$git_branch$git_status$character
-"""
-
-# ---------------- TIME ----------------
-[time]
-disabled = false
-time_format = "%H:%M"
-style = "bg:{{accent}} fg:{{shadow}}"
-format = "[](fg:{{accent}})[  $time ]($style)[](fg:{{accent}} bg:{{surface}})"
+[](fg:{{accent}})[ $os ](bg:{{accent}} fg:{{bg}})[](fg:{{accent}} bg:{{surface}})$directory$git_branch$git_status[](fg:{{surface}})
+$character"""
 
 # ---------------- OS ----------------
 [os]
 disabled = false
-style = "bg:{{surface}} fg:{{accent}}"
-format = "[ $symbol ]($style)"
+style = "bg:{{accent}} fg:{{bg}}"
 
 [os.symbols]
-Arch = ""
-
-# ---------------- USER ----------------
-[username]
-show_always = true
-style_user = "bg:{{surface}} fg:{{fg}}"
-format = "[ $user ]($style)"
-
-# ---------------- HOST ----------------
-[hostname]
-ssh_only = false
-style = "bg:{{surface}} fg:{{blue}}"
-format = "[@$hostname ]($style)[](fg:{{surface}} bg:{{surface2}})"
+Arch = ""
 
 # ---------------- DIRECTORY ----------------
 [directory]
 home_symbol = "~"
 truncation_length = 3
 truncation_symbol = "…/"
-style = "bg:{{surface2}} fg:{{accent}}"
-format = "[ $path ]($style)[](fg:{{surface2}})"
+style = "bg:{{surface}} fg:{{fg}}"
+format = "[ $path ]($style)"
 
 # ---------------- GIT ----------------
 [git_branch]
-symbol = ""
-style = "bg:{{surface2}} fg:{{green}}"
-format = "[ $symbol $branch ]($style)"
+symbol = ""
+style = "bg:{{surface}} fg:{{green}}"
+format = "[$symbol$branch ]($style)"
 
 [git_status]
-style = "bg:{{surface2}} fg:{{yellow}}"
-format = "[ $all_status$ahead_behind ]($style)[](fg:{{surface2}} bg:{{bg}})"
+conflicted = " "
+ahead = " "
+behind = " "
+diverged = " "
+untracked = " "
+stashed = " "
+modified = " "
+staged = " "
+renamed = " "
+deleted = " "
+style = "bg:{{surface}} fg:{{yellow}}"
+format = "([$all_status$ahead_behind ]($style))"
 
 # ---------------- PROMPT ----------------
 [character]
-success_symbol = "[ ❯](fg:{{accent}})"
-error_symbol = "[ ❯](fg:{{red}})"
+success_symbol = "[❯](bold fg:{{accent}})"
+error_symbol = "[❯](bold fg:{{red}})"
 
 # ---------------- CLEAN ----------------
 [package]

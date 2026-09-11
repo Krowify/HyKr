@@ -1,7 +1,11 @@
 {
     "wallpaper_path": "~/wallpapers/",
     "cache_path": "~/.cache/quickshell/wallpaper-picker-thumbs/",
-    "number_of_pictures": 9,
+    "columns": 4,
     "border_color": "#80FFFFFF",
+    "bg": "#11111b",
+    "surface": "#31324499",
+    "text": "#cdd6f4",
+    "text_dim": "#9399b2",
     "cache_batch_size": 20
 }

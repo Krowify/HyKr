@@ -3,3 +3,12 @@
 # something this repo should ever track or accidentally commit.
 Configs/configs/hypr/hyprland-gui.conf
 Configs/configs/hypr/hyprland-gui.lua
+
+# Per-user runtime state, rewritten by apply-theme.sh/apply_wallpaper.sh on
+# every theme switch or wallpaper pick -- apply-theme.sh already falls back
+# to $default_wallpaper when current-wallpaper.txt is missing, so these
+# are safe to leave untracked rather than churning the repo with everyone's
+# personal picks.
+Configs/configs/theme-switcher/current-theme.json
+Configs/configs/theme-switcher/themes/*/current-wallpaper.txt
+Source/wallpapers/pywallpaper.jpg

@@ -4,7 +4,7 @@
     "exclusive": true,
     "spacing": 0,
 
-    "modules-left": ["cpu", "custom/gpu", "memory", "temperature"],
+    "modules-left": ["cpu", "custom/gpu", "memory", "temperature", "battery"],
     "modules-center": ["clock"],
     "modules-right": ["mpris", "network", "pulseaudio", "custom/power"],
 
@@ -35,6 +35,18 @@
         "tooltip-format": "CPU Temp: {temperatureC}°C",
         "interval": 2,
         "on-click": "pkill hyprsunset || hyprsunset"
+    },
+
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "states": {
+            "warning": 20,
+            "critical": 10
+        },
+        "tooltip-format": "{timeTo}, {power}W",
+        "interval": 5
     },
 
     "clock": {
