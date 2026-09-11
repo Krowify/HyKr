@@ -119,47 +119,102 @@ PanelWindow {
                 // entirely on a machine with no battery, since this same
                 // shell config also runs on the desktop's three monitors.
                 // A Row skips invisible children, so nothing else shifts.
+                //
+                // Hovering it slides out the exact percentage. Inline rather
+                // than a floating tooltip window on purpose: this bar's layer
+                // surface is only barHeight (34px) tall, so anything drawn
+                // below the icon would be clipped off, and an extra
+                // PanelWindow is the very pattern shell.qml's header warns
+                // about.
                 Item {
-                    width: 20; height: 20
+                    id: batteryItem
+                    width: batteryRow.implicitWidth
+                    height: 20
                     visible: Services.BatteryService.available
 
-                    Text {
-                        anchors.centerIn: parent
-                        // nf-md-battery_* and nf-md-battery_charging_*.
-                        // Material Design's battery ramps are not evenly
-                        // spaced -- the discharging set has every tenth,
-                        // the charging set skips 10/50/70 -- so each
-                        // threshold below maps to the nearest glyph that
-                        // actually exists rather than a computed decile.
-                        text: {
-                            const p = Services.BatteryService.percent;
-                            if (Services.BatteryService.charging) {
-                                if (p >= 95) return "\u{F0085}"; // charging_100
-                                if (p >= 90) return "\u{F008B}"; // charging_90
-                                if (p >= 80) return "\u{F008A}"; // charging_80
-                                if (p >= 60) return "\u{F0089}"; // charging_60
-                                if (p >= 40) return "\u{F0088}"; // charging_40
-                                if (p >= 30) return "\u{F0087}"; // charging_30
-                                if (p >= 20) return "\u{F0086}"; // charging_20
-                                return "\u{F0084}"; // charging (generic)
-                            }
-                            if (p >= 95) return "\u{F0079}"; // battery (full)
-                            if (p >= 90) return "\u{F0082}"; // battery_90
-                            if (p >= 80) return "\u{F0081}"; // battery_80
-                            if (p >= 70) return "\u{F0080}"; // battery_70
-                            if (p >= 60) return "\u{F007F}"; // battery_60
-                            if (p >= 50) return "\u{F007E}"; // battery_50
-                            if (p >= 40) return "\u{F007D}"; // battery_40
-                            if (p >= 30) return "\u{F007C}"; // battery_30
-                            if (p >= 20) return "\u{F007B}"; // battery_20
-                            if (p >= 10) return "\u{F007A}"; // battery_10
-                            return "\u{F008E}"; // battery_outline (empty)
+                    HoverHandler { id: batteryHover }
+
+                    Row {
+                        id: batteryRow
+                        spacing: batteryHover.hovered ? 5 : 0
+
+                        Behavior on spacing { NumberAnimation { duration: 120 } }
+
+                        // Deliberately BEFORE the glyph. The whole group is
+                        // pushed right by the RowLayout's filler, so it grows
+                        // leftwards into empty bar: with the label first, the
+                        // battery glyph itself never moves as the label
+                        // appears. After the glyph it would slide the icon out
+                        // from under the pointer, dropping the hover and
+                        // flickering the label on and off. Either way nothing
+                        // to the right (volume, network, bluetooth, date,
+                        // bell) shifts by a pixel, so the popup panels'
+                        // rightOffset values stay correct.
+                        Text {
+                            id: batteryPercent
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: Services.BatteryService.percent + "%"
+                            font.pixelSize: 11
+                            font.family: "monospace"
+                            color: Services.BatteryService.low ? "#c8102e" : "#c8d4d1"
+                            // Animating width rather than toggling visible
+                            // slides the label out from behind the icon, and
+                            // clip keeps the digits inside whatever width it
+                            // currently has. implicitWidth is pure text
+                            // metrics, so this can't feed back into itself.
+                            width: batteryHover.hovered ? implicitWidth : 0
+                            clip: true
+                            opacity: batteryHover.hovered ? 1 : 0
+
+                            Behavior on width { NumberAnimation { duration: 120 } }
+                            Behavior on opacity { NumberAnimation { duration: 120 } }
                         }
-                        font.family: "JetBrainsMono Nerd Font"
-                        font.pixelSize: 15
-                        // Same accent the other icons use for "needs your
-                        // attention", here meaning on battery and under 15%.
-                        color: Services.BatteryService.low ? "#c8102e" : "#9fb3ae"
+
+                        Item {
+                            width: 20
+                            height: 20
+
+                            Text {
+                                anchors.centerIn: parent
+                                // nf-md-battery_* and nf-md-battery_charging_*.
+                                // Material Design's battery ramps are not
+                                // evenly spaced -- the discharging set has
+                                // every tenth, the charging set skips
+                                // 10/50/70 -- so each threshold below maps to
+                                // the nearest glyph that actually exists
+                                // rather than a computed decile.
+                                text: {
+                                    const p = Services.BatteryService.percent;
+                                    if (Services.BatteryService.charging) {
+                                        if (p >= 95) return "\u{F0085}"; // charging_100
+                                        if (p >= 90) return "\u{F008B}"; // charging_90
+                                        if (p >= 80) return "\u{F008A}"; // charging_80
+                                        if (p >= 60) return "\u{F0089}"; // charging_60
+                                        if (p >= 40) return "\u{F0088}"; // charging_40
+                                        if (p >= 30) return "\u{F0087}"; // charging_30
+                                        if (p >= 20) return "\u{F0086}"; // charging_20
+                                        return "\u{F0084}"; // charging (generic)
+                                    }
+                                    if (p >= 95) return "\u{F0079}"; // battery (full)
+                                    if (p >= 90) return "\u{F0082}"; // battery_90
+                                    if (p >= 80) return "\u{F0081}"; // battery_80
+                                    if (p >= 70) return "\u{F0080}"; // battery_70
+                                    if (p >= 60) return "\u{F007F}"; // battery_60
+                                    if (p >= 50) return "\u{F007E}"; // battery_50
+                                    if (p >= 40) return "\u{F007D}"; // battery_40
+                                    if (p >= 30) return "\u{F007C}"; // battery_30
+                                    if (p >= 20) return "\u{F007B}"; // battery_20
+                                    if (p >= 10) return "\u{F007A}"; // battery_10
+                                    return "\u{F008E}"; // battery_outline (empty)
+                                }
+                                font.family: "JetBrainsMono Nerd Font"
+                                font.pixelSize: 15
+                                // Same accent the other icons use for "needs
+                                // your attention", here meaning on battery and
+                                // under 15%.
+                                color: Services.BatteryService.low ? "#c8102e" : "#9fb3ae"
+                            }
+                        }
                     }
                 }
 

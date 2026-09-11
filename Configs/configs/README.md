@@ -34,8 +34,8 @@ Not from elifouts:
 - `quickshell/laptop/` — the Laptop theme's whole bar stack, replacing
   waybar + swaync with one process (`quickshell -c laptop`): a horizontal
   top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
-  date/notifications), four popup panels, and a native notification daemon
-  with a toast stack. Exposes an `IpcHandler` on target `dock`
+  date/notifications — hover the battery for the exact percentage), four
+  popup panels, and a native notification daemon with a toast stack. Exposes an `IpcHandler` on target `dock`
   (`quickshell -c laptop ipc call dock toggleNotifications|toggleDnd`) so
   `Super+N` and the quick-settings DND entry reach it under this theme
   instead of the swaync-client they still use everywhere else. Same
