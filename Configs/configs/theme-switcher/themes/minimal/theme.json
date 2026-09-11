@@ -1,7 +1,7 @@
 {
   "name": "Minimal",
   "id": "minimal",
-  "default_wallpaper": "wallpapers/minimal.jpg",
+  "default_wallpaper": "wallpapers/minimal.png",
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"
