@@ -220,7 +220,12 @@ hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr'
 -- Laptop theme's Quickshell dock) -- the old "pkill waybar || waybar"
 -- could only ever start waybar, resurrecting it under the Laptop theme.
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.sh --toggle"))
-hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
+-- Notification center. The Laptop theme runs no swaync (its Quickshell
+-- dock carries its own notification daemon and center), so this bind was
+-- simply dead under that theme. Ask the dock over IPC first; under every
+-- waybar theme no laptop shell is running, that call fails, and
+-- swaync-client runs exactly as before.
+hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("quickshell -c laptop ipc call dock toggleNotifications >/dev/null 2>&1 || swaync-client -t -sw"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset -t 5000"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
 hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))

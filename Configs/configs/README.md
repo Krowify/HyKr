@@ -31,6 +31,15 @@ Not from elifouts:
   runtime-tested — no `quickshell` binary in the dev environment this was
   built in; the `Process`/polling blocks are the most likely thing to need
   fixing if something doesn't work.
+- `quickshell/laptop/` — the Laptop theme's whole bar stack, replacing
+  waybar + swaync with one process (`quickshell -c laptop`): a horizontal
+  top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
+  date/notifications), four popup panels, and a native notification daemon
+  with a toast stack. Exposes an `IpcHandler` on target `dock`
+  (`quickshell -c laptop ipc call dock toggleNotifications|toggleDnd`) so
+  `Super+N` and the quick-settings DND entry reach it under this theme
+  instead of the swaync-client they still use everywhere else. Same
+  not-runtime-tested caveat as `quickshell/hykr/` above.
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
