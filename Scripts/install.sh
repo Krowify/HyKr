@@ -16,8 +16,9 @@ pkg_names() {
 
 # Purple-to-blue gradient wordmark + subtitle, centered both horizontally
 # and vertically in the terminal -- pure printf/ANSI truecolor, no
-# dependency (unlike the gum prompts below, this needs to work even if
-# gum's install fails).
+# external dependency (gum's own TUI confirm was tried here and dropped --
+# it doesn't render on a bare Linux console, only inside a real terminal
+# emulator, and install.sh has to work from a raw TTY).
 print_logo() {
     local logo_path="${scrDir}/logo.txt"
     [[ -f "${logo_path}" ]] || return 0
