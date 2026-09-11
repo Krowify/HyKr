@@ -4,8 +4,8 @@
 // reads as part of the same translucent-window look rather than a
 // solid, un-transparent strip.
 //
-// Layout, left to right: workspaces / (centered) clock / volume,
-// network, bluetooth, date, notifications.
+// Layout, left to right: workspaces / (centered) clock / battery,
+// volume, network, bluetooth, date, notifications.
 //
 // The four popup panels are NOT declared here anymore -- see shell.qml's
 // header comment: nesting multiple PanelWindows as children of another
@@ -109,10 +109,59 @@ PanelWindow {
 
             Item { Layout.fillWidth: true }
 
-            // ---- right: volume, network, bluetooth, date, notifications ----
+            // ---- right: battery, volume, network, bluetooth, date, notifications ----
             Row {
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 16
+
+                // Battery sits at the head of this group -- i.e. immediately
+                // left of the Wi-Fi and bluetooth icons -- and disappears
+                // entirely on a machine with no battery, since this same
+                // shell config also runs on the desktop's three monitors.
+                // A Row skips invisible children, so nothing else shifts.
+                Item {
+                    width: 20; height: 20
+                    visible: Services.BatteryService.available
+
+                    Text {
+                        anchors.centerIn: parent
+                        // nf-md-battery_* and nf-md-battery_charging_*.
+                        // Material Design's battery ramps are not evenly
+                        // spaced -- the discharging set has every tenth,
+                        // the charging set skips 10/50/70 -- so each
+                        // threshold below maps to the nearest glyph that
+                        // actually exists rather than a computed decile.
+                        text: {
+                            const p = Services.BatteryService.percent;
+                            if (Services.BatteryService.charging) {
+                                if (p >= 95) return "\u{F0085}"; // charging_100
+                                if (p >= 90) return "\u{F008B}"; // charging_90
+                                if (p >= 80) return "\u{F008A}"; // charging_80
+                                if (p >= 60) return "\u{F0089}"; // charging_60
+                                if (p >= 40) return "\u{F0088}"; // charging_40
+                                if (p >= 30) return "\u{F0087}"; // charging_30
+                                if (p >= 20) return "\u{F0086}"; // charging_20
+                                return "\u{F0084}"; // charging (generic)
+                            }
+                            if (p >= 95) return "\u{F0079}"; // battery (full)
+                            if (p >= 90) return "\u{F0082}"; // battery_90
+                            if (p >= 80) return "\u{F0081}"; // battery_80
+                            if (p >= 70) return "\u{F0080}"; // battery_70
+                            if (p >= 60) return "\u{F007F}"; // battery_60
+                            if (p >= 50) return "\u{F007E}"; // battery_50
+                            if (p >= 40) return "\u{F007D}"; // battery_40
+                            if (p >= 30) return "\u{F007C}"; // battery_30
+                            if (p >= 20) return "\u{F007B}"; // battery_20
+                            if (p >= 10) return "\u{F007A}"; // battery_10
+                            return "\u{F008E}"; // battery_outline (empty)
+                        }
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 15
+                        // Same accent the other icons use for "needs your
+                        // attention", here meaning on battery and under 15%.
+                        color: Services.BatteryService.low ? "#c8102e" : "#9fb3ae"
+                    }
+                }
 
                 Item {
                     width: 20; height: 20

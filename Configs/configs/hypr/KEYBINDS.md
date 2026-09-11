@@ -29,7 +29,7 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | `Super+G` | Toggle group |
 | `Super+J` | Swap split (window positions — `togglesplit` is broken upstream in Hyprland 0.56.2, [hyprwm/Hyprland#15106](https://github.com/hyprwm/Hyprland/issues/15106)) |
 | `Super+M` | Toggle quick-settings panel (Quickshell) |
-| `Super+Ctrl+B` | Toggle Waybar |
+| `Super+Ctrl+B` | Toggle the bar (Waybar, or the Laptop theme's Quickshell dock — whichever the active theme runs) |
 | `Super+N` | Toggle notification center (SwayNC) |
 | `Super+Shift+N` | Toggle blue light filter (hyprsunset) |
 | `Super+Shift+I` | Toggle caffeine (kills/restarts hypridle) |

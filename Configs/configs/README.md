@@ -34,6 +34,14 @@ Not from elifouts:
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
+- `hypr/start_bar.sh` — picks the bar + notification daemon from the theme
+  that's actually active (`current-theme.json` → that theme's `theme.json`
+  `bar` field) instead of hardcoding one: `waybar` + `swaync` for most
+  themes, `quickshell -c laptop` for the Laptop theme's
+  `"bar": "quickshell-dock"`. Run from `hyprland.lua`'s autostart, and with
+  `--toggle` from `Super+Ctrl+B`, both of which used to start waybar
+  unconditionally — which is why waybar kept reappearing on top of the
+  Quickshell dock after every login.
 - `hypr/KEYBINDS.md` — every bind in `hyprland.lua`, grouped the same
   way the file is, as Keybind/Action tables — a human-readable index,
   not copy-pasteable syntax (see `hyprland.lua` directly for that).
