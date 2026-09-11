@@ -338,6 +338,23 @@ hl.bind("F10", hl.dsp.exec_cmd("pamixer -t"), { locked = true })
 hl.bind("F11", hl.dsp.exec_cmd("pamixer -d 5"), { locked = true, repeating = true })
 hl.bind("F12", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true, repeating = true })
 
+-- The same three actions on the XF86 media keycodes. The F10/F11/F12 binds
+-- above are what the desktop's keyboard sends; a laptop's dedicated volume
+-- keys emit XF86AudioMute / XF86AudioLowerVolume / XF86AudioRaiseVolume
+-- instead (KEY_MUTE / KEY_VOLUMEDOWN / KEY_VOLUMEUP at the libinput level),
+-- which nothing here bound -- so on the laptop the volume keys did nothing
+-- at all. Binding both sets keeps one file working on both machines, the
+-- same way has_trackpad() does for gestures, just resolved at bind time
+-- rather than at runtime: a keycode the keyboard never emits is simply a
+-- bind that never fires.
+--
+-- Same pamixer/step/flags as above deliberately, so both sets of keys
+-- behave identically. locked = true keeps them working on the hyprlock
+-- screen; repeating = true lets holding the key ramp.
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("pamixer -t"), { locked = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("pamixer -d 5"), { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true, repeating = true })
+
 -- --------------------------------------------------- // Mouse
 hl.bind(var_mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(var_mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })

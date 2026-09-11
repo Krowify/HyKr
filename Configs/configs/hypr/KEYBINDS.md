@@ -95,9 +95,13 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | Keybind | Action |
 | --- | --- |
 | `Shift+F11` | Toggle fullscreen |
-| `F10` | Mute volume |
-| `F11` | Lower volume |
-| `F12` | Raise volume |
+| `F10` / `XF86AudioMute` | Mute volume |
+| `F11` / `XF86AudioLowerVolume` | Lower volume |
+| `F12` / `XF86AudioRaiseVolume` | Raise volume |
+
+The `F10`-`F12` set is what the desktop keyboard sends; the `XF86Audio*` set
+is what a laptop's dedicated volume keys send. Both are bound, so either
+keyboard works from the same config.
 
 ## Mouse
 
