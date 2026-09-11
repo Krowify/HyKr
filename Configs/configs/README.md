@@ -43,6 +43,14 @@ Not from elifouts:
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
+- `hypr/fn_keys.sh` — the three laptop function-row actions that need a
+  device name looked up first (keyboard backlight, touchpad toggle, airplane
+  mode), so they can't be a one-line `exec_cmd` in `hyprland.lua`. Finds the
+  `*kbd_backlight` device via `brightnessctl -l`, the touchpad via `hyprctl
+  devices`, and toggles radios with nmcli + bluetoothctl rather than rfkill
+  (`/dev/rfkill` is root-only, so an rfkill bind fails silently on a
+  keypress). Always exits 0 — these are bound to hardware keys that may not
+  emit a keycode at all on a given machine.
 - `hypr/start_bar.sh` — picks the bar + notification daemon from the theme
   that's actually active (`current-theme.json` → that theme's `theme.json`
   `bar` field) instead of hardcoding one: `waybar` + `swaync` for most

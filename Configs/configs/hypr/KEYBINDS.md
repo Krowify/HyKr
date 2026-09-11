@@ -103,6 +103,26 @@ The `F10`-`F12` set is what the desktop keyboard sends; the `XF86Audio*` set
 is what a laptop's dedicated volume keys send. Both are bound, so either
 keyboard works from the same config.
 
+### Laptop function row
+
+The rest of the Fn row, by the keysym the key emits rather than its F-number
+(that differs per laptop — on the MSI these sit on F4-F12):
+
+| Keysym | Action |
+| --- | --- |
+| `XF86MonBrightnessDown` / `Up` | Screen brightness (brightnessctl, 5% steps) |
+| `XF86AudioMicMute` | Mute microphone |
+| `XF86Bluetooth` | Toggle Bluetooth |
+| `XF86RFKill` | Airplane mode — all radios off/on |
+| `XF86TouchpadToggle` | Enable/disable touchpad |
+| `XF86KbdLightOnOff` | Cycle keyboard backlight off → mid → max |
+| `XF86KbdBrightnessDown` / `Up` | Keyboard backlight down/up |
+
+Brightness and backlight keys are `locked`, so they work on the lock screen.
+Not every laptop emits every one of these — several MSI Fn keys are handled
+by the EC and never reach the compositor. Check what a key really sends with
+`sudo libinput debug-events --show-keycodes`.
+
 ## Mouse
 
 | Keybind | Action |

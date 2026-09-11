@@ -355,6 +355,51 @@ hl.bind("XF86AudioMute", hl.dsp.exec_cmd("pamixer -t"), { locked = true })
 hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("pamixer -d 5"), { locked = true, repeating = true })
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true, repeating = true })
 
+-- --------------------------------------------------- // Laptop function row
+-- The rest of the MSI's Fn row. Each of these is a standard XF86 keysym
+-- that libinput maps from the matching KEY_* code, so they cost nothing on
+-- the desktop: a keycode that keyboard never emits is just a bind that
+-- never fires -- same reasoning as the XF86Audio* block above.
+--
+-- What is NOT guaranteed is that a given laptop emits all of them. Several
+-- MSI Fn keys are swallowed by the EC and never reach the compositor at
+-- all (the keyboard backlight especially). Confirm what yours actually
+-- sends with:
+--     sudo libinput debug-events --show-keycodes
+-- and check the KEY_* name against the keysym bound here.
+--
+-- locked = true on brightness and backlight so they still work on the
+-- hyprlock screen -- adjusting a too-dim screen while locked is exactly
+-- when you need them.
+
+-- F9 / F10 -- screen brightness. brightnessctl is already in pkg_core.lst
+-- (listed for the quick-settings slider). 5% steps match the volume keys.
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -q set 5%-"), { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -q set +5%"), { locked = true, repeating = true })
+
+-- F5 -- mic mute. pamixer's --default-source is the input-side counterpart
+-- of the -t above, so this stays on the one audio CLI the rest of the row
+-- uses rather than adding wpctl.
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("pamixer --default-source -t"), { locked = true })
+
+-- F6 -- bluetooth. Same toggle quick_settings.sh already offers from its
+-- wofi menu, so the key and the menu can't disagree.
+hl.bind("XF86Bluetooth", hl.dsp.exec_cmd("bluetoothctl power \"$(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)\""))
+
+-- F12 -- airplane mode. Via the helper because a bare `rfkill block all`
+-- needs root (/dev/rfkill is root-only on stock Arch) and would just fail
+-- silently on a keypress; the helper uses nmcli + bluetoothctl, which both
+-- work as the logged-in user through polkit.
+hl.bind("XF86RFKill", hl.dsp.exec_cmd("~/.config/hypr/fn_keys.sh airplane"))
+
+-- F4 and F8 -- both need a device name looked up first, so they go through
+-- the helper rather than inlining a pipeline here. It always exits 0 and
+-- explains itself on stderr when the device isn't there.
+hl.bind("XF86TouchpadToggle", hl.dsp.exec_cmd("~/.config/hypr/fn_keys.sh touchpad"))
+hl.bind("XF86KbdLightOnOff", hl.dsp.exec_cmd("~/.config/hypr/fn_keys.sh kbd-light toggle"), { locked = true })
+hl.bind("XF86KbdBrightnessDown", hl.dsp.exec_cmd("~/.config/hypr/fn_keys.sh kbd-light down"), { locked = true, repeating = true })
+hl.bind("XF86KbdBrightnessUp", hl.dsp.exec_cmd("~/.config/hypr/fn_keys.sh kbd-light up"), { locked = true, repeating = true })
+
 -- --------------------------------------------------- // Mouse
 hl.bind(var_mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(var_mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
