@@ -25,7 +25,12 @@ PanelWindow {
     anchors { top: true; right: true }
     margins { top: 44; right: 14 }
     implicitWidth: 280
-    implicitHeight: column.implicitHeight
+    // With no toasts queued the Column measures 0, which left this mapped
+    // as a zero-height layer-shell surface the whole time the dock was up.
+    // Hide the window outright when there's nothing to show, and keep the
+    // implicit height off zero for the frame where it's still visible.
+    visible: Services.NotificationService.popupModel.count > 0
+    implicitHeight: Math.max(1, column.implicitHeight)
 
     Column {
         id: column

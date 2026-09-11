@@ -630,7 +630,13 @@ if [[ -d "$WAYBAR_DIR" ]]; then
       "$WAYBAR_DIR/style.css.tpl" > "$WAYBAR_STYLE_OUT"
   fi
 
-  if wayland_is_live; then
+  # Only restart waybar for themes that actually run it. A
+  # "quickshell-dock" theme that still ships waybar templates (so its
+  # colors stay in sync for when you switch back) would otherwise spawn
+  # waybar here, on top of the Quickshell dock, for the rest of this
+  # script -- the bar-mode block at the end kills it again, but any
+  # failure in between leaves two bars mapped at once.
+  if [[ "$bar_mode" != "quickshell-dock" ]] && wayland_is_live; then
     pkill waybar >/dev/null 2>&1 || true
     waybar >/dev/null 2>&1 &
   fi

@@ -24,10 +24,57 @@
 // the native NotificationServer approach -- see
 // services/NotificationService.qml.
 import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Io
 import QtQuick
 import "./panels"
+import "./services" as Services
 
 ShellRoot {
+    id: root
+
+    // A panel opened from a keybind should land on the monitor you're
+    // actually looking at rather than always the first one. Indexed loop
+    // instead of Array.find so this only relies on the .length/[i] access
+    // DockState.qml already uses on Quickshell.screens. Falls back to
+    // whatever DockState points at if Hyprland reports no focused monitor,
+    // or its name doesn't match any screen.
+    function focusedScreen() {
+        const monitor = Hyprland.focusedMonitor;
+        if (monitor) {
+            for (let i = 0; i < Quickshell.screens.length; i++) {
+                if (Quickshell.screens[i].name === monitor.name)
+                    return Quickshell.screens[i];
+            }
+        }
+        return DockState.activeScreen;
+    }
+
+    // Lets Hyprland keybinds and quick_settings.sh reach this shell the
+    // same way they reach swaync under every other theme. Both call sites
+    // try `quickshell -c laptop ipc call dock ...` first and fall back to
+    // swaync-client, which keeps this scoped to the Laptop theme by
+    // construction: no laptop shell is running under the waybar themes, so
+    // the ipc call just fails there and the old swaync path runs unchanged.
+    IpcHandler {
+        target: "dock"
+
+        // Super+N. Was bound to `swaync-client -t -sw`, which does nothing
+        // under this theme -- swaync isn't running, the dock's own
+        // notification center replaces it.
+        function toggleNotifications(): void {
+            DockState.toggle(root.focusedScreen(), "notifications");
+        }
+
+        // The quick-settings menu's "Toggle DND" entry, same story: it
+        // shelled out to `swaync-client --toggle-dnd` and was dead here.
+        // This is the exact property NotificationCenterPanel's DND switch
+        // flips, so the two stay in sync either way you toggle it.
+        function toggleDnd(): void {
+            Services.NotificationService.doNotDisturb = !Services.NotificationService.doNotDisturb;
+        }
+    }
+
     Variants {
         model: Quickshell.screens
         DockBar {}

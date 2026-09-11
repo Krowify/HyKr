@@ -59,8 +59,16 @@ Singleton {
                         const name = parts.slice(2).join(" ")
                         return { mac: mac, name: name.length > 0 ? name : mac }
                     })
-                root.connectedDevices = parseDevices(sections[0])
+                const connected = parseDevices(sections[0])
+                root.connectedDevices = connected
+                // `bluetoothctl devices Paired` lists every paired device,
+                // connected ones included, so BluetoothPanel rendered an
+                // active headset twice -- once under "connected", again
+                // under "paired". Keep the paired row for what's actually
+                // just paired.
+                const connectedMacs = connected.map(device => device.mac)
                 root.pairedDevices = parseDevices(sections[1])
+                    .filter(device => !connectedMacs.includes(device.mac))
             }
         }
     }

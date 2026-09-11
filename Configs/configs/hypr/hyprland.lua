@@ -18,9 +18,20 @@ hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" 
 
 -- Caps Lock does nothing when pressed -- a Wayland/libinput setting
 -- (xkb_options), not the old X11 setxkbmap approach.
+--
+-- natural_scroll lives in the touchpad sub-category on purpose, NOT as a
+-- bare input:natural_scroll: the global key wins over the per-device one
+-- and would flip the desktop's mouse wheel too (hyprwm/Hyprland#2458).
+-- Nested here it only ever reaches touchpads, so it's a silent no-op on
+-- the desktop and needs no has_trackpad() gate (which isn't defined until
+-- further down this file anyway).
 hl.config({
     input = {
         kb_options = "caps:none",
+
+        touchpad = {
+            natural_scroll = true,
+        },
     },
 })
 
@@ -156,8 +167,19 @@ hl.on("hyprland.start", function()
     -- privilege-escalation prompts (mounting a drive from Dolphin, some
     -- NetworkManager/Bluetooth actions) silently fail or hang without one.
     hl.exec_cmd("hyprpolkitagent")
-    hl.exec_cmd("waybar")
-    hl.exec_cmd("swaync")
+    -- Bar + notification daemon, picked from the ACTIVE theme rather
+    -- than hardcoded. Most themes use the waybar+swaync pair; the Laptop
+    -- theme replaces both with one Quickshell process ("bar":
+    -- "quickshell-dock" in its theme.json, which apply-theme.sh honours).
+    -- Starting waybar unconditionally here meant it came back on every
+    -- login even under the Laptop theme -- stacked on top of the
+    -- Quickshell dock -- and swaync doubled its notifications.
+    -- The `[ -x ... ] ||` guard covers an install whose ~/.config/hypr
+    -- apply-theme.sh already de-symlinked into a real copy (it does that
+    -- on the first theme apply) before start_bar.sh existed: there the
+    -- script isn't present until link_dots.sh is re-run, and without the
+    -- fallback that login would come up with no bar at all.
+    hl.exec_cmd("[ -x ~/.config/hypr/start_bar.sh ] && ~/.config/hypr/start_bar.sh || { waybar & swaync & }")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("awww-daemon")
     hl.exec_cmd("wal -R")
@@ -205,8 +227,16 @@ hl.bind(var_mainMod .. " + G", hl.dsp.group.toggle())
 -- bound here until upstream restores togglesplit or ships a replacement.
 hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
 hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr' || quickshell -c hykr"))
-hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("pkill waybar || waybar"))
-hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("swaync-client -t -sw"))
+-- Toggles whichever bar the active theme actually runs (waybar, or the
+-- Laptop theme's Quickshell dock) -- the old "pkill waybar || waybar"
+-- could only ever start waybar, resurrecting it under the Laptop theme.
+hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.sh --toggle"))
+-- Notification center. The Laptop theme runs no swaync (its Quickshell
+-- dock carries its own notification daemon and center), so this bind was
+-- simply dead under that theme. Ask the dock over IPC first; under every
+-- waybar theme no laptop shell is running, that call fails, and
+-- swaync-client runs exactly as before.
+hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("quickshell -c laptop ipc call dock toggleNotifications >/dev/null 2>&1 || swaync-client -t -sw"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset -t 5000"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
 hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))

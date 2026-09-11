@@ -31,9 +31,26 @@ Not from elifouts:
   runtime-tested — no `quickshell` binary in the dev environment this was
   built in; the `Process`/polling blocks are the most likely thing to need
   fixing if something doesn't work.
+- `quickshell/laptop/` — the Laptop theme's whole bar stack, replacing
+  waybar + swaync with one process (`quickshell -c laptop`): a horizontal
+  top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
+  date/notifications — hover the battery for the exact percentage), four
+  popup panels, and a native notification daemon with a toast stack. Exposes an `IpcHandler` on target `dock`
+  (`quickshell -c laptop ipc call dock toggleNotifications|toggleDnd`) so
+  `Super+N` and the quick-settings DND entry reach it under this theme
+  instead of the swaync-client they still use everywhere else. Same
+  not-runtime-tested caveat as `quickshell/hykr/` above.
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
+- `hypr/start_bar.sh` — picks the bar + notification daemon from the theme
+  that's actually active (`current-theme.json` → that theme's `theme.json`
+  `bar` field) instead of hardcoding one: `waybar` + `swaync` for most
+  themes, `quickshell -c laptop` for the Laptop theme's
+  `"bar": "quickshell-dock"`. Run from `hyprland.lua`'s autostart, and with
+  `--toggle` from `Super+Ctrl+B`, both of which used to start waybar
+  unconditionally — which is why waybar kept reappearing on top of the
+  Quickshell dock after every login.
 - `hypr/KEYBINDS.md` — every bind in `hyprland.lua`, grouped the same
   way the file is, as Keybind/Action tables — a human-readable index,
   not copy-pasteable syntax (see `hyprland.lua` directly for that).

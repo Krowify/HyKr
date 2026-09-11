@@ -23,7 +23,12 @@ case "$chosen" in
         bluetoothctl power "$(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)"
         ;;
     *"DND"*)
-        swaync-client --toggle-dnd
+        # Under the Laptop theme the Quickshell dock owns notifications and
+        # swaync isn't running, so this entry did nothing there. Ask the dock
+        # first -- it flips the same doNotDisturb the notification center's own
+        # switch does -- and fall back to swaync-client for the waybar themes,
+        # where the ipc call finds no laptop shell and fails.
+        quickshell -c laptop ipc call dock toggleDnd >/dev/null 2>&1 || swaync-client --toggle-dnd
         ;;
     *"Night Light"*)
         pkill hyprsunset || hyprsunset
