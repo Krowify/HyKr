@@ -28,7 +28,18 @@ PanelWindow {
     Rectangle {
         anchors.fill: parent
         radius: 16
-        color: "#0d1a18"
+        // Matches DockBar's translucency (same 0.55 alpha) so the
+        // notification center reads as part of the same surface as the bar
+        // it hangs from, instead of an opaque slab against a see-through
+        // strip. Alpha lives in the color, NOT in the Rectangle's opacity
+        // property -- opacity cascades to children in Qt Quick, which is
+        // the exact bug DockBar.qml's header documents (it faded every
+        // icon and label, not just the background).
+        //
+        // The laptop-popup layer rule in the theme's hyprland.lua.tpl
+        // already blurs this namespace with ignore_alpha = 0.2, and 0.55
+        // clears that threshold, so it picks up the same blur as the bar.
+        color: Qt.rgba(0.051, 0.102, 0.094, 0.55)
         border.width: 1
         border.color: Qt.rgba(1, 1, 1, 0.08)
         clip: true

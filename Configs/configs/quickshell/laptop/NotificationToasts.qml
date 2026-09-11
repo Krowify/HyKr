@@ -45,7 +45,12 @@ PanelWindow {
                 width: column.width
                 height: contentCol.implicitHeight + 20
                 radius: 12
-                color: "#0d1a18"
+                // Same translucency as DockBar and the notification center
+                // -- see NotificationCenterPanel.qml for why the alpha is in
+                // the color rather than the opacity property. The urgency
+                // stripe and the text below stay fully opaque so a toast is
+                // still readable over a busy wallpaper.
+                color: Qt.rgba(0.051, 0.102, 0.094, 0.55)
                 border.width: 1
                 border.color: Qt.rgba(1, 1, 1, 0.1)
 
