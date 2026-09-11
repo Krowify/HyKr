@@ -83,6 +83,19 @@ if ! command -v pacman &>/dev/null; then
     exit 1
 fi
 
+# Are we running over SSH? disable_sshd.sh further down turns sshd off, which
+# would cut the connection this install is running over. `su -` below resets
+# the environment (login shell), taking SSH_CONNECTION with it, so resolve
+# this once here and hand the answer to the re-exec explicitly.
+if [[ -z "${HYKR_OVER_SSH:-}" ]]; then
+    if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" || -n "${SSH_TTY:-}" ]]; then
+        HYKR_OVER_SSH=1
+    else
+        HYKR_OVER_SSH=0
+    fi
+fi
+export HYKR_OVER_SSH
+
 # --------------------------------------------------- // Root handoff
 # link_dots.sh symlinks into $HOME, and yay's makepkg refuses to build AUR
 # packages as root -- if this script is run as root (the normal state right
@@ -152,6 +165,14 @@ if [[ ${EUID} -eq 0 ]]; then
     # call into other scripts with many varied sudo invocations). Scoped
     # to just this user, validated, and removed the moment this run ends.
     SUDOERS_DROPIN="/etc/sudoers.d/99-hykr-install"
+    # A previous run that died without running its EXIT trap (power loss, OOM
+    # kill, a hard reset) would have left this file behind -- i.e. permanent
+    # passwordless root for whoever it named. Clear it before writing ours, so
+    # a re-run is self-healing rather than silently inheriting the old grant.
+    if [[ -e "${SUDOERS_DROPIN}" ]]; then
+        print_log "Removing a stale ${SUDOERS_DROPIN} left by an interrupted install"
+        rm -f "${SUDOERS_DROPIN}"
+    fi
     echo "${TARGET_USER} ALL=(ALL) NOPASSWD: ALL" > "${SUDOERS_DROPIN}"
     chmod 0440 "${SUDOERS_DROPIN}"
     if ! visudo -cf "${SUDOERS_DROPIN}"; then
@@ -162,7 +183,7 @@ if [[ ${EUID} -eq 0 ]]; then
     trap 'rm -f "${SUDOERS_DROPIN}"' EXIT
 
     print_log "Re-running install.sh as ${TARGET_USER}"
-    su - "${TARGET_USER}" -c "bash '${scrDir}/install.sh'"
+    su - "${TARGET_USER}" -c "HYKR_OVER_SSH='${HYKR_OVER_SSH}' bash '${scrDir}/install.sh'"
 
     rm -f "${SUDOERS_DROPIN}"
     trap - EXIT
@@ -179,17 +200,41 @@ if ! command -v yay &>/dev/null; then
     rm -rf /tmp/hykr-yay
 fi
 
+# Steps that failed but were not fatal; summarised at the end so a warning
+# that scrolled past under a few thousand lines of pacman output still gets
+# seen.
+failed_steps=()
+
 # --------------------------------------------------- // GPU drivers
-"${scrDir}/install_gpu_drivers.sh"
+"${scrDir}/install_gpu_drivers.sh" || {
+    print_log "WARNING: GPU driver install failed — continuing. Re-run"
+    print_log "  ${scrDir}/install_gpu_drivers.sh after fixing it."
+    failed_steps+=("GPU drivers")
+}
 
 # --------------------------------------------------- // Packages
+# global_fn.sh sets `set -e`, and yay exits non-zero if ANY package in the
+# batch fails -- one broken AUR build (proton-mail-bin and friends are not
+# rare) would otherwise abort the whole installer here, before link_dots.sh
+# had run, leaving a machine with packages and no configs at all. yay still
+# installs everything that did build, so warn and carry on: a missing app is
+# recoverable, a missing desktop is not. failed_steps is reported at the end
+# so nothing fails silently either.
 print_log "Installing core packages (Scripts/pkg_core.lst)"
 mapfile -t core_pkgs < <(pkg_names "${scrDir}/pkg_core.lst")
-yay -S --needed --noconfirm "${core_pkgs[@]}"
+yay -S --needed --noconfirm "${core_pkgs[@]}" || {
+    print_log "WARNING: some core packages failed to install — continuing anyway."
+    print_log "  Fix the failing package(s), then re-run this script -- everything"
+    print_log "  here uses --needed, so a second pass only does what's still missing."
+    failed_steps+=("core packages (pkg_core.lst)")
+}
 
 print_log "Installing optional packages (Scripts/pkg_extra.lst)"
 mapfile -t extra_pkgs < <(pkg_names "${scrDir}/pkg_extra.lst")
-yay -S --needed --noconfirm "${extra_pkgs[@]}"
+yay -S --needed --noconfirm "${extra_pkgs[@]}" || {
+    print_log "WARNING: some optional packages failed to install — continuing anyway."
+    failed_steps+=("optional packages (pkg_extra.lst)")
+}
 
 # --------------------------------------------------- // Dotfiles
 print_log "Linking dotfiles (also seeds a default pywal theme if needed)"
@@ -208,27 +253,67 @@ fi
 "${scrDir}/enable_services.sh"
 
 # --------------------------------------------------- // SDDM theme
-"${scrDir}/extra/install_sddm_theme.sh"
+# Each extra/ step below is allowed to fail without taking the rest of the
+# install with it -- setup_firewall.sh in particular exits 1 when firewalld
+# isn't installed, which under `set -e` used to abort everything after it.
+"${scrDir}/extra/install_sddm_theme.sh" || {
+    print_log "WARNING: SDDM theme install failed — continuing."
+    failed_steps+=("SDDM theme (extra/install_sddm_theme.sh)")
+}
 
 # --------------------------------------------------- // Firewall
-"${scrDir}/extra/setup_firewall.sh"
+"${scrDir}/extra/setup_firewall.sh" || {
+    print_log "WARNING: firewall hardening failed — continuing."
+    failed_steps+=("firewall hardening (extra/setup_firewall.sh)")
+}
 
 # --------------------------------------------------- // Hyprland gesture plugins
 if confirm "Install hyprexpo (Mission Control-style overview) + hyprgrass (touchpad gestures)?"; then
-    "${scrDir}/extra/setup_hypr_gestures.sh"
+    "${scrDir}/extra/setup_hypr_gestures.sh" || {
+        print_log "WARNING: hyprpm gesture plugin setup failed — continuing."
+        failed_steps+=("gesture plugins (extra/setup_hypr_gestures.sh)")
+    }
 fi
 
 # --------------------------------------------------- // MAC randomization
-"${scrDir}/extra/setup_mac_randomization.sh"
+"${scrDir}/extra/setup_mac_randomization.sh" || {
+    print_log "WARNING: MAC randomization drop-in failed — continuing."
+    failed_steps+=("MAC randomization (extra/setup_mac_randomization.sh)")
+}
 
 # --------------------------------------------------- // sshd
-"${scrDir}/extra/disable_sshd.sh"
+# Opt-in, and skipped outright over SSH: disabling sshd is what you want on a
+# desktop that never takes inbound connections, but doing it unprompted to a
+# machine you are installing onto REMOTELY drops the very session running
+# this script, mid-install.
+if [[ "${HYKR_OVER_SSH}" == "1" ]]; then
+    print_log "Running over SSH — leaving sshd enabled (disabling it would cut this session)."
+    print_log "  To turn it off later, once you're at the machine: ${scrDir}/extra/disable_sshd.sh"
+elif confirm "Disable sshd (less attack surface on a machine that takes no inbound SSH)?"; then
+    "${scrDir}/extra/disable_sshd.sh" || {
+        print_log "WARNING: disabling sshd failed — continuing."
+        failed_steps+=("disable sshd (extra/disable_sshd.sh)")
+    }
+fi
 
 # --------------------------------------------------- // USBGuard
-# Opt-in, unlike the steps above -- a policy generated without your
+# Opt-in, like the sshd step above -- a policy generated without your
 # keyboard/trackpad connected can lock out USB input on next boot.
 if confirm "Enable usbguard (USB device allow-listing -- protects against a plugged-in device while the laptop is unattended)?"; then
-    "${scrDir}/extra/setup_usbguard.sh"
+    "${scrDir}/extra/setup_usbguard.sh" || {
+        print_log "WARNING: usbguard setup failed — continuing."
+        failed_steps+=("usbguard (extra/setup_usbguard.sh)")
+    }
+fi
+
+if [[ ${#failed_steps[@]} -gt 0 ]]; then
+    print_log ""
+    print_log "Install finished, but these steps failed and were skipped:"
+    for step in "${failed_steps[@]}"; do
+        print_log "  - ${step}"
+    done
+    print_log "Everything else was applied. Re-run the named script once you've"
+    print_log "sorted out why it failed."
 fi
 
 print_log "Install complete. Reboot to start SDDM / Hyprland."

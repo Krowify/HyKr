@@ -14,14 +14,30 @@ Singleton {
     property var connectedDevices: []
     property var pairedDevices: []
 
+    // Set by BluetoothPanel from its own visibility. The dock bar itself only
+    // ever reads `powered` (for the icon colour); connectedDevices/
+    // pairedDevices are read exclusively by the panel. Enumerating them on
+    // every tick meant two extra bluetoothctl processes -- each a fresh D-Bus
+    // client -- every 4 seconds, forever, for a list nobody was looking at.
+    property bool detailsWanted: false
+
+    // Repopulate immediately on open rather than waiting up to one tick, so
+    // the panel doesn't flash an empty device list.
+    onDetailsWantedChanged: if (detailsWanted) devicesProc.running = true
+
     function refresh() {
         powerProc.running = true
-        devicesProc.running = true
+        if (root.detailsWanted)
+            devicesProc.running = true
     }
 
     function togglePower() {
         Quickshell.execDetached(["bluetoothctl", "power", root.powered ? "off" : "on"])
         refreshTimer.restart()
+        // Powering off drops every connection, so the list the panel is
+        // showing is stale the moment this runs.
+        if (root.detailsWanted)
+            devicesProc.running = true
     }
 
     function openManager() {

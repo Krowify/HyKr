@@ -25,8 +25,14 @@
 WALLPAPER_DIR="$HOME/wallpapers"
 ROFI_GRID_THEME="$HOME/.config/rofi/wallpaper-grid.rasi"
 
+# pywallpaper.jpg is excluded: apply_wallpaper.sh writes a copy of
+# whatever you just picked to ~/wallpapers/pywallpaper.jpg (it is the
+# path wal/colorschemes/dark/ywal16.json points at), so listing it here
+# showed your last pick a second time, under a name that isn't a
+# wallpaper in its own right.
 wallpapers() {
-    find -L "${WALLPAPER_DIR}" -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | sort
+    find -L "${WALLPAPER_DIR}" -type f ! -name 'pywallpaper.jpg' \
+        \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | sort
 }
 
 pick_with_rofi() {

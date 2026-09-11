@@ -14,8 +14,17 @@ Singleton {
     property int volume: 0
     property bool muted: false
 
+    // Set by VolumePanel from its own visibility. The dock bar shows only the
+    // mute state; the numeric volume and the slider are panel-only. setVolume
+    // updates root.volume locally, so the slider stays correct while open
+    // without needing the poll to confirm it.
+    property bool detailsWanted: false
+
+    onDetailsWantedChanged: if (detailsWanted) volumeProc.running = true
+
     function refresh() {
-        volumeProc.running = true
+        if (root.detailsWanted)
+            volumeProc.running = true
         muteProc.running = true
     }
 

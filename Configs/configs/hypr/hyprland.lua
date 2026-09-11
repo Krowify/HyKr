@@ -54,6 +54,16 @@ require("generated-theme")
 -- which keeps the same env value and config path/format.
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 
+-- Cursor theme. gtk-{3,4}.0/settings.ini already set
+-- gtk-cursor-theme-name=Bibata-Modern-Classic, but that only reaches GTK
+-- apps -- Hyprland's own pointer, and every Qt/Wayland-native client, read
+-- XCURSOR_THEME/XCURSOR_SIZE from the environment instead. Without these the
+-- installed cursor theme (illogical-impulse-bibata-modern-classic-bin, in
+-- pkg_core.lst) applied to roughly half the desktop and the rest fell back
+-- to default Adwaita.
+hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("XCURSOR_SIZE", "24")
+
 -- Pywal border colors always win over the active theme's border colors,
 -- same as every other "last write wins" surface in this repo (kitty,
 -- starship, spicetify) -- var_color4/var_backgroundCol come from the

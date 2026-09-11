@@ -313,12 +313,30 @@ PanelWindow {
         }
     }
 
+    // The only consumers of clock.now render "hh:mm" and "ddd d" -- neither
+    // changes more than once a minute, so a 1000 ms repeat was waking the
+    // shell (and repainting) 60x more often than the display could possibly
+    // differ. That is exactly the sort of idle wakeup that costs battery on
+    // the machine this theme exists for. Instead: fire once, at the next
+    // minute boundary, then re-arm for the following one. `repeat: false`
+    // plus a recomputed interval keeps it aligned to :00 seconds rather
+    // than drifting by however long the shell took to start.
     Timer {
         id: clock
         property date now: new Date()
-        interval: 1000
+
+        function msToNextMinute() {
+            const d = new Date();
+            return 60000 - (d.getSeconds() * 1000 + d.getMilliseconds());
+        }
+
+        interval: msToNextMinute()
         running: true
-        repeat: true
-        onTriggered: now = new Date()
+        repeat: false
+        onTriggered: {
+            now = new Date();
+            interval = msToNextMinute();
+            restart();
+        }
     }
 }

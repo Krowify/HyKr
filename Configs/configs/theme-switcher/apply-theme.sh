@@ -30,6 +30,14 @@ OUT="$HOME/.config/hypr/generated-theme.lua"
 # into the repo" to "real, independent copy" the first time a theme is
 # applied, so from then on it's fully owned by the theme switcher, same
 # as it is for anyone who installs this repo standalone.
+# -L on the copy, not just -r: some tracked files under these trees are
+# themselves relative symlinks back into the repo (themes/minimal/wallpapers/
+# minimal.png -> ../../../../../../Source/wallpapers/...). A plain `cp -r`
+# preserves an inner symlink as a symlink, and that relative path resolves
+# to somewhere above $HOME once the tree no longer lives in the repo --
+# i.e. the minimal theme's default wallpaper would silently become a
+# dangling link the first time a theme was applied. -L copies the pointed-at
+# file instead, so the detached copy is genuinely self-contained.
 de_symlink() {
   local path="$1"
   [[ -L "$path" ]] || return 0
@@ -37,15 +45,22 @@ de_symlink() {
   real="$(readlink -f "$path")"
   rm -f "$path"
   if [[ -d "$real" ]]; then
-    cp -r "$real" "$path"
+    cp -rL "$real" "$path"
   elif [[ -f "$real" ]]; then
-    cp "$real" "$path"
+    cp -L "$real" "$path"
   fi
 }
+# theme-switcher itself belongs in this list: matugen's config.toml writes
+# themes/dynamic/colors.json, and the dynamic_colors branch below copies
+# that over $COLORS for any other such theme (laptop). Both are files this
+# repo tracks, so while ~/.config/theme-switcher was still a symlink those
+# writes landed on tracked files in the git checkout -- a permanently dirty
+# tree, and a `git pull` that refuses with "local changes would be
+# overwritten". Exactly the failure the rest of this list exists to prevent.
 for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
          "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
          "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
-         "$HOME/.config/gtk-3.0" \
+         "$HOME/.config/gtk-3.0" "$HOME/.config/theme-switcher" \
          "$HOME/.config/spicetify" "$HOME/.config/quickshell"; do
   de_symlink "$p"
 done
@@ -586,10 +601,24 @@ if [[ -f "$KITTY_TPL" ]]; then
     -e "s/{{font_family_bold}}/$font_family_bold/g" \
     "$KITTY_TPL" > "$KITTY_OUT"
 
-  for s in /tmp/kitty.sock-*; do
-    [[ -S "$s" ]] || continue
-    kitty @ --to "unix:$s" set-colors -a "$KITTY_OUT" >/dev/null 2>&1 || true
-  done
+  # Recolor already-open kitty windows. This used to glob /tmp/kitty.sock-*,
+  # which never matched anything: kitty.conf's listen_on is
+  # unix:$XDG_RUNTIME_DIR/kitty-{kitty_pid}, so the whole loop was dead and a
+  # theme switch only ever reached newly-opened windows. Read each running
+  # kitty's own KITTY_LISTEN_ON out of /proc instead of reconstructing the
+  # path here -- same approach hypr/apply_wallpaper.sh already uses, and it
+  # stays correct if listen_on is ever changed again.
+  if command -v kitty >/dev/null 2>&1; then
+    for pid in $(pgrep -x kitty || true); do
+      # `|| true`: this script runs under `set -euo pipefail`, and a kitty
+      # window closed between the pgrep above and this read makes the
+      # pipeline fail -- which would abort the whole theme apply partway
+      # through, before waybar/swaync had been restarted.
+      sock="$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^KITTY_LISTEN_ON=//p' || true)"
+      [[ -n "$sock" ]] || continue
+      kitty @ --to "$sock" set-colors --all -- "$KITTY_OUT" >/dev/null 2>&1 || true
+    done
+  fi
 fi
 
 # --------- Waybar (theme-specific layout + colors) ----------
@@ -645,7 +674,10 @@ fi
 # --------- Starship (theme-aware) ----------
 STARSHIP_TPL="$BASE/templates/starship.toml.tpl"
 STARSHIP_OUT="$HOME/.config/starship.toml"
-STARSHIP_LOG="/tmp/theme-switcher.log"
+# Not /tmp: a predictable name in a world-writable directory is a file any
+# other local user can pre-create (as a symlink to something of yours) before
+# this script ever appends to it. XDG_RUNTIME_DIR is 0700 and per-user.
+STARSHIP_LOG="${XDG_RUNTIME_DIR:-$HOME/.cache}/theme-switcher.log"
 
 if [[ -f "$STARSHIP_TPL" ]]; then
   mkdir -p "$HOME/.config"

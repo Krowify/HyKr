@@ -17,6 +17,9 @@
 # (generated theme output, hyprmod's own files, etc.) -- it only ever
 # copies a repo-tracked file over its live counterpart, and only for
 # files that actually differ or are missing live.
+#
+# One class of file is tracked in the repo AND rewritten at runtime, so it
+# needs an explicit exemption to keep that promise true: see SKIP_PATTERNS.
 
 set -e
 
@@ -30,6 +33,27 @@ APPLY=0
 [[ "${1:-}" == "--apply" ]] && APPLY=1
 
 drift_found=0
+
+# Tracked files that are legitimately rewritten on this machine at runtime.
+# Reporting them as "drift" is noise, and copying the repo's version over
+# them with --apply would throw away generated state -- exactly what the
+# header above promises not to do.
+#
+# theme-switcher/themes/*/colors.json: for a dynamic_colors theme (dynamic,
+# laptop) matugen regenerates this from the current wallpaper on every apply.
+# The committed copy is a starting point, not the truth on a live install.
+SKIP_PATTERNS=(
+    'themes/*/colors.json'
+)
+
+should_skip() {
+    local rel="$1" pattern
+    for pattern in "${SKIP_PATTERNS[@]}"; do
+        # shellcheck disable=SC2053 -- glob match is the point
+        [[ "$rel" == $pattern ]] && return 0
+    done
+    return 1
+}
 
 # One tracked file vs its live counterpart.
 check_file() {
@@ -75,6 +99,7 @@ for manifest in "${dotsDir}"/*.toml; do
     if [[ -d "$src" ]]; then
         while IFS= read -r -d '' f; do
             rel="${f#"$src"/}"
+            should_skip "$rel" && continue
             check_file "$f" "${dst}/${rel}"
         done < <(find "$src" -type f -print0)
     else

@@ -18,9 +18,20 @@ Singleton {
     property bool vpnConnected: false
     property string vpnServer: ""
 
+    // Set by NetworkPanel from its own visibility. The dock bar reads only
+    // connectionType (the wifi/ethernet icon); every vpn* property is
+    // panel-only. vpnProc shells out to protonvpn-cli, which spawns a Python
+    // interpreter -- doing that every 5 seconds forever, to populate a panel
+    // that is closed almost all of the time, was the single most expensive
+    // thing this shell did at idle.
+    property bool detailsWanted: false
+
+    onDetailsWantedChanged: if (detailsWanted) vpnProc.running = true
+
     function refresh() {
         statusProc.running = true
-        vpnProc.running = true
+        if (root.detailsWanted)
+            vpnProc.running = true
     }
 
     function openNetworkManager() {

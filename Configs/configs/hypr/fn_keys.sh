@@ -25,7 +25,12 @@ kbd_device() {
 
 kbd_light() {
     local dev step="${2:-10}"
-    dev="$(kbd_device)" || { echo "fn_keys.sh: brightnessctl not installed" >&2; return 0; }
+    command -v brightnessctl >/dev/null 2>&1 || { echo "fn_keys.sh: brightnessctl not installed" >&2; return 0; }
+    # Not `dev="$(kbd_device)" || ...`: that takes kbd_device's exit status,
+    # which is grep's -- so "brightnessctl is installed but this machine
+    # exposes no kbd_backlight device" reported the wrong cause and the
+    # specific message below was unreachable. Check the two separately.
+    dev="$(kbd_device || true)"
     [[ -n "$dev" ]] || { echo "fn_keys.sh: no kbd_backlight device -- this laptop likely drives its keyboard light in firmware, not via sysfs" >&2; return 0; }
 
     case "${1:-}" in
@@ -83,7 +88,13 @@ touchpad_toggle() {
 airplane_toggle() {
     command -v nmcli >/dev/null 2>&1 || { echo "fn_keys.sh: nmcli not installed" >&2; return 0; }
 
-    if nmcli radio all 2>/dev/null | grep -q enabled; then
+    # `nmcli radio all` prints four fields -- WIFI-HW WIFI WWAN-HW WWAN -- and
+    # WIFI-HW is the *hardware* rfkill state, which stays "enabled" after
+    # `nmcli radio all off`. Grepping the whole table therefore always matched,
+    # so every press took the "turn off" branch and airplane mode could never
+    # be turned back off. Ask for the one field that tracks the software
+    # state, terse so there's no header row to match either.
+    if [[ "$(nmcli -t -f WIFI radio all 2>/dev/null)" == "enabled" ]]; then
         nmcli radio all off >/dev/null 2>&1
         command -v bluetoothctl >/dev/null 2>&1 && bluetoothctl power off >/dev/null 2>&1
         echo "airplane mode: on" >&2

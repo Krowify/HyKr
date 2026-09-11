@@ -12,6 +12,13 @@ import "../services" as Services
 PanelWindow {
     id: root
 
+    // Drive bluetoothctl device enumeration from this panel's own
+    // visibility: it is the only consumer of that data, and polling for it
+    // while the panel is closed was pure idle battery drain. Component.onCompleted
+    // seeds it so the service agrees with reality before the first toggle.
+    onVisibleChanged: Services.BluetoothService.detailsWanted = root.visible
+    Component.onCompleted: Services.BluetoothService.detailsWanted = root.visible
+
     property var anchorScreen
     property real barHeight: 34
     property real rightOffset: 90

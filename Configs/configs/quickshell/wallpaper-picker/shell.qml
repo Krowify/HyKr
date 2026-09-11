@@ -103,7 +103,11 @@ PanelWindow {
     Process {
         id: findProc
         command: ["sh", "-c",
-            `find -L "${configs.wallpaper_path}" -type f \\( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \\) | sort`]
+            // ! -name pywallpaper.jpg: apply_wallpaper.sh drops a copy of the
+            // last pick at ~/wallpapers/pywallpaper.jpg (the path
+            // wal/colorschemes/dark/ywal16.json refers to), which otherwise
+            // shows up in this grid as a duplicate of whatever you just chose.
+            `find -L "${configs.wallpaper_path}" -type f ! -name "pywallpaper.jpg" \\( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \\) | sort`]
         stdout: SplitParser {
             onRead: data => {
                 if (data.length === 0)

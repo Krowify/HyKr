@@ -6,6 +6,13 @@ import "../services" as Services
 PanelWindow {
     id: root
 
+    // Drive the pactl volume read from this panel's own
+    // visibility: it is the only consumer of that data, and polling for it
+    // while the panel is closed was pure idle battery drain. Component.onCompleted
+    // seeds it so the service agrees with reality before the first toggle.
+    onVisibleChanged: Services.AudioService.detailsWanted = root.visible
+    Component.onCompleted: Services.AudioService.detailsWanted = root.visible
+
     property var anchorScreen
     property real barHeight: 34
     // Distance from the bar's right edge to roughly under the volume

@@ -31,7 +31,11 @@ case "$chosen" in
         quickshell -c laptop ipc call dock toggleDnd >/dev/null 2>&1 || swaync-client --toggle-dnd
         ;;
     *"Night Light"*)
-        pkill hyprsunset || hyprsunset
+        # -t 5000 to match the Super+Shift+N bind in hyprland.lua -- without it
+        # this menu entry started hyprsunset at its default temperature, so the
+        # key and the menu produced visibly different results for the same
+        # nominal action.
+        pkill hyprsunset || hyprsunset -t 5000
         ;;
     *"Caffeine"*)
         pkill hypridle || hypridle
