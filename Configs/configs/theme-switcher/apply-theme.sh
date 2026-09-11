@@ -830,7 +830,6 @@ OBSIDIAN_TPL="$BASE/templates/obsidian.css.tpl"
 OBSIDIAN_SNIPPET_OUT="$HOME/obsidian/.obsidian/snippets/obsidian.css"
 
 if [[ -f "$OBSIDIAN_TPL" ]]; then
-  echo "obsidian block entered"
   mkdir -p "$(dirname "$OBSIDIAN_SNIPPET_OUT")"
 
   accent_alt_safe="${accent_alt_hex:-$accent_hex}"
