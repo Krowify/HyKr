@@ -104,7 +104,15 @@ for manifest in "${dotsDir}"/*.toml; do
     if [[ -d "$src" ]]; then
         while IFS= read -r -d '' f; do
             rel="${f#"$src"/}"
-            should_skip "$rel" && continue
+            # Skip a generated file only when one already exists locally. If
+            # it is missing entirely it still needs seeding from the repo's
+            # committed default -- skipping unconditionally meant a newly
+            # added generated file (quickshell/laptop/colors.json) never
+            # landed on an existing install at all, and the app reading it
+            # silently fell back to its built-in default forever.
+            if [[ -e "${dst}/${rel}" ]] && should_skip "$rel"; then
+                continue
+            fi
             check_file "$f" "${dst}/${rel}"
         done < <(find "$src" -type f -print0)
     else
