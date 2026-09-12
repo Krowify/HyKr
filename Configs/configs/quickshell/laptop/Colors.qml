@@ -44,8 +44,20 @@ Singleton {
     // #383838; anything already mid-tone or brighter is left alone.
     readonly property real minLuminance: 0.22
 
-    readonly property color accent: root.ensureContrast(
-        root.isHex(adapter.accent) ? adapter.accent : root.fallbackAccent)
+    // Two steps on purpose. adapter.accent is a JS *string*; a colour's
+    // .r/.g/.b only exist on an actual QML color value, so handing the raw
+    // string to ensureContrast() made luminance() read undefined channels,
+    // return NaN, and produce Qt.rgba(NaN, NaN, NaN) -- which renders black.
+    // Assigning through a `property color` first performs the coercion, so
+    // the arithmetic below gets real channels. (The bug hid at first: while
+    // colors.json was missing, isHex() failed and the fallback -- already a
+    // color -- took the working path, so it only appeared once a generated
+    // palette actually existed.)
+    readonly property color rawAccent: root.isHex(adapter.accent)
+        ? adapter.accent
+        : root.fallbackAccent
+
+    readonly property color accent: root.ensureContrast(root.rawAccent)
 
     function isHex(s) {
         return typeof s === "string" && /^#[0-9a-fA-F]{6}$/.test(s);
@@ -64,6 +76,11 @@ Singleton {
     // which Qt.lighter leaves untouched.
     function ensureContrast(c) {
         const L = root.luminance(c);
+        // Anything that isn't a real colour would otherwise propagate NaN
+        // through the mix below and render black. Hand it back untouched and
+        // let the caller's own coercion decide.
+        if (!isFinite(L))
+            return c;
         if (L >= root.minLuminance)
             return c;
         const t = (root.minLuminance - L) / (1 - L);
