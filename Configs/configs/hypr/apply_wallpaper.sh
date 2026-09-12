@@ -117,6 +117,25 @@ fi
 # ~/.cache -- require() only resolves modules under the config root.
 [ -f ~/.cache/wal/colors-hyprland.lua ] && cat ~/.cache/wal/colors-hyprland.lua > ~/.config/hypr/colors-hyprland.lua
 
+# ...and tell the running Hyprland about it. Writing the file alone changes
+# nothing live: hyprland.lua does require("colors-hyprland") once, at config
+# parse time, so the border keeps whatever colour it had at the last reload.
+# apply-theme.sh gets away without this because it ends in `hyprctl reload`;
+# a wallpaper pick never reloaded anything, which is why the active-window
+# border stayed on the previous wallpaper's accent while kitty, starship,
+# rofi and wofi all moved.
+#
+# `hyprctl keyword` rather than `hyprctl reload`: it takes effect instantly
+# and avoids re-parsing the whole config, which would also re-pin every
+# monitor (see hyprland.lua's note on why the monitor block is explicit).
+# The file write above is what makes it survive the next reload or relog.
+#
+# 0xff-prefixed, matching wal/templates/colors-hyprland.lua's own format.
+if command -v hyprctl >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+    hyprctl keyword general:col.active_border "0xff${color4#\#}" >/dev/null 2>&1 || true
+    hyprctl keyword general:col.inactive_border "0xff${background#\#}" >/dev/null 2>&1 || true
+fi
+
 if [ -f ~/.cache/wal/spicetify-color.ini ]; then
     mkdir -p ~/.config/spicetify
     cat ~/.cache/wal/spicetify-color.ini > ~/.config/spicetify/color.ini
