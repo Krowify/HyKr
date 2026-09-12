@@ -511,6 +511,23 @@ if [[ -f "$WPICKER_CONFIG" ]]; then
      "$WPICKER_CONFIG" > "$tmp_wpicker" && mv "$tmp_wpicker" "$WPICKER_CONFIG"
 fi
 
+# --------- Quickshell laptop dock ----------
+# The dock's accent (the active-workspace pill, top left) instead of a
+# hardcoded crimson. Only meaningful under a "quickshell-dock" theme, but
+# written unconditionally and cheaply so switching back to the Laptop theme
+# doesn't show a stale colour from two themes ago -- same reason the waybar
+# templates are rendered even for themes that don't run waybar.
+#
+# Its FileView watches this path, so the running dock repaints on write;
+# nothing needs restarting. hypr/apply_wallpaper.sh writes the same file from
+# pywal's $color4 on a wallpaper pick, last write wins, exactly as
+# kitty/starship already work.
+QS_DOCK_COLORS="$HOME/.config/quickshell/laptop/colors.json"
+
+if [[ -d "$(dirname "$QS_DOCK_COLORS")" ]]; then
+  printf '{\n    "accent": "%s"\n}\n' "$accent_hex" > "$QS_DOCK_COLORS"
+fi
+
 # --------- Fastfetch ----------
 FASTFETCH_TPL="$BASE/templates/fastfetch/config.jsonc.tpl"
 FASTFETCH_DIR="$HOME/.config/fastfetch"

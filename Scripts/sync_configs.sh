@@ -42,8 +42,13 @@ drift_found=0
 # theme-switcher/themes/*/colors.json: for a dynamic_colors theme (dynamic,
 # laptop) matugen regenerates this from the current wallpaper on every apply.
 # The committed copy is a starting point, not the truth on a live install.
+#
+# quickshell/laptop/colors.json: the dock's accent, rewritten by both
+# apply-theme.sh and apply_wallpaper.sh from the live palette. Same story --
+# the committed value is only the out-of-the-box default.
 SKIP_PATTERNS=(
     'themes/*/colors.json'
+    'laptop/colors.json'
 )
 
 should_skip() {

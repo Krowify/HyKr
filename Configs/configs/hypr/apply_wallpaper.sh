@@ -97,6 +97,22 @@ if [ -f "$WOFI_TPL" ]; then
         "$WOFI_TPL" > "$WOFI_OUT"
 fi
 
+# Quickshell laptop dock accent (the active-workspace pill). $color4 is the
+# same pywal slot the Hyprland border, rofi and wofi accents above already
+# use, so the dock matches them rather than drifting on its own. The dock's
+# FileView watches this file, so it repaints immediately -- the equivalent of
+# the live kitty recolour a few lines up.
+#
+# Skipped while ~/.config/quickshell is still a symlink into the repo (a
+# fresh install where no theme has been applied and the picker has never
+# run): writing through it would modify a tracked file. apply-theme.sh
+# de-symlinks it and writes the same value on the next theme apply.
+QS_DOCK_COLORS="$HOME/.config/quickshell/laptop/colors.json"
+
+if [ ! -L "$HOME/.config/quickshell" ] && [ -d "$(dirname "$QS_DOCK_COLORS")" ]; then
+    printf '{\n    "accent": "%s"\n}\n' "$color4" > "$QS_DOCK_COLORS"
+fi
+
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
 # ~/.cache -- require() only resolves modules under the config root.
 [ -f ~/.cache/wal/colors-hyprland.lua ] && cat ~/.cache/wal/colors-hyprland.lua > ~/.config/hypr/colors-hyprland.lua
