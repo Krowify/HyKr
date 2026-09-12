@@ -1,6 +1,14 @@
 # ~/.zshrc
 [[ $- != *i* ]] && return
 
+# Treat `#` as starting a comment at an interactive prompt. bash does this by
+# default and zsh does not, so without it any command pasted with a trailing
+# note -- `ls -ld ~/.config/foo  # should be a real dir` -- passes the comment
+# to the command as arguments, and you get a fistful of "No such file or
+# directory" errors for the individual words. Costs nothing and removes a
+# papercut that hits every copied-from-somewhere command.
+setopt interactive_comments
+
 # Tab completion -- unlike bash (wired up by the bash-completion package's
 # own /etc/bash.bashrc hook), zsh needs this called explicitly or completion
 # falls back to filename-only.

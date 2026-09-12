@@ -12,3 +12,24 @@ Configs/configs/hypr/hyprland-gui.lua
 Configs/configs/theme-switcher/current-theme.json
 Configs/configs/theme-switcher/themes/*/current-wallpaper.txt
 Source/wallpapers/pywallpaper.jpg
+
+# Key material. Nothing matching these is tracked today and nothing should
+# be -- the rules exist so a stray `git add -A` in the repo root can't sweep
+# up a private key that happens to be sitting there. That is not theoretical:
+# an ssh keypair was found untracked in this repo's root, one careless add
+# away from being published to a public remote.
+#
+# gitignore only covers UNTRACKED files, so this is a safety net, not a
+# containment fix. A key belongs in ~/.ssh (0600), not in a dotfiles repo
+# that gets pushed to GitHub. If one is ever actually committed, rotate it --
+# removing the commit does not un-publish it.
+key
+key.pub
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
