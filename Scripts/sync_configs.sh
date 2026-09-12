@@ -34,21 +34,37 @@ APPLY=0
 
 drift_found=0
 
-# Tracked files that are legitimately rewritten on this machine at runtime.
-# Reporting them as "drift" is noise, and copying the repo's version over
-# them with --apply would throw away generated state -- exactly what the
-# header above promises not to do.
+# Tracked files that are legitimately rewritten on this machine at runtime by
+# apply-theme.sh / apply_wallpaper.sh. The repo copy of each is only a seed --
+# the truth on a live install is whatever the last theme apply or wallpaper
+# pick generated. Reporting them as "drift" is noise, and copying the repo's
+# version over them with --apply throws away your actual theming, which is
+# exactly what the header above promises not to do.
 #
-# theme-switcher/themes/*/colors.json: for a dynamic_colors theme (dynamic,
-# laptop) matugen regenerates this from the current wallpaper on every apply.
-# The committed copy is a starting point, not the truth on a live install.
+# Entries are "<manifest>:<path within it>" because the same filename means
+# different things per app: waybar/config and wlogout/layout are generated,
+# but wofi/config is a hand-written file that SHOULD be synced. A bare
+# filename pattern could not tell those apart.
 #
-# quickshell/laptop/colors.json: the dock's accent, rewritten by both
-# apply-theme.sh and apply_wallpaper.sh from the live palette. Same story --
-# the committed value is only the out-of-the-box default.
+# Only applies to a file that already exists locally -- a missing one is still
+# seeded from the repo, so a fresh install gets its defaults.
 SKIP_PATTERNS=(
-    'themes/*/colors.json'
-    'laptop/colors.json'
+    'fastfetch:config.jsonc'
+    'gtk-4.0:gtk.css'
+    'hypr:hyprlock.conf'
+    'kitty:current-theme.conf'
+    'quickshell:laptop/colors.json'
+    'quickshell:wallpaper-picker/config.json'
+    'spicetify:color.ini'
+    'starship:starship.toml'
+    'swaync:config.json'
+    'swaync:style.css'
+    'theme-switcher:themes/*/colors.json'
+    'waybar:config'
+    'waybar:style.css'
+    'wlogout:layout'
+    'wlogout:style.css'
+    'wofi:style.css'
 )
 
 should_skip() {
@@ -101,6 +117,8 @@ for manifest in "${dotsDir}"/*.toml; do
 
     print_log "Detached: ${dst} (was a symlink to ${src}, now a real copy)"
 
+    app="$(basename "$manifest" .toml)"
+
     if [[ -d "$src" ]]; then
         while IFS= read -r -d '' f; do
             rel="${f#"$src"/}"
@@ -110,12 +128,18 @@ for manifest in "${dotsDir}"/*.toml; do
             # added generated file (quickshell/laptop/colors.json) never
             # landed on an existing install at all, and the app reading it
             # silently fell back to its built-in default forever.
-            if [[ -e "${dst}/${rel}" ]] && should_skip "$rel"; then
+            if [[ -e "${dst}/${rel}" ]] && should_skip "${app}:${rel}"; then
                 continue
             fi
             check_file "$f" "${dst}/${rel}"
         done < <(find "$src" -type f -print0)
     else
+        # Single-file manifest (starship.toml, .zshrc): the skip check has to
+        # happen here too, or a wholly generated file like starship.toml is
+        # clobbered on every --apply.
+        if [[ -e "$dst" ]] && should_skip "${app}:$(basename "$src")"; then
+            continue
+        fi
         check_file "$src" "$dst"
     fi
 done

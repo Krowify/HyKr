@@ -10,15 +10,21 @@
 # measure its height for centring. Normalising the sprite into a fixed box
 # here gets the same placement without ever invoking fastfetch recursively.
 #
-# Sprite names come from pokeget; entries may carry its flags (-s for shiny,
-# --mega-y and friends for alternate forms). `pokeget --help` lists them.
-POKEMON_LIST=(
-  victini
-  "mimikyu -s"
-  celebi
-  furret
-  "mewtwo --mega-y"
-)
+# pokeget embeds sprites for the WHOLE Pokedex in its own binary -- nothing is
+# downloaded and there is no sprite pack to install -- so "more variety" is a
+# config question, not a fetching one.
+#
+# Empty list (the default) means pokeget's own `random`, drawing from every
+# Pokemon it ships. Fill the list instead to restrict the pool to favourites;
+# entries may carry pokeget's flags (-s shiny, --mega-y and other alternate
+# forms, --alolan). `pokeget --help` lists them.
+POKEMON_LIST=()
+# POKEMON_LIST=(victini "mimikyu -s" celebi furret "mewtwo --mega-y")
+
+# Percent chance of rolling a shiny when drawing at random -- the real games
+# use ~1/4096, which you would never actually see. 0 disables it. Ignored when
+# POKEMON_LIST is non-empty, since entries there carry their own flags.
+SHINY_CHANCE=10
 
 WIDTH=38          # logo box width, in columns
 HEIGHT=16         # logo box height; roughly the module count in config.jsonc
@@ -37,7 +43,14 @@ fallback() {
 
 command -v pokeget >/dev/null 2>&1 || fallback
 
-sprite=$(pokeget ${POKEMON_LIST[RANDOM % ${#POKEMON_LIST[@]}]} --hide-name 2>/dev/null) || fallback
+if (( ${#POKEMON_LIST[@]} > 0 )); then
+  pick=${POKEMON_LIST[RANDOM % ${#POKEMON_LIST[@]}]}
+else
+  pick=random
+  (( SHINY_CHANCE > 0 && RANDOM % 100 < SHINY_CHANCE )) && pick="random -s"
+fi
+
+sprite=$(pokeget $pick --hide-name 2>/dev/null) || fallback
 [[ -n "$sprite" ]] || fallback
 
 # True printed width: strip SGR escapes first, or every colour code counts
