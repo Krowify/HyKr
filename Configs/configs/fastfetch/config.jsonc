@@ -10,10 +10,10 @@
     }
   },
   "logo": {
-    "type": "file",
-    "source": "~/.config/fastfetch/jirachi.txt",
+    "type": "command-raw",
+    "source": "$HOME/.config/fastfetch/pokemon-logo.sh",
     "padding": {
-      "top": 2,
+      "top": 0,
       "left": 2,
       "right": 4
     }

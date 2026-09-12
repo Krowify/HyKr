@@ -11,5 +11,6 @@ proton-vpn-gtk-app                                     # Official ProtonVPN Linu
 
 # --------------------------------------------------- // Utilities
 imagemagick                                            # provides `magick`, used (soft-guarded, so silently skipped without it) by waybar's colorpicker.sh to generate a swatch preview thumbnail
+pokeget                                                # random Pokemon sprites, used as fastfetch's logo via Configs/configs/fastfetch/pokemon-logo.sh ("command-raw" in config.jsonc). Optional -- that script falls back to jirachi.txt when pokeget isn't installed, so the fetch still renders without it.
 lazygit                                                # terminal git UI, run from kitty
 fzf                                                    # fuzzy history/file search (Ctrl+R and friends) -- wired into Configs/configs/zsh/.zshrc
