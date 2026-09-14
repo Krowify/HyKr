@@ -288,7 +288,7 @@ IFS=$'\001' read -r \
 # theme.json -> one shot (same \001 separator, same reason as above)
 IFS=$'\001' read -r \
   border_size gaps_out rounding blur_enabled_bool blur_size blur_passes blur_vibrancy default_wallpaper \
-  font_family font_family_bold border_gradient border_gradient_angle qs_config \
+  font_family font_family_bold qs_config \
   logo_type logo_source logo_width logo_height \
   < <(jq -r '
     [
@@ -303,12 +303,6 @@ IFS=$'\001' read -r \
       (.fonts.family // "JetBrainsMono Nerd Font"),
       (.fonts.family_bold // "JetBrainsMono Nerd Font Bold"),
 
-      # Active-window border as an accent -> accent_alt gradient rather
-      # than one flat colour. Opt-in per theme (Hyperspace uses it), since
-      # on a palette whose two accents are nearly identical a gradient is
-      # just a flat border that cost more to compute.
-      (.hypr.border_gradient // false),
-      (.hypr.border_gradient_angle // 45),
 
       # Which `quickshell -c <name>` config holds the bar for this theme,
       # read whenever .bar is "quickshell-dock". Defaults to "laptop" so
@@ -370,16 +364,13 @@ layout="dwindle"
 border_active="$accent"
 border_inactive="$bg"
 
-# Optional gradient border (theme.json: hypr.border_gradient). Hyprland's
-# col.active_border takes "<colour> <colour> <angle>deg" wherever it takes
-# a single colour, so this stays one string and every consumer below --
-# the generated-theme.lua render AND the colors-hyprland.lua bridge that
-# actually wins at runtime (see hypr/hyprland.lua) -- keeps using it
-# unchanged. accent_alt is the second stop, so the gradient tracks the
-# wallpaper at both ends rather than fading into something fixed.
-if [[ "$border_gradient" == "true" ]]; then
-  border_active="$border_active $(hex_to_rgba_ff "${accent_alt_hex:-$accent_hex}") ${border_gradient_angle}deg"
-fi
+# border_active stays a SINGLE colour. Hyprland's Lua config validates
+# col.active_border as one colour value, not as hyprlang's
+# "<colour> <colour> <angle>deg" gradient string -- passing a gradient here
+# made both consumers reject it ("invalid color"): generated-theme.lua's own
+# col block, and hyprland.lua's later assignment from var_color4 out of
+# colors-hyprland.lua. A gradient, if it's ever wanted, needs whatever form
+# the Lua API itself takes for one, not the hyprlang string.
 
 active_opacity="0.9"
 inactive_opacity="0.85"

@@ -14,7 +14,7 @@ whatever the last apply generated.
 
 | Surface | How |
 | --- | --- |
-| Window borders | Accent + accent_alt as a 45° gradient on the active border, via `~/.config/hypr/colors-hyprland.lua` (see `templates/hyprland.lua.tpl`) |
+| Window borders | The wallpaper's accent on the active border, via `~/.config/hypr/colors-hyprland.lua` (see `templates/hyprland.lua.tpl`) |
 | Bar / notifications | Its own Quickshell shell, `quickshell -c hyperspace` (`"bar": "quickshell-dock"`) — see `Configs/configs/quickshell/hyperspace/` |
 | Wofi / rofi | The shared `templates/wofi.css.tpl` and `templates/rofi/*.tpl`, re-rendered on both a theme switch and a plain wallpaper pick |
 | Lock screen | `templates/hyprlock.conf.tpl` — shows the theme's own wallpaper, blurred |
