@@ -239,8 +239,19 @@ hex_lerp() {
 
 # ---------------- Cache JSON reads (ONLY 2 jq calls total) ----------------
 
-# colors.json -> one shot
-IFS=$'\t' read -r \
+# colors.json -> one shot.
+#
+# Separator is \001, not a tab, and the jq program joins on it explicitly
+# rather than rendering a TSV. Tab is an IFS *whitespace* character, so
+# bash collapses a run of them into one delimiter -- meaning any field that
+# came out empty (a colors.json without an `orange`, a theme.json without a
+# `default_wallpaper`) silently shifted every later value one variable to
+# the left. Caught the hard way: a theme with no fastfetch logo of its own
+# ended up with the logo's *width* in its `source` and an empty `height`,
+# i.e. invalid JSON in the generated fastfetch config. \001 isn't IFS
+# whitespace, so empty fields stay empty and everything lands where it
+# should.
+IFS=$'\001' read -r \
   bg_hex accent_hex fg_hex fg_dim_hex bg_alt_hex surface_hex surface2_hex \
   red_hex green_hex yellow_hex blue_hex magenta_hex cyan_hex shadow_hex accent_alt_hex \
   pink_hex orange_hex teal_hex lavender_hex sky_hex overlay_hex border_active_hex border_inactive_hex \
@@ -271,13 +282,14 @@ IFS=$'\t' read -r \
       (.overlay // ""),
       (.border_active // .accent // ""),
       (.border_inactive // .surface // .bg_alt // "")
-    ] | @tsv
+    ] | map(tostring) | join("\u0001")
   ' "$COLORS")
 
-# theme.json -> one shot
-IFS=$'\t' read -r \
+# theme.json -> one shot (same \001 separator, same reason as above)
+IFS=$'\001' read -r \
   border_size gaps_out rounding blur_enabled_bool blur_size blur_passes blur_vibrancy default_wallpaper \
-  font_family font_family_bold \
+  font_family font_family_bold border_gradient border_gradient_angle qs_config \
+  logo_type logo_source logo_width logo_height \
   < <(jq -r '
     [
       (.hypr.border_size // 3),
@@ -289,8 +301,28 @@ IFS=$'\t' read -r \
       (.hypr.blur.vibrancy // 0.8),
       (.default_wallpaper // ""),
       (.fonts.family // "JetBrainsMono Nerd Font"),
-      (.fonts.family_bold // "JetBrainsMono Nerd Font Bold")
-    ] | @tsv
+      (.fonts.family_bold // "JetBrainsMono Nerd Font Bold"),
+
+      # Active-window border as an accent -> accent_alt gradient rather
+      # than one flat colour. Opt-in per theme (Hyperspace uses it), since
+      # on a palette whose two accents are nearly identical a gradient is
+      # just a flat border that cost more to compute.
+      (.hypr.border_gradient // false),
+      (.hypr.border_gradient_angle // 45),
+
+      # Which `quickshell -c <name>` config holds the bar for this theme,
+      # read whenever .bar is "quickshell-dock". Defaults to "laptop" so
+      # the Laptop theme keeps working without naming it.
+      (.quickshell.config // "laptop"),
+
+      # fastfetch logo. Default is the random-Pokemon script every other
+      # theme uses; a theme can point at an image of its own instead
+      # (Hyperspace ships one in its assets/).
+      (.fastfetch.logo.type // "command-raw"),
+      (.fastfetch.logo.source // ""),
+      (.fastfetch.logo.width // 38),
+      (.fastfetch.logo.height // 16)
+    ] | map(tostring) | join("\u0001")
   ' "$THEME_JSON")
 
 [[ -z "$bg_hex" ]] && { echo "colors.json missing .bg"; exit 1; }
@@ -337,6 +369,17 @@ layout="dwindle"
 
 border_active="$accent"
 border_inactive="$bg"
+
+# Optional gradient border (theme.json: hypr.border_gradient). Hyprland's
+# col.active_border takes "<colour> <colour> <angle>deg" wherever it takes
+# a single colour, so this stays one string and every consumer below --
+# the generated-theme.lua render AND the colors-hyprland.lua bridge that
+# actually wins at runtime (see hypr/hyprland.lua) -- keeps using it
+# unchanged. accent_alt is the second stop, so the gradient tracks the
+# wallpaper at both ends rather than fading into something fixed.
+if [[ "$border_gradient" == "true" ]]; then
+  border_active="$border_active $(hex_to_rgba_ff "${accent_alt_hex:-$accent_hex}") ${border_gradient_angle}deg"
+fi
 
 active_opacity="0.9"
 inactive_opacity="0.85"
@@ -407,6 +450,11 @@ fi
 
 # --------- Wallpaper - SWWW ----------
 wp_rel=""
+# Resolved below, and read again much later by the hyprlock render: a theme
+# whose lock screen shows the wallpaper (Hyperspace) needs the same absolute
+# path this block just put on screen, and "" is the honest answer when
+# nothing resolved -- hyprlock falls back to its `color` for an empty path.
+wp_abs=""
 
 if [[ -f "$THEME_PATH/current-wallpaper.txt" ]]; then
   wp_rel="$(cat "$THEME_PATH/current-wallpaper.txt" 2>/dev/null || true)"
@@ -435,6 +483,10 @@ if [[ -n "$wp_rel" ]]; then
       >/dev/null 2>&1 || true
   else
     echo "Warning: wallpaper not found: $wp_abs" >&2
+    # Don't hand a path that isn't there to the hyprlock render below --
+    # an empty one makes hyprlock fall back to a flat `color` background,
+    # a missing one makes it complain on every lock.
+    wp_abs=""
   fi
 fi
 
@@ -511,21 +563,56 @@ if [[ -f "$WPICKER_CONFIG" ]]; then
      "$WPICKER_CONFIG" > "$tmp_wpicker" && mv "$tmp_wpicker" "$WPICKER_CONFIG"
 fi
 
-# --------- Quickshell laptop dock ----------
-# The dock's accent (the active-workspace pill, top left) instead of a
-# hardcoded crimson. Only meaningful under a "quickshell-dock" theme, but
-# written unconditionally and cheaply so switching back to the Laptop theme
-# doesn't show a stale colour from two themes ago -- same reason the waybar
-# templates are rendered even for themes that don't run waybar.
+# --------- Quickshell dock colours ----------
+# The palette every Quickshell-based bar in this repo renders from, instead
+# of hardcoded colours in each delegate.
 #
-# Its FileView watches this path, so the running dock repaints on write;
-# nothing needs restarting. hypr/apply_wallpaper.sh writes the same file from
-# pywal's $color4 on a wallpaper pick, last write wins, exactly as
-# kitty/starship already work.
-QS_DOCK_COLORS="$HOME/.config/quickshell/laptop/colors.json"
+# Written for EVERY Quickshell dock config, not just the active theme's:
+# each config directory that already has a colors.json is one, so this
+# needs no list of theme names to stay current, and switching back to
+# another dock theme can't show it a palette from two themes ago. It's a
+# handful of bytes, and the same reason the waybar templates are rendered
+# even for themes that don't run waybar. (The wallpaper-picker config is
+# untouched -- its file is config.json, owned by the block further up.)
+#
+# Each dock's Colors.qml declares only the keys it actually reads, so the
+# rest are ignored: the Laptop dock takes `accent` alone out of this same
+# file, Hyperspace renders every surface from the whole palette.
+#
+# Their FileView watches the path, so a running dock repaints on write;
+# nothing needs restarting. hypr/apply_wallpaper.sh writes the same files
+# from pywal on a wallpaper pick, last write wins, exactly as kitty and
+# starship already work.
+write_qs_colors() {
+  local dir="$1"
+  [[ -d "$dir" ]] || return 0
+  cat > "$dir/colors.json" <<EOF
+{
+    "bg": "$bg_hex",
+    "surface": "$surface_hex",
+    "surface2": "$surface2_hex",
+    "fg": "$fg_hex",
+    "fg_dim": "$fg_dim_hex",
+    "accent": "$accent_hex",
+    "accent_alt": "${accent_alt_hex:-$accent_hex}",
+    "green": "$green_hex",
+    "red": "$red_hex"
+}
+EOF
+}
 
-if [[ -d "$(dirname "$QS_DOCK_COLORS")" ]]; then
-  printf '{\n    "accent": "%s"\n}\n' "$accent_hex" > "$QS_DOCK_COLORS"
+QS_BASE="$HOME/.config/quickshell"
+
+for qs_colors in "$QS_BASE"/*/colors.json; do
+  [[ -f "$qs_colors" ]] || continue
+  write_qs_colors "$(dirname "$qs_colors")"
+done
+
+# ...and the active theme's own config even if it has never had one (a dock
+# added without a committed seed would otherwise sit on Colors.qml's
+# built-in fallbacks until the first wallpaper pick).
+if [[ "$bar_mode" == "quickshell-dock" ]]; then
+  write_qs_colors "$QS_BASE/$qs_config"
 fi
 
 # --------- Fastfetch ----------
@@ -535,6 +622,28 @@ FASTFETCH_OUT="$FASTFETCH_DIR/config.jsonc"
 
 if [[ -f "$FASTFETCH_TPL" ]]; then
   mkdir -p "$FASTFETCH_DIR"
+
+  # Logo. Default (no .fastfetch.logo in theme.json) is the random-Pokemon
+  # script every theme has used so far; a theme can name an image of its
+  # own instead -- Hyperspace does, and ships it in its assets/. A relative
+  # source resolves inside the theme directory, which is where such an
+  # image belongs (it travels with the theme, and de_symlink's `cp -rL`
+  # copies it into the live tree like everything else there).
+  if [[ -z "$logo_source" ]]; then
+    logo_source="\$HOME/.config/fastfetch/pokemon-logo.sh"
+  elif [[ "$logo_source" != /* ]]; then
+    logo_source="$THEME_PATH/$logo_source"
+  fi
+
+  # A theme pointing at an image that isn't there would leave fastfetch
+  # printing an error above every fetch -- fall back to the shared script
+  # rather than to a broken logo. (The default above is a $HOME-relative
+  # string fastfetch expands itself, so only a real path is checked here.)
+  if [[ "$logo_source" == /* && ! -e "$logo_source" ]]; then
+    echo "Warning: theme logo not found: $logo_source -- using the default" >&2
+    logo_source="\$HOME/.config/fastfetch/pokemon-logo.sh"
+    logo_type="command-raw"
+  fi
 
   # The 11 module keyColors (OS through Uptime) are a smooth gradient
   # from accent to fg, rather than a grab-bag of named role colors --
@@ -565,6 +674,10 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
   swatch7="$(hex_to_rgb_csv "$fg_hex")"; swatch7="${swatch7//,/;}"
 
   sed \
+    -e "s|{{logo_type}}|$logo_type|g" \
+    -e "s|{{logo_source}}|$logo_source|g" \
+    -e "s|{{logo_width}}|$logo_width|g" \
+    -e "s|{{logo_height}}|$logo_height|g" \
     -e "s/{{fg}}/$fg_hex/g" \
     -e "s/{{fg_dim}}/$fg_dim_hex/g" \
     -e "s/{{red}}/$red_hex/g" \
@@ -750,7 +863,7 @@ if [[ -f "$HYPRLOCK_TPL" ]]; then
     -e "s|{{fg_hex}}|$fg_hex|g" \
     -e "s|{{font_family}}|$font_family|g" \
     -e "s|{{font_family_bold}}|$font_family_bold|g" \
-    -e "s|{{wallpaper_path}}||g" \
+    -e "s|{{wallpaper_path}}|$wp_abs|g" \
     "$HYPRLOCK_TPL" > "$HYPRLOCK_OUT"
 fi
 
@@ -1094,21 +1207,53 @@ if ! wayland_is_live; then
   exit 0
 fi
 
+# Which Quickshell shells might be up right now: the one this theme wants
+# (if any) plus every other theme's, since switching Hyperspace -> Laptop
+# has to stop `-c hyperspace` just as surely as switching to a waybar theme
+# does. Read from the themes themselves rather than hardcoded, so a new
+# Quickshell theme needs no edit here.
+qs_configs_all() {
+  local dir id
+  for dir in "$BASE"/themes/*/; do
+    [[ -f "$dir/theme.json" ]] || continue
+    [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
+    id="$(jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null)"
+    if [[ -n "$id" && "$id" != "null" ]]; then
+      printf '%s\n' "$id"
+    fi
+  done | sort -u
+}
+
+stop_other_qs_shells() {
+  local keep="${1:-}" id
+  while IFS= read -r id; do
+    if [[ -z "$id" || "$id" == "$keep" ]]; then
+      continue
+    fi
+    pkill -9 -f "quickshell -c $id" >/dev/null 2>&1 || true
+    wait_for_exit "quickshell -c $id"
+  done < <(qs_configs_all)
+}
+
 if [[ "$bar_mode" == "quickshell-dock" ]]; then
   pkill waybar >/dev/null 2>&1 || true
   pkill -x swaync >/dev/null 2>&1 || true
-  pkill -9 -f 'quickshell -c laptop' >/dev/null 2>&1 || true
-  wait_for_exit 'quickshell -c laptop'
+  stop_other_qs_shells "$qs_config"
+
+  # Restart this theme's own shell even if it is already running: its QML
+  # is what just changed shape (a different theme may have been applied
+  # over it), and Quickshell only re-reads a config at startup.
+  pkill -9 -f "quickshell -c $qs_config" >/dev/null 2>&1 || true
+  wait_for_exit "quickshell -c $qs_config"
 
   if command -v quickshell >/dev/null 2>&1; then
-    nohup quickshell -c laptop >/dev/null 2>&1 &
+    nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
     disown
   else
-    echo "Warning: quickshell not found — laptop bar/notifications not started" >&2
+    echo "Warning: quickshell not found — $qs_config bar/notifications not started" >&2
   fi
 else
-  pkill -9 -f 'quickshell -c laptop' >/dev/null 2>&1 || true
-  wait_for_exit 'quickshell -c laptop'
+  stop_other_qs_shells ""
   pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
   pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
 fi

@@ -19,7 +19,7 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | `Super+Alt+F4` | Force-kill focused window |
 | `Super+Delete` | Exit Hyprland session |
 | `Super+Escape` | Logout menu (Wlogout) |
-| `Super+L` | Lock screen (Hyprlock) |
+| `Super+L` | Lock screen (`lock.sh` → Hyprlock; restores the theme's bar on unlock) |
 
 ## Toggle
 

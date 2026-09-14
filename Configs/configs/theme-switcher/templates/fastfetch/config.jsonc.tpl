@@ -10,8 +10,10 @@
     }
   },
   "logo": {
-    "type": "command-raw",
-    "source": "$HOME/.config/fastfetch/pokemon-logo.sh",
+    "type": "{{logo_type}}",
+    "source": "{{logo_source}}",
+    "width": {{logo_width}},
+    "height": {{logo_height}},
     "padding": {
       "top": 0,
       "left": 2,

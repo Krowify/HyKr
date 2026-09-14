@@ -36,10 +36,31 @@ Not from elifouts:
   top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
   date/notifications — hover the battery for the exact percentage), four
   popup panels, and a native notification daemon with a toast stack. Exposes an `IpcHandler` on target `dock`
-  (`quickshell -c laptop ipc call dock toggleNotifications|toggleDnd`) so
-  `Super+N` and the quick-settings DND entry reach it under this theme
-  instead of the swaync-client they still use everywhere else. Same
-  not-runtime-tested caveat as `quickshell/hykr/` above.
+  (reached through `hypr/dock_ipc.sh`) so `Super+N` and the quick-settings
+  DND entry hit it under this theme instead of the swaync-client they still
+  use everywhere else. Same not-runtime-tested caveat as
+  `quickshell/hykr/` above.
+- `quickshell/hyperspace/` — the Hyperspace theme's bar stack
+  (`quickshell -c hyperspace`), same idea as `laptop/` but laid out as three
+  floating islands (workspaces / clock+date / battery, volume, network,
+  bluetooth, notifications) and coloured entirely from the wallpaper: it
+  reads a full generated palette from its own `colors.json`, not just an
+  accent. Panels drop under whichever icon was clicked, measured from the
+  bar's live layout rather than hardcoded offsets. Its `services/` are
+  copies of `laptop/services/` — a Quickshell config can't import across
+  config roots — so a fix in one belongs in both; see
+  `quickshell/hyperspace/README.md`. Same not-runtime-tested caveat.
+- `hypr/lock.sh` — the single path to a locked session: `Super+L`, wlogout's
+  Lock button, `quick_settings.sh` and hypridle's `lock_cmd` (so
+  `loginctl lock-session` and the pre-suspend hook too) all run it. Refuses
+  to stack a second hyprlock, and once you unlock calls `start_bar.sh` to
+  bring back the active theme's bar — a Quickshell dock doesn't always
+  survive hyprlock's session-lock surface, and nothing else supervises it.
+- `hypr/dock_ipc.sh` — calls a function on whichever Quickshell dock the
+  active theme runs (`toggle-notifications`, `toggle-dnd`), falling back to
+  `swaync-client` under the waybar themes. Used by `Super+N` and the
+  quick-settings DND entry, which previously hardcoded
+  `quickshell -c laptop` and so did nothing under any other Quickshell theme.
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
   existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
   hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
@@ -53,9 +74,11 @@ Not from elifouts:
   emit a keycode at all on a given machine.
 - `hypr/start_bar.sh` — picks the bar + notification daemon from the theme
   that's actually active (`current-theme.json` → that theme's `theme.json`
-  `bar` field) instead of hardcoding one: `waybar` + `swaync` for most
-  themes, `quickshell -c laptop` for the Laptop theme's
-  `"bar": "quickshell-dock"`. Run from `hyprland.lua`'s autostart, and with
+  `bar` and `quickshell.config` fields) instead of hardcoding one: `waybar`
+  + `swaync` for most themes, `quickshell -c <config>` for a theme with
+  `"bar": "quickshell-dock"` (Laptop, Hyperspace). It also stops any other
+  theme's Quickshell shell, so switching between two of them can't stack
+  two bars. Run from `hyprland.lua`'s autostart, and with
   `--toggle` from `Super+Ctrl+B`, both of which used to start waybar
   unconditionally — which is why waybar kept reappearing on top of the
   Quickshell dock after every login.

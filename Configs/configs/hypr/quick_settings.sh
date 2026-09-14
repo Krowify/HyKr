@@ -23,12 +23,12 @@ case "$chosen" in
         bluetoothctl power "$(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)"
         ;;
     *"DND"*)
-        # Under the Laptop theme the Quickshell dock owns notifications and
-        # swaync isn't running, so this entry did nothing there. Ask the dock
-        # first -- it flips the same doNotDisturb the notification center's own
-        # switch does -- and fall back to swaync-client for the waybar themes,
-        # where the ipc call finds no laptop shell and fails.
-        quickshell -c laptop ipc call dock toggleDnd >/dev/null 2>&1 || swaync-client --toggle-dnd
+        # Under a Quickshell theme (Laptop, Hyperspace) that shell owns
+        # notifications and swaync isn't running, so this entry did nothing
+        # there. dock_ipc.sh asks whichever dock the active theme runs -- it
+        # flips the same doNotDisturb the notification center's own switch
+        # does -- and falls back to swaync-client under the waybar themes.
+        ~/.config/hypr/dock_ipc.sh toggle-dnd
         ;;
     *"Night Light"*)
         # -t 5000 to match the Super+Shift+N bind in hyprland.lua -- without it
@@ -44,7 +44,9 @@ case "$chosen" in
         pkill -9 -x -f 'quickshell -c wallpaper-picker'; ~/.config/quickshell/wallpaper-picker/launch.sh
         ;;
     *"Lock Screen"*)
-        hyprlock
+        # lock.sh, not hyprlock directly -- see hypr/lock.sh: it restores the
+        # active theme's bar once you unlock.
+        ~/.config/hypr/lock.sh
         ;;
     *"Logout"*)
         wlogout

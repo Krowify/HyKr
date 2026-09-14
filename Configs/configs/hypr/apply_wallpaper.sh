@@ -97,20 +97,46 @@ if [ -f "$WOFI_TPL" ]; then
         "$WOFI_TPL" > "$WOFI_OUT"
 fi
 
-# Quickshell laptop dock accent (the active-workspace pill). $color4 is the
-# same pywal slot the Hyprland border, rofi and wofi accents above already
-# use, so the dock matches them rather than drifting on its own. The dock's
-# FileView watches this file, so it repaints immediately -- the equivalent of
-# the live kitty recolour a few lines up.
+# Quickshell dock palettes. $color4 is the same pywal slot the Hyprland
+# border, rofi and wofi accents above already use, so the docks match them
+# rather than drifting on their own; the rest of the roles map onto the
+# slots starship's own pywal template already uses for the same jobs. Each
+# dock's Colors.qml declares only the keys it actually reads (the Laptop
+# one: `accent`), so a fuller palette here is free -- Hyperspace renders
+# every surface from it, which is why it's written whole rather than as the
+# single accent this used to be.
+#
+# Every config directory that already carries a colors.json is a dock, so
+# this needs no list of theme names to stay current -- add a Quickshell
+# theme and its colours follow a wallpaper pick automatically. (The
+# wallpaper-picker config is untouched: its file is config.json, and
+# apply-theme.sh owns it.) Their FileViews watch these paths, so a running
+# dock repaints immediately -- the equivalent of the live kitty recolour a
+# few lines up.
 #
 # Skipped while ~/.config/quickshell is still a symlink into the repo (a
 # fresh install where no theme has been applied and the picker has never
 # run): writing through it would modify a tracked file. apply-theme.sh
-# de-symlinks it and writes the same value on the next theme apply.
-QS_DOCK_COLORS="$HOME/.config/quickshell/laptop/colors.json"
+# de-symlinks it and writes the same values on the next theme apply.
+QS_BASE="$HOME/.config/quickshell"
 
-if [ ! -L "$HOME/.config/quickshell" ] && [ -d "$(dirname "$QS_DOCK_COLORS")" ]; then
-    printf '{\n    "accent": "%s"\n}\n' "$color4" > "$QS_DOCK_COLORS"
+if [ ! -L "$QS_BASE" ] && [ -d "$QS_BASE" ]; then
+    for qs_colors in "$QS_BASE"/*/colors.json; do
+        [ -f "$qs_colors" ] || continue
+        cat > "$qs_colors" <<EOF
+{
+    "bg": "$background",
+    "surface": "$color8",
+    "surface2": "$color0",
+    "fg": "$foreground",
+    "fg_dim": "$color7",
+    "accent": "$color4",
+    "accent_alt": "$color6",
+    "green": "$color2",
+    "red": "$color1"
+}
+EOF
+    done
 fi
 
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not

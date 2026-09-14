@@ -224,7 +224,12 @@ hl.bind(var_mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(var_mainMod .. " + ALT + F4", hl.dsp.exec_cmd("kill -9 $(hyprctl activewindow -j | jq -r .pid)"))
 hl.bind(var_mainMod .. " + DELETE", hl.dsp.exit())
 hl.bind(var_mainMod .. " + ESCAPE", hl.dsp.exec_cmd("wlogout"))
-hl.bind(var_mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+-- lock.sh, not hyprlock directly: it guards against a second instance and,
+-- once you unlock, brings back the bar the active theme wants (a Quickshell
+-- dock does not always survive hyprlock's session-lock surface). Every other
+-- way of locking -- wlogout, quick_settings.sh, hypridle's lock_cmd, and so
+-- `loginctl lock-session` too -- goes through the same script.
+hl.bind(var_mainMod .. " + L", hl.dsp.exec_cmd("~/.config/hypr/lock.sh"))
 
 -- --------------------------------------------------- // Toggle
 hl.bind(var_mainMod .. " + T", hl.dsp.window.float({ action = "toggle" }))
@@ -246,7 +251,11 @@ hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.
 -- simply dead under that theme. Ask the dock over IPC first; under every
 -- waybar theme no laptop shell is running, that call fails, and
 -- swaync-client runs exactly as before.
-hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("quickshell -c laptop ipc call dock toggleNotifications >/dev/null 2>&1 || swaync-client -t -sw"))
+-- dock_ipc.sh resolves the ACTIVE theme's Quickshell config (Laptop's dock,
+-- Hyperspace's, or none) and falls back to swaync-client under the waybar
+-- themes. It replaces a hardcoded `quickshell -c laptop ipc call ...` that
+-- did nothing at all under any other Quickshell theme.
+hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("~/.config/hypr/dock_ipc.sh toggle-notifications"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset -t 5000"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
 hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))

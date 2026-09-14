@@ -48,12 +48,18 @@ drift_found=0
 #
 # Only applies to a file that already exists locally -- a missing one is still
 # seeded from the repo, so a fresh install gets its defaults.
+#
+# 'quickshell:*/colors.json' is a glob for the same reason
+# 'theme-switcher:themes/*/colors.json' is: every Quickshell dock config
+# (laptop/, hyperspace/, whatever comes next) has one, all of them written by
+# apply-theme.sh and apply_wallpaper.sh, and none of them should be reverted
+# to the repo's seed by --apply.
 SKIP_PATTERNS=(
     'fastfetch:config.jsonc'
     'gtk-4.0:gtk.css'
     'hypr:hyprlock.conf'
     'kitty:current-theme.conf'
-    'quickshell:laptop/colors.json'
+    'quickshell:*/colors.json'
     'quickshell:wallpaper-picker/config.json'
     'spicetify:color.ini'
     'starship:starship.toml'

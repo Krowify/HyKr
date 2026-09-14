@@ -27,6 +27,16 @@ _HyKr wouldn't exist without the projects, tools, and artists below._
 | Aloe.jpg, DSC02292-EDIT.jpg, DSC04822.JPG, DSC05767.JPG, MistyTrees.jpg, Sunset.jpg, dreamlike.jpg, leaves.jpg, pywallpaper.jpg | Eli F. ([elifouts](https://github.com/elifouts)) | [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles/tree/main/wallpapers) |
 | `nord/`, `anime/`, `m-26.jp/`, `apocalypse/`, `outrun/`, `evangelion/`, `stalenhag/`, `pixel/`, `radium/` (554 images total) | Unlisted (repo has no per-image credits or LICENSE) | [dharmx/walls](https://github.com/dharmx/walls) |
 
+## Fastfetch logo
+
+The Hyperspace theme's fastfetch logo
+(`Configs/configs/theme-switcher/themes/hyperspace/assets/fastfetch-logo.png`)
+is image `132.png` from
+[Maheswara660/fastfetch](https://github.com/Maheswara660/fastfetch/tree/main/images)
+(no license file upstream; kept for personal desktop use, original artist
+unlisted there). Every other theme uses the random-Pokémon logo drawn by
+`Configs/configs/fastfetch/pokemon-logo.sh` via `pokeget` instead.
+
 ## SDDM Theme
 
 `pixel-sakura` in [`Configs/sddm/`](../Configs/sddm) is from

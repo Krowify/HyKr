@@ -1,6 +1,6 @@
 {
   "label" : "lock",
-  "action" : "pkill -x wlogout || true; sleep 0.2; hyprlock",
+  "action" : "pkill -x wlogout || true; sleep 0.2; ~/.config/hypr/lock.sh",
   "text" : "Lock",
   "keybind" : "l"
 }
