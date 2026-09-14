@@ -41,15 +41,18 @@ Not from elifouts:
   use everywhere else. Same not-runtime-tested caveat as
   `quickshell/hykr/` above.
 - `quickshell/hyperspace/` — the Hyperspace theme's bar stack
-  (`quickshell -c hyperspace`), same idea as `laptop/` but laid out as three
-  floating islands (workspaces / clock+date / battery, volume, network,
-  bluetooth, notifications) and coloured entirely from the wallpaper: it
-  reads a full generated palette from its own `colors.json`, not just an
-  accent. Panels drop under whichever icon was clicked, measured from the
-  bar's live layout rather than hardcoded offsets. Its `services/` are
-  copies of `laptop/services/` — a Quickshell config can't import across
-  config roots — so a fix in one belongs in both; see
-  `quickshell/hyperspace/README.md`. Same not-runtime-tested caveat.
+  (`quickshell -c hyperspace`), same idea as `laptop/` but coloured entirely
+  from the wallpaper: it reads a full generated palette from its own
+  `colors.json`, not just an accent. Ships two bar layouts, switched by the
+  one `DockState.barStyle` line: `notch`, a capsule hanging off the top edge
+  that widens around a fixed clock when something changes and collapses
+  again (the default), and `islands`, three floating pills across the top.
+  Panels drop under whichever icon was clicked, measured from the live
+  layout rather than hardcoded offsets, which is what lets one set of panels
+  serve both. Its `services/` are copies of `laptop/services/` — a
+  Quickshell config can't import across config roots — so a fix in one
+  belongs in both; see `quickshell/hyperspace/README.md`. Same
+  not-runtime-tested caveat.
 - `hypr/lock.sh` — the single path to a locked session: `Super+L`, wlogout's
   Lock button, `quick_settings.sh` and hypridle's `lock_cmd` (so
   `loginctl lock-session` and the pre-suspend hook too) all run it. Refuses

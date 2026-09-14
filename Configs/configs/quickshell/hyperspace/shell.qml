@@ -67,8 +67,16 @@ ShellRoot {
         }
     }
 
+    // Exactly one of these instantiates anything: Variants over an empty
+    // model builds nothing, so the unselected bar costs a comparison and no
+    // window. DockState.barStyle is the single switch -- see its comment.
     Variants {
-        model: Quickshell.screens
+        model: DockState.barStyle === "notch" ? Quickshell.screens : []
+        NotchBar {}
+    }
+
+    Variants {
+        model: DockState.barStyle === "notch" ? [] : Quickshell.screens
         DockBar {}
     }
 
@@ -78,9 +86,11 @@ ShellRoot {
     }
 
     // Unlike the Laptop shell, none of these carry a hardcoded per-icon
-    // offset: each reads DockState.anchorFromRight (set by DockBar at tap
-    // time from the right island's live layout) and centres itself under
-    // whichever icon was actually clicked.
+    // offset: each reads DockState.anchorFromRight -- set by whichever bar
+    // is running, at tap time, from its own live layout -- and centres
+    // itself under the icon that was actually clicked. That is what lets
+    // the same four panels serve both a fixed row of islands and a capsule
+    // whose icons move as it opens.
     //
     // `colors`/`dock` hand the two root-level singletons down explicitly:
     // the panels live in panels/, a directory of their own, and reach

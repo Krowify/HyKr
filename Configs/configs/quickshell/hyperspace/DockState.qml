@@ -14,20 +14,42 @@ import QtQuick
 QtObject {
     id: root
 
-    // ---- geometry, read by DockBar and every panel ----
+    // ---- which bar is running ----
+    //
+    // "notch"   -> NotchBar.qml, one capsule hanging from the top edge that
+    //              widens when something changes (the default)
+    // "islands" -> DockBar.qml, three floating islands across the top
+    //
+    // shell.qml reads this to decide which one to instantiate, and every
+    // panel reads barHeight below, so this single line switches the bar and
+    // re-seats the popups to match. Change it and restart the shell:
+    //   pkill -f 'quickshell -c hyperspace'; quickshell -c hyperspace
+    property string barStyle: "notch"
+
+    // ---- geometry, read by whichever bar is running, and by every panel ----
 
     // Gap between the top of the screen and the top of the islands. This is
     // the whole point of the floating-island layout: the wallpaper shows
-    // through above and between them.
+    // through above and between them. Unused by the notch, which hangs off
+    // the screen edge instead.
     readonly property int topGap: 8
     readonly property int islandHeight: 30
-    // Horizontal gap from the screen edge to the left/right islands.
+    // Horizontal gap from the screen edge to the left/right islands -- and
+    // the minimum gap the notch keeps from either edge when its content is
+    // wider than the output.
     readonly property int islandMargin: 14
     // Inner padding at each end of an island's content row.
     readonly property int islandPadding: 13
-    // The layer surface's height (and its exclusive zone), so tiled windows
-    // start below the islands rather than under them.
-    readonly property int barHeight: root.topGap + root.islandHeight + 4
+
+    // The notch capsule's height, which is also its layer surface's height
+    // and its exclusive zone: it grows sideways only, never down, so the
+    // surface is a fixed strip and tiled windows never reflow when it opens.
+    readonly property int notchHeight: 30
+
+    // The bottom edge of whichever bar is running: the layer surface height
+    // and exclusive zone for the islands, and the line every popup panel
+    // hangs below.
+    readonly property int barHeight: root.barStyle === "notch" ? root.notchHeight : root.topGap + root.islandHeight + 4
 
     // ---- panel state ----
 

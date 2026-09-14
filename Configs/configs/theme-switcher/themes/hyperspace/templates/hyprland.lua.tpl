@@ -59,6 +59,15 @@ hl.window_rule({
 hl.layer_rule({ match = { namespace = "hyperspace-dock" }, blur = true })
 hl.layer_rule({ match = { namespace = "hyperspace-dock" }, ignore_alpha = 0.2 })
 
+-- The other bar style (DockState.barStyle = "notch"): one capsule hanging
+-- from the top edge on an otherwise transparent full-width surface, so the
+-- same threshold does the same job -- blur the capsule, leave the empty
+-- strip either side of it alone. Both namespaces are ruled unconditionally
+-- because the style is switched inside the shell, not by re-rendering this
+-- file, and a rule for a layer that isn't mapped costs nothing.
+hl.layer_rule({ match = { namespace = "hyperspace-notch" }, blur = true })
+hl.layer_rule({ match = { namespace = "hyperspace-notch" }, ignore_alpha = 0.2 })
+
 hl.layer_rule({ match = { namespace = "hyperspace-popup" }, blur = true })
 hl.layer_rule({ match = { namespace = "hyperspace-popup" }, ignore_alpha = 0.2 })
 

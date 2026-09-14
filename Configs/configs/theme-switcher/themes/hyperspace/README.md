@@ -28,7 +28,9 @@ plus `"quickshell": { "config": "hyperspace" }` tells `apply-theme.sh` (and
 `hypr/start_bar.sh`, and `hypr/dock_ipc.sh`) to run
 `quickshell -c hyperspace` instead of the waybar+swaync pair. That shell
 carries the bar, the notification daemon and the popup panels — full
-details in `Configs/configs/quickshell/hyperspace/README.md`.
+details in `Configs/configs/quickshell/hyperspace/README.md`, including the
+`DockState.barStyle` switch between the two bar layouts it ships (the
+dynamic notch, and the three floating islands).
 
 ## Switching to it
 
