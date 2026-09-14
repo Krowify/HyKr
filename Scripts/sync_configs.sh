@@ -138,7 +138,16 @@ for manifest in "${dotsDir}"/*.toml; do
                 continue
             fi
             check_file "$f" "${dst}/${rel}"
-        done < <(find "$src" -type f -print0)
+            # -type l as well as -type f: two tracked wallpapers are relative
+            # symlinks into Source/wallpapers rather than copies (see
+            # themes/minimal/wallpapers/README.md), and a plain -type f never
+            # matched them -- so on a detached ~/.config/theme-switcher those
+            # themes' default wallpapers were simply never synced, leaving
+            # apply-theme.sh with an empty wallpapers/ directory to offer.
+            # diff and cp both follow a symlink by default, so each lands as
+            # a real file on the live side, which is what de_symlink's own
+            # `cp -rL` does for the same files on a fresh detach.
+        done < <(find "$src" \( -type f -o -type l \) -print0)
     else
         # Single-file manifest (starship.toml, .zshrc): the skip check has to
         # happen here too, or a wholly generated file like starship.toml is
