@@ -89,7 +89,13 @@ start_bar() {
 
     if command -v quickshell >/dev/null 2>&1; then
       pgrep -f "$QS_PATTERN" >/dev/null 2>&1 || {
-        nohup quickshell -c laptop >/dev/null 2>&1 &
+        # "$qs_config", never a literal. This line said `-c laptop` while
+        # the pgrep above it tested for the ACTIVE theme's config, so under
+        # any other Quickshell theme it looked for a shell that wasn't
+        # running and then started the Laptop dock instead -- every login,
+        # every unlock through lock.sh, every Super+Ctrl+B, each time with a
+        # fresh pid. The theme's own bar never started at all.
+        nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
         disown
       }
     else
