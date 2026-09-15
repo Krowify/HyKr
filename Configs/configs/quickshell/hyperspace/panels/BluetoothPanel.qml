@@ -118,8 +118,20 @@ PanelWindow {
             // appears twice.
             model: root.connected.concat(root.paired)
 
+            // `modelData` comes from the delegate's context, NOT from a
+            // `required property var modelData` declaration. That
+            // declaration is what stopped this whole shell from loading:
+            // "BluetoothPanel is not a type", with no inner cause, which is
+            // how a component that failed to compile looks from its use
+            // site. It is the one thing this file had that the three panels
+            // beside it don't, and every delegate in this repo that works on
+            // this hardware -- the Laptop panels' Repeaters, DockBar's
+            // workspace pips -- takes modelData implicitly.
+            //
+            // (A `required property var modelData` at the ROOT of a Variants
+            // component, as in DockBar.qml and NotificationToasts.qml, is a
+            // different mechanism and is fine.)
             delegate: Item {
-                required property var modelData
                 readonly property bool isConnected: root.connected.some(device => device.mac === modelData.mac)
 
                 width: ListView.view.width
