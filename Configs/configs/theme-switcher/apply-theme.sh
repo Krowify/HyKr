@@ -1024,8 +1024,44 @@ fi
 VSCODE_TPL="$BASE/templates/vscode/settings.json.tpl"
 VSCODE_OUT="$HOME/.config/Code/User/settings.json"
 
+# settings.json has two owners: this template, and you -- every preference
+# you change in VS Code's own UI is written to the same file. Rendering
+# straight over it (what this did) threw all of that away on every theme
+# apply. Merge instead, so the theme owns its colour keys and everything
+# else survives.
+#
+# hypr/apply_wallpaper.sh carries a copy of this function for the same
+# reason it carries its own hex_to_rgba_css: the two scripts share no
+# library. Fixes belong in both.
+write_vscode_settings() {
+  local rendered="$1" out="$2" tmp
+
+  if [[ -s "$out" ]] && jq -e . "$out" >/dev/null 2>&1; then
+    tmp="$(mktemp)"
+    # A deep merge, right-hand side winning: the theme's keys are replaced,
+    # anything you added that the template doesn't mention is kept.
+    if jq -s '.[0] * .[1]' "$out" "$rendered" > "$tmp" 2>/dev/null; then
+      mv "$tmp" "$out"
+      return 0
+    fi
+    rm -f "$tmp"
+  fi
+
+  if [[ ! -s "$out" ]]; then
+    cp "$rendered" "$out"
+    return 0
+  fi
+
+  # There is a settings.json, but jq can't read it -- VS Code allows
+  # comments and trailing commas in it, JSON doesn't. Never destroy a file
+  # we failed to parse: leave the rendered colours beside it and say so.
+  cp "$rendered" "$out.hykr-new"
+  echo "Warning: $out is not valid JSON (comments?) -- theme colours written to $out.hykr-new instead" >&2
+}
+
 if [[ -f "$VSCODE_TPL" ]]; then
   mkdir -p "$(dirname "$VSCODE_OUT")"
+  tmp_vscode="$(mktemp)"
 
   sed \
     -e "s/{{bg}}/$bg_hex/g" \
@@ -1050,7 +1086,10 @@ if [[ -f "$VSCODE_TPL" ]]; then
     -e "s/{{shadow}}/$shadow_hex/g" \
     -e "s/{{border_active}}/${border_active_hex:-$accent_hex}/g" \
     -e "s/{{border_inactive}}/${border_inactive_hex:-$surface_hex}/g" \
-    "$VSCODE_TPL" > "$VSCODE_OUT"
+    "$VSCODE_TPL" > "$tmp_vscode"
+
+  write_vscode_settings "$tmp_vscode" "$VSCODE_OUT"
+  rm -f "$tmp_vscode"
 fi
 
 # --------- Qt6ct (dolphin, kate, other Qt6 apps) ----------

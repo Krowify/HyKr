@@ -139,6 +139,76 @@ EOF
     done
 fi
 
+# VS Code. apply-theme.sh renders this same template on a theme switch, but
+# nothing re-rendered it on a plain wallpaper pick -- so every other surface
+# moved to the new wallpaper's colours and the editor sat on the palette from
+# whenever a theme was last applied. Same "last write wins" gap rofi and wofi
+# above had.
+#
+# The role mapping matches the one those blocks use ($color4 as the accent,
+# $color8/$color0 as the raised surfaces, $color7 as dim foreground), with
+# pywal's remaining slots filling the named colours the template wants. pywal
+# has no separate orange, so yellow covers both.
+VSCODE_TPL="$HOME/.config/theme-switcher/templates/vscode/settings.json.tpl"
+VSCODE_OUT="$HOME/.config/Code/User/settings.json"
+
+# A copy of apply-theme.sh's function of the same name -- these two scripts
+# share no library, which is why hex_to_rgba_css above is duplicated too.
+# Fixes belong in both.
+write_vscode_settings() {
+    rendered="$1"; out="$2"
+
+    if [ -s "$out" ] && jq -e . "$out" >/dev/null 2>&1; then
+        tmp=$(mktemp)
+        if jq -s '.[0] * .[1]' "$out" "$rendered" > "$tmp" 2>/dev/null; then
+            mv "$tmp" "$out"
+            return 0
+        fi
+        rm -f "$tmp"
+    fi
+
+    if [ ! -s "$out" ]; then
+        cp "$rendered" "$out"
+        return 0
+    fi
+
+    cp "$rendered" "$out.hykr-new"
+    echo "Warning: $out is not valid JSON (comments?) -- theme colours written to $out.hykr-new instead" >&2
+}
+
+if [ -f "$VSCODE_TPL" ] && command -v jq >/dev/null 2>&1; then
+    mkdir -p "$(dirname "$VSCODE_OUT")"
+    tmp_vscode=$(mktemp)
+
+    sed \
+        -e "s/{{bg}}/$background/g" \
+        -e "s/{{bg_alt}}/$color0/g" \
+        -e "s/{{surface}}/$color8/g" \
+        -e "s/{{surface2}}/$color0/g" \
+        -e "s/{{fg}}/$foreground/g" \
+        -e "s/{{fg_dim}}/$color7/g" \
+        -e "s/{{accent}}/$color4/g" \
+        -e "s/{{accent_alt}}/$color6/g" \
+        -e "s/{{red}}/$color1/g" \
+        -e "s/{{orange}}/$color3/g" \
+        -e "s/{{yellow}}/$color3/g" \
+        -e "s/{{green}}/$color2/g" \
+        -e "s/{{teal}}/$color6/g" \
+        -e "s/{{blue}}/$color4/g" \
+        -e "s/{{sky}}/$color12/g" \
+        -e "s/{{mauve}}/$color5/g" \
+        -e "s/{{pink}}/$color13/g" \
+        -e "s/{{lavender}}/$color12/g" \
+        -e "s/{{overlay}}/$color8/g" \
+        -e "s/{{shadow}}/$background/g" \
+        -e "s/{{border_active}}/$color4/g" \
+        -e "s/{{border_inactive}}/$color8/g" \
+        "$VSCODE_TPL" > "$tmp_vscode"
+
+    write_vscode_settings "$tmp_vscode" "$VSCODE_OUT"
+    rm -f "$tmp_vscode"
+fi
+
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not
 # ~/.cache -- require() only resolves modules under the config root.
 [ -f ~/.cache/wal/colors-hyprland.lua ] && cat ~/.cache/wal/colors-hyprland.lua > ~/.config/hypr/colors-hyprland.lua
