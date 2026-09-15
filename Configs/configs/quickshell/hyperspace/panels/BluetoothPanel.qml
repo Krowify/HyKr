@@ -143,15 +143,19 @@ PanelWindow {
                     // perform under the pointer, so a tap is never a
                     // surprise -- there is no room here for a separate
                     // button per row.
-                    text: rowHover.hovered ? (parent.isConnected ? "disconnect" : "connect") : (parent.isConnected ? "connected" : "paired")
+                    text: rowHover.containsMouse ? (parent.isConnected ? "disconnect" : "connect") : (parent.isConnected ? "connected" : "paired")
                     color: parent.isConnected ? root.colors.good : root.colors.textDim
                     font.pixelSize: 10
                     font.family: "JetBrainsMono Nerd Font"
                 }
 
-                HoverHandler { id: rowHover }
-                TapHandler {
-                    onTapped: parent.isConnected ? Services.BluetoothService.disconnectDevice(modelData.mac) : Services.BluetoothService.connectDevice(modelData.mac)
+                // MouseArea rather than a pointer handler -- see
+                // ../panels/NetworkPanel.qml for what that cost.
+                MouseArea {
+                    id: rowHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: parent.isConnected ? Services.BluetoothService.disconnectDevice(modelData.mac) : Services.BluetoothService.connectDevice(modelData.mac)
                 }
             }
         }
@@ -169,20 +173,24 @@ PanelWindow {
             id: managerButton
             anchors { bottom: parent.bottom; left: parent.left; right: parent.right; margins: 14 }
             height: 26; radius: 9
-            color: managerHover.hovered ? root.colors.accent : root.colors.accentSoft
+            color: managerHover.containsMouse ? root.colors.accent : root.colors.accentSoft
             border.width: 1
             border.color: root.colors.hairline
 
             Text {
                 anchors.centerIn: parent
                 text: "Open Bluetooth Manager"
-                color: managerHover.hovered ? root.colors.bg : root.colors.text
+                color: managerHover.containsMouse ? root.colors.bg : root.colors.text
                 font.pixelSize: 11
                 font.family: "JetBrainsMono Nerd Font"
             }
 
-            HoverHandler { id: managerHover }
-            TapHandler { onTapped: Services.BluetoothService.openManager() }
+            MouseArea {
+                id: managerHover
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: Services.BluetoothService.openManager()
+            }
         }
     }
 }

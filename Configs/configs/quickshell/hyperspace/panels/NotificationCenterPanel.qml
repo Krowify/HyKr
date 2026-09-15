@@ -67,17 +67,23 @@ PanelWindow {
                 anchors.verticalCenter: parent.verticalCenter
                 width: 68; height: 22; radius: 9
                 visible: Services.NotificationService.historyCount > 0
-                color: clearHover.hovered ? root.colors.accent : root.colors.mutedFill
+                color: clearHover.containsMouse ? root.colors.accent : root.colors.mutedFill
 
                 Text {
                     anchors.centerIn: parent
                     text: "Clear all"
-                    color: clearHover.hovered ? root.colors.bg : root.colors.textDim
+                    color: clearHover.containsMouse ? root.colors.bg : root.colors.textDim
                     font.pixelSize: 10
                     font.family: "JetBrainsMono Nerd Font"
                 }
-                HoverHandler { id: clearHover }
-                TapHandler { onTapped: Services.NotificationService.clear() }
+                // MouseArea rather than a pointer handler -- see
+                // NetworkPanel.qml for what that cost.
+                MouseArea {
+                    id: clearHover
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: Services.NotificationService.clear()
+                }
             }
         }
 

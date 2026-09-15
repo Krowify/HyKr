@@ -79,7 +79,7 @@ PanelWindow {
     // notch out from under an open panel would leave the panel pointing at
     // nothing.
     readonly property bool panelOpen: DockState.activePanel !== "" && DockState.activeScreen === root.targetScreen
-    readonly property bool expanded: hover.hovered || holdTimer.running || root.panelOpen
+    readonly property bool expanded: hover.containsMouse || holdTimer.running || root.panelOpen
 
     // Which reading just changed, so the expanded row can point at it
     // instead of the notch just saying "something happened". Cleared when
@@ -197,7 +197,16 @@ PanelWindow {
         x: (root.width - width) / 2
         clip: true
 
-        HoverHandler { id: hover }
+        // MouseArea rather than a pointer handler -- see
+        // panels/NetworkPanel.qml for what that cost. acceptedButtons is
+        // NoButton so it tracks the pointer for the expand without
+        // swallowing clicks meant for the icons' TapHandlers in the wings.
+        MouseArea {
+            id: hover
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
+        }
 
         // The rounded body, pushed up past the top of the clip rectangle so
         // its top corners fall outside and only the bottom two are rounded

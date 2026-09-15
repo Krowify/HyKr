@@ -127,21 +127,31 @@ PanelWindow {
                     width: Services.NetworkService.vpnAvailable ? (parent.width - 8) / 2 : parent.width
                     height: 27; radius: 9
                     visible: Services.NetworkService.vpnAvailable
-                    color: quickHover.hovered ? root.colors.accent : root.colors.accentSoft
+                    color: quickHover.containsMouse ? root.colors.accent : root.colors.accentSoft
                     border.width: 1
                     border.color: root.colors.hairline
 
                     Text {
                         anchors.centerIn: parent
                         text: Services.NetworkService.vpnConnected ? "Disconnect" : "Quick Connect"
-                        color: quickHover.hovered ? root.colors.bg : root.colors.text
+                        color: quickHover.containsMouse ? root.colors.bg : root.colors.text
                         font.pixelSize: 11
                         font.family: "JetBrainsMono Nerd Font"
                     }
 
-                    HoverHandler { id: quickHover }
-                    TapHandler {
-                        onTapped: Services.NetworkService.vpnConnected ? Services.NetworkService.vpnDisconnect() : Services.NetworkService.vpnConnect()
+                    // MouseArea, not a pointer handler, for the hover
+                    // state: on this machine's Qt a panel using one failed
+                    // to register as a type at all ("NetworkPanel is not a
+                    // type"), while VolumePanel -- same imports, same
+                    // required properties, same directory, MouseArea and
+                    // TapHandler only -- loaded fine. Same reason
+                    // QtQuick.Layouts was dropped from these files: the
+                    // root cause is unexplained, the working set is known.
+                    MouseArea {
+                        id: quickHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: Services.NetworkService.vpnConnected ? Services.NetworkService.vpnDisconnect() : Services.NetworkService.vpnConnect()
                     }
                 }
 
@@ -153,20 +163,24 @@ PanelWindow {
                     width: Services.NetworkService.vpnAvailable ? (parent.width - 8) / 2 : parent.width
                     height: 27; radius: 9
                     visible: Services.NetworkService.vpnGuiAvailable
-                    color: guiHover.hovered ? root.colors.accent : root.colors.accentSoft
+                    color: guiHover.containsMouse ? root.colors.accent : root.colors.accentSoft
                     border.width: 1
                     border.color: root.colors.hairline
 
                     Text {
                         anchors.centerIn: parent
                         text: "Open App"
-                        color: guiHover.hovered ? root.colors.bg : root.colors.text
+                        color: guiHover.containsMouse ? root.colors.bg : root.colors.text
                         font.pixelSize: 11
                         font.family: "JetBrainsMono Nerd Font"
                     }
 
-                    HoverHandler { id: guiHover }
-                    TapHandler { onTapped: Services.NetworkService.openVpnApp() }
+                    MouseArea {
+                        id: guiHover
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: Services.NetworkService.openVpnApp()
+                    }
                 }
             }
 
