@@ -59,9 +59,12 @@ Not from elifouts:
 - `hypr/apply_wallpaper.sh` — the shared colour pipeline behind every
   wallpaper picker in the repo: awww, pywal, then kitty (live, over its
   socket), starship, rofi, wofi, the Quickshell dock palettes, the Hyprland
-  border, VS Code and spicetify. VS Code's `settings.json` is *merged* into,
-  not overwritten — it is a file you own too, and every preference changed
-  in VS Code's own UI lands in it.
+  border, VS Code and spicetify. VS Code gets a generated colour-theme
+  *extension* (`~/.vscode/extensions/hykr-theme/`), not
+  `workbench.colorCustomizations` — customizations paint over whatever theme
+  is selected, which made VS Code's own theme picker appear broken. Its
+  `settings.json` is *merged* into, not overwritten: it is a file you own too,
+  and every preference changed in VS Code's UI lands in it.
 - `hypr/lock.sh` — the single path to a locked session: `Super+L`, wlogout's
   Lock button, `quick_settings.sh` and hypridle's `lock_cmd` (so
   `loginctl lock-session` and the pre-suspend hook too) all run it. Refuses

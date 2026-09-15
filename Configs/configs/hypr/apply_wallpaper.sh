@@ -139,18 +139,25 @@ EOF
     done
 fi
 
-# VS Code. apply-theme.sh renders this same template on a theme switch, but
-# nothing re-rendered it on a plain wallpaper pick -- so every other surface
+# VS Code. apply-theme.sh renders the same templates on a theme switch, but
+# nothing re-rendered them on a plain wallpaper pick -- so every other surface
 # moved to the new wallpaper's colours and the editor sat on the palette from
 # whenever a theme was last applied. Same "last write wins" gap rofi and wofi
 # above had.
 #
-# The role mapping matches the one those blocks use ($color4 as the accent,
-# $color8/$color0 as the raised surfaces, $color7 as dim foreground), with
-# pywal's remaining slots filling the named colours the template wants. pywal
-# has no separate orange, so yellow covers both.
-VSCODE_TPL="$HOME/.config/theme-switcher/templates/vscode/settings.json.tpl"
+# The colours go into a real colour-theme EXTENSION, not into
+# workbench.colorCustomizations: customizations paint over whatever theme is
+# selected, which made VS Code's own theme picker look broken. settings.json
+# only gets fonts, and workbench.colorTheme is seeded once if nothing has
+# chosen a theme yet -- after that the picker owns it.
+#
+# The role mapping matches the rofi/wofi blocks above ($color4 the accent,
+# $color8/$color0 the raised surfaces, $color7 dim foreground), with pywal's
+# remaining slots filling the named colours. pywal has no separate orange, so
+# yellow covers both.
+VSCODE_TPL_DIR="$HOME/.config/theme-switcher/templates/vscode"
 VSCODE_OUT="$HOME/.config/Code/User/settings.json"
+VSCODE_EXT_DIR="$HOME/.vscode/extensions/hykr-theme"
 
 # A copy of apply-theme.sh's function of the same name -- these two scripts
 # share no library, which is why hex_to_rgba_css above is duplicated too.
@@ -160,7 +167,14 @@ write_vscode_settings() {
 
     if [ -s "$out" ] && jq -e . "$out" >/dev/null 2>&1; then
         tmp=$(mktemp)
-        if jq -s '.[0] * .[1]' "$out" "$rendered" > "$tmp" 2>/dev/null; then
+        if jq -s '
+              (.[0]
+                | del(.["workbench.colorCustomizations"])
+                | del(.["editor.tokenColorCustomizations"])
+                | del(.["editor.semanticTokenColorCustomizations"]))
+              * .[1]
+              | if has("workbench.colorTheme") then . else . + {"workbench.colorTheme": "HyKr"} end
+           ' "$out" "$rendered" > "$tmp" 2>/dev/null; then
             mv "$tmp" "$out"
             return 0
         fi
@@ -168,19 +182,16 @@ write_vscode_settings() {
     fi
 
     if [ ! -s "$out" ]; then
-        cp "$rendered" "$out"
+        jq '. + {"workbench.colorTheme": "HyKr"}' "$rendered" > "$out" 2>/dev/null || cp "$rendered" "$out"
         return 0
     fi
 
     cp "$rendered" "$out.hykr-new"
-    echo "Warning: $out is not valid JSON (comments?) -- theme colours written to $out.hykr-new instead" >&2
+    echo "Warning: $out is not valid JSON (comments?) -- VS Code settings written to $out.hykr-new instead" >&2
 }
 
-if [ -f "$VSCODE_TPL" ] && command -v jq >/dev/null 2>&1; then
-    mkdir -p "$(dirname "$VSCODE_OUT")"
-    tmp_vscode=$(mktemp)
-
-    sed \
+if [ -d "$VSCODE_TPL_DIR" ] && command -v jq >/dev/null 2>&1; then
+    set -- \
         -e "s/{{bg}}/$background/g" \
         -e "s/{{bg_alt}}/$color0/g" \
         -e "s/{{surface}}/$color8/g" \
@@ -202,11 +213,21 @@ if [ -f "$VSCODE_TPL" ] && command -v jq >/dev/null 2>&1; then
         -e "s/{{overlay}}/$color8/g" \
         -e "s/{{shadow}}/$background/g" \
         -e "s/{{border_active}}/$color4/g" \
-        -e "s/{{border_inactive}}/$color8/g" \
-        "$VSCODE_TPL" > "$tmp_vscode"
+        -e "s/{{border_inactive}}/$color8/g"
 
-    write_vscode_settings "$tmp_vscode" "$VSCODE_OUT"
-    rm -f "$tmp_vscode"
+    if [ -f "$VSCODE_TPL_DIR/hykr-color-theme.json.tpl" ]; then
+        mkdir -p "$VSCODE_EXT_DIR/themes"
+        cp "$VSCODE_TPL_DIR/package.json" "$VSCODE_EXT_DIR/package.json"
+        sed "$@" "$VSCODE_TPL_DIR/hykr-color-theme.json.tpl" > "$VSCODE_EXT_DIR/themes/hykr-color-theme.json"
+    fi
+
+    if [ -f "$VSCODE_TPL_DIR/settings.json.tpl" ]; then
+        mkdir -p "$(dirname "$VSCODE_OUT")"
+        tmp_vscode=$(mktemp)
+        sed "$@" "$VSCODE_TPL_DIR/settings.json.tpl" > "$tmp_vscode"
+        write_vscode_settings "$tmp_vscode" "$VSCODE_OUT"
+        rm -f "$tmp_vscode"
+    fi
 fi
 
 # hyprland.lua's require("colors-hyprland") reads from ~/.config/hypr, not

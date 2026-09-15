@@ -1021,26 +1021,46 @@ fi
 
 # --------- VS Code ----------
 # MAKE SURE TO EDIT THE OUT PATH IF YOU USE A DIFFERENT VSCODE, LIKE VSCODEIUM OR SOMETHING.
-VSCODE_TPL="$BASE/templates/vscode/settings.json.tpl"
+#
+# The palette ships as a real colour-theme EXTENSION, not as
+# workbench.colorCustomizations in settings.json. Customizations are painted
+# on top of whatever theme is selected, so with them in place picking a theme
+# in VS Code's own UI appeared to do nothing -- the customizations won every
+# time and the editor stayed whatever colour the last theme apply made it. As
+# an extension it is a theme like any other: pick "HyKr" and you get the
+# wallpaper's colours, pick anything else and you get that, uninterfered with.
+#
+# workbench.colorTheme is therefore seeded ONCE, only when the file doesn't
+# already choose a theme. After that the picker owns it -- re-asserting it
+# here every apply would be the same override in a different place.
+VSCODE_TPL_DIR="$BASE/templates/vscode"
 VSCODE_OUT="$HOME/.config/Code/User/settings.json"
+VSCODE_EXT_DIR="$HOME/.vscode/extensions/hykr-theme"
 
 # settings.json has two owners: this template, and you -- every preference
-# you change in VS Code's own UI is written to the same file. Rendering
-# straight over it (what this did) threw all of that away on every theme
-# apply. Merge instead, so the theme owns its colour keys and everything
-# else survives.
+# changed in VS Code's own UI is written to the same file. Rendering straight
+# over it (what this used to do) threw all of that away on every theme apply.
 #
-# hypr/apply_wallpaper.sh carries a copy of this function for the same
-# reason it carries its own hex_to_rgba_css: the two scripts share no
-# library. Fixes belong in both.
+# So: merge, theme keys winning; drop the two keys the old approach owned
+# wholesale, since leaving them behind would keep overriding the extension
+# forever; and seed workbench.colorTheme only if nothing has chosen one.
+#
+# hypr/apply_wallpaper.sh carries a copy of this function for the same reason
+# it carries its own hex_to_rgba_css: the two scripts share no library. Fixes
+# belong in both.
 write_vscode_settings() {
   local rendered="$1" out="$2" tmp
 
   if [[ -s "$out" ]] && jq -e . "$out" >/dev/null 2>&1; then
     tmp="$(mktemp)"
-    # A deep merge, right-hand side winning: the theme's keys are replaced,
-    # anything you added that the template doesn't mention is kept.
-    if jq -s '.[0] * .[1]' "$out" "$rendered" > "$tmp" 2>/dev/null; then
+    if jq -s '
+          (.[0]
+            | del(.["workbench.colorCustomizations"])
+            | del(.["editor.tokenColorCustomizations"])
+            | del(.["editor.semanticTokenColorCustomizations"]))
+          * .[1]
+          | if has("workbench.colorTheme") then . else . + {"workbench.colorTheme": "HyKr"} end
+       ' "$out" "$rendered" > "$tmp" 2>/dev/null; then
       mv "$tmp" "$out"
       return 0
     fi
@@ -1048,46 +1068,55 @@ write_vscode_settings() {
   fi
 
   if [[ ! -s "$out" ]]; then
-    cp "$rendered" "$out"
+    jq '. + {"workbench.colorTheme": "HyKr"}' "$rendered" > "$out" 2>/dev/null || cp "$rendered" "$out"
     return 0
   fi
 
-  # There is a settings.json, but jq can't read it -- VS Code allows
-  # comments and trailing commas in it, JSON doesn't. Never destroy a file
-  # we failed to parse: leave the rendered colours beside it and say so.
+  # There is a settings.json, but jq can't read it -- VS Code allows comments
+  # and trailing commas in it, JSON doesn't. Never destroy a file we failed to
+  # parse: leave the rendered copy beside it and say so.
   cp "$rendered" "$out.hykr-new"
-  echo "Warning: $out is not valid JSON (comments?) -- theme colours written to $out.hykr-new instead" >&2
+  echo "Warning: $out is not valid JSON (comments?) -- VS Code settings written to $out.hykr-new instead" >&2
 }
 
-if [[ -f "$VSCODE_TPL" ]]; then
+# Every colour the theme file and the settings file need, in one place, so the
+# two renders below can't drift apart.
+vscode_sed_args=(
+  -e "s/{{bg}}/$bg_hex/g"
+  -e "s/{{bg_alt}}/$bg_alt_hex/g"
+  -e "s/{{surface}}/$surface_hex/g"
+  -e "s/{{surface2}}/$surface2_hex/g"
+  -e "s/{{fg}}/$fg_hex/g"
+  -e "s/{{fg_dim}}/$fg_dim_hex/g"
+  -e "s/{{accent}}/$accent_hex/g"
+  -e "s/{{accent_alt}}/${accent_alt_hex:-$accent_hex}/g"
+  -e "s/{{red}}/$red_hex/g"
+  -e "s/{{orange}}/${orange_hex:-$yellow_hex}/g"
+  -e "s/{{yellow}}/$yellow_hex/g"
+  -e "s/{{green}}/$green_hex/g"
+  -e "s/{{teal}}/${teal_hex:-$green_hex}/g"
+  -e "s/{{blue}}/$blue_hex/g"
+  -e "s/{{sky}}/${sky_hex:-$blue_hex}/g"
+  -e "s/{{mauve}}/${magenta_hex:-$accent_hex}/g"
+  -e "s/{{pink}}/${pink_hex:-$red_hex}/g"
+  -e "s/{{lavender}}/${lavender_hex:-$blue_hex}/g"
+  -e "s/{{overlay}}/${overlay_hex:-$surface2_hex}/g"
+  -e "s/{{shadow}}/$shadow_hex/g"
+  -e "s/{{border_active}}/${border_active_hex:-$accent_hex}/g"
+  -e "s/{{border_inactive}}/${border_inactive_hex:-$surface_hex}/g"
+)
+
+if [[ -f "$VSCODE_TPL_DIR/hykr-color-theme.json.tpl" ]]; then
+  mkdir -p "$VSCODE_EXT_DIR/themes"
+  cp "$VSCODE_TPL_DIR/package.json" "$VSCODE_EXT_DIR/package.json"
+  sed "${vscode_sed_args[@]}" \
+    "$VSCODE_TPL_DIR/hykr-color-theme.json.tpl" > "$VSCODE_EXT_DIR/themes/hykr-color-theme.json"
+fi
+
+if [[ -f "$VSCODE_TPL_DIR/settings.json.tpl" ]]; then
   mkdir -p "$(dirname "$VSCODE_OUT")"
   tmp_vscode="$(mktemp)"
-
-  sed \
-    -e "s/{{bg}}/$bg_hex/g" \
-    -e "s/{{bg_alt}}/$bg_alt_hex/g" \
-    -e "s/{{surface}}/$surface_hex/g" \
-    -e "s/{{surface2}}/$surface2_hex/g" \
-    -e "s/{{fg}}/$fg_hex/g" \
-    -e "s/{{fg_dim}}/$fg_dim_hex/g" \
-    -e "s/{{accent}}/$accent_hex/g" \
-    -e "s/{{accent_alt}}/${accent_alt_hex:-$accent_hex}/g" \
-    -e "s/{{red}}/$red_hex/g" \
-    -e "s/{{orange}}/${orange_hex:-$yellow_hex}/g" \
-    -e "s/{{yellow}}/$yellow_hex/g" \
-    -e "s/{{green}}/$green_hex/g" \
-    -e "s/{{teal}}/${teal_hex:-$green_hex}/g" \
-    -e "s/{{blue}}/$blue_hex/g" \
-    -e "s/{{sky}}/${sky_hex:-$blue_hex}/g" \
-    -e "s/{{mauve}}/${magenta_hex:-$accent_hex}/g" \
-    -e "s/{{pink}}/${pink_hex:-$red_hex}/g" \
-    -e "s/{{lavender}}/${lavender_hex:-$blue_hex}/g" \
-    -e "s/{{overlay}}/${overlay_hex:-$surface2_hex}/g" \
-    -e "s/{{shadow}}/$shadow_hex/g" \
-    -e "s/{{border_active}}/${border_active_hex:-$accent_hex}/g" \
-    -e "s/{{border_inactive}}/${border_inactive_hex:-$surface_hex}/g" \
-    "$VSCODE_TPL" > "$tmp_vscode"
-
+  sed "${vscode_sed_args[@]}" "$VSCODE_TPL_DIR/settings.json.tpl" > "$tmp_vscode"
   write_vscode_settings "$tmp_vscode" "$VSCODE_OUT"
   rm -f "$tmp_vscode"
 fi
