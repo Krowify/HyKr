@@ -21,7 +21,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
-import "./panels"
 import "./services" as Services
 
 ShellRoot {
@@ -92,12 +91,27 @@ ShellRoot {
     // the same four panels serve both a fixed row of islands and a capsule
     // whose icons move as it opens.
     //
-    // `colors`/`dock` hand the two root-level singletons down explicitly:
-    // the panels live in panels/, a directory of their own, and reach
-    // everything outside it through an explicit import (as they already do
-    // for ../services) rather than assuming a root singleton resolves
-    // unqualified from a subdirectory. This file sits next to both, so it
-    // can just name them.
+    // `colors`/`dock` hand the two singletons down explicitly rather than
+    // each panel naming them -- see the note at the top of any panel file.
+    //
+    // The panels live in the config ROOT, beside this file, and not in a
+    // panels/ subdirectory. They were in one, reached by an unqualified
+    // `import "./panels"`, and it failed like this, at random:
+    //
+    //   ERROR: caused by @shell.qml[119:5]: NotificationCenterPanel is not a type
+    //
+    // Exactly one of the four failed per launch, a different one each time,
+    // with no inner cause -- three identical runs named three different
+    // panels. It survived disabling and deleting Qt's QML disk cache, and
+    // moving the laptop config (which has four identically-named panels of
+    // its own) out of ~/.config/quickshell entirely. Nothing in the files
+    // themselves: rewriting the named file just moved the error to another.
+    //
+    // Everything that resolves reliably in this shell -- DockBar, NotchBar,
+    // NotificationToasts, Colors, DockState -- is a file in this directory,
+    // so the panels are too now. The same wandering error is documented in
+    // ../laptop/shell.qml, which still has a panels/ directory; if it turns
+    // up there, this is the fix.
     VolumePanel {
         colors: Colors
         dock: DockState

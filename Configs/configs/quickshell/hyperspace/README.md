@@ -126,6 +126,34 @@ The committed `colors.json` is only a seed for a fresh install; on a live
 machine it is whatever the last theme apply or wallpaper pick generated, so
 `Scripts/sync_configs.sh` skips it.
 
+## Why every .qml except the services sits in the config root
+
+The four popup panels were in a `panels/` subdirectory, reached by
+`import "./panels"` in `shell.qml`, the way the Laptop shell still does it.
+That failed to load the whole shell, at random:
+
+```
+ERROR: caused by @shell.qml[119:5]: NotificationCenterPanel is not a type
+```
+
+Exactly one of the four failed per launch and a **different one each time** —
+three identical runs named three different panels. No inner cause is ever
+reported, which in QML is how a component that failed to compile looks from
+its use site, so the first two attempts at a fix chased the named file and
+"fixed" it by moving the error elsewhere. It is not the files: it survived
+disabling Qt's QML disk cache, deleting it, and moving the Laptop config
+(which has four identically-named panels of its own) out of
+`~/.config/quickshell` altogether.
+
+Everything that resolves reliably here — `DockBar`, `NotchBar`,
+`NotificationToasts`, `Colors`, `DockState` — is a file in the config root,
+so the panels are now too, and the unqualified directory import is gone.
+`services/` stays in a subdirectory because it is imported *qualified*
+(`import "./services" as Services`) and has never once failed.
+
+The same wandering error is documented in `../laptop/shell.qml`, which still
+has a `panels/` directory. If it shows up there, this is the fix.
+
 ## Why `services/` is duplicated from `../laptop/services/`
 
 A Quickshell *config* resolves its singletons and relative imports inside

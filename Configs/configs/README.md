@@ -49,7 +49,10 @@ Not from elifouts:
   again (the default), and `islands`, three floating pills across the top.
   Panels drop under whichever icon was clicked, measured from the live
   layout rather than hardcoded offsets, which is what lets one set of panels
-  serve both. Its `services/` are copies of `laptop/services/` — a
+  serve both. Every .qml but the services sits in the config root: reached
+  through a `panels/` subdirectory instead, exactly one panel per launch
+  failed to register as a type, a different one each time — see that
+  directory's README. Its `services/` are copies of `laptop/services/` — a
   Quickshell config can't import across config roots — so a fix in one
   belongs in both; see `quickshell/hyperspace/README.md`. Same
   not-runtime-tested caveat.

@@ -2,7 +2,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import "../services" as Services
+import "./services" as Services
 
 PanelWindow {
     id: root
@@ -18,13 +18,10 @@ PanelWindow {
     property var anchorScreen
 
     // `colors` and `dock` are the Colors.qml / DockState.qml singletons,
-    // handed in by shell.qml rather than referenced by name here. Both live
-    // in the config ROOT, one directory up: a file in panels/ reaches
-    // anything outside its own directory through an explicit import (which
-    // is exactly what `import "../services"` above is doing for the
-    // services), so injecting the two the panels need keeps this file from
-    // depending on a root-level singleton resolving unqualified from a
-    // subdirectory. shell.qml sits next to both and can name them directly.
+    // handed in by shell.qml rather than referenced by name here. They could
+    // be named directly now that this file sits in the config root beside
+    // them, but passing them keeps each panel independent of what the
+    // singletons are called, and it costs two lines at the one call site.
     required property var colors
     required property var dock
 
