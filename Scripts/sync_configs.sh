@@ -34,6 +34,29 @@ APPLY=0
 
 drift_found=0
 
+# Files git ignores are not repo content and must never be copied over a
+# live config, even though `find` below happily walks into them.
+#
+# This is not hypothetical. apply-theme.sh writes current-theme.json, and on
+# an install where ~/.config/theme-switcher was still a symlink into the repo
+# (i.e. before the first theme apply de-symlinked it) that write landed in
+# the CHECKOUT. The file is gitignored, so it stayed there untracked -- and
+# every subsequent `sync_configs.sh --apply` copied that stale snapshot back
+# over the live one, silently reverting the active theme. The symptom was two
+# bars: the file said "laptop", so start_bar.sh brought the Laptop dock up at
+# login on a machine running the Hyperspace theme.
+#
+# themes/*/current-wallpaper.txt has exactly the same shape and would have
+# reverted the chosen wallpaper the same way.
+#
+# Listed in one `git ls-files` call rather than a per-file `git check-ignore`,
+# and keyed by absolute path so the lookup in the loops below is a plain hash
+# hit. A repo with no git (a tarball copy) just gets an empty set.
+declare -A IGNORED=()
+while IFS= read -r _rel; do
+    [[ -n "$_rel" ]] && IGNORED["${repoDir}/${_rel}"]=1
+done < <(git -C "$repoDir" ls-files --others --ignored --exclude-standard 2>/dev/null || true)
+
 # Tracked files that are legitimately rewritten on this machine at runtime by
 # apply-theme.sh / apply_wallpaper.sh. The repo copy of each is only a seed --
 # the truth on a live install is whatever the last theme apply or wallpaper
@@ -128,6 +151,8 @@ for manifest in "${dotsDir}"/*.toml; do
     if [[ -d "$src" ]]; then
         while IFS= read -r -d '' f; do
             rel="${f#"$src"/}"
+            # Runtime state that git ignores -- see IGNORED above.
+            [[ -n "${IGNORED[$f]:-}" ]] && continue
             # Skip a generated file only when one already exists locally. If
             # it is missing entirely it still needs seeding from the repo's
             # committed default -- skipping unconditionally meant a newly
@@ -152,6 +177,9 @@ for manifest in "${dotsDir}"/*.toml; do
         # Single-file manifest (starship.toml, .zshrc): the skip check has to
         # happen here too, or a wholly generated file like starship.toml is
         # clobbered on every --apply.
+        if [[ -n "${IGNORED[$src]:-}" ]]; then
+            continue
+        fi
         if [[ -e "$dst" ]] && should_skip "${app}:$(basename "$src")"; then
             continue
         fi
