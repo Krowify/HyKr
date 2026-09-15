@@ -41,6 +41,15 @@ Singleton {
         root.volume = clamped
     }
 
+    // One read, now, without claiming ownership of detailsWanted -- which
+    // VolumePanel drives from its own visibility and would switch back off
+    // when it closes. Hyperspace's notch calls this as it opens, because it
+    // SHOWS the level and would otherwise render whatever the last poll left
+    // behind (0% on a shell where the volume panel has never been opened).
+    function refreshVolume() {
+        volumeProc.running = true
+    }
+
     function stepVolume(delta) {
         setVolume(root.volume + delta)
     }
@@ -74,7 +83,16 @@ Singleton {
         id: muteProc
         command: ["pactl", "get-sink-mute", "@DEFAULT_SINK@"]
         stdout: StdioCollector {
-            onStreamFinished: root.muted = text.includes("yes")
+            onStreamFinished: {
+                // Only move on an answer we actually recognise. A failed or
+                // empty read reported as "not muted" would flip the value and
+                // flip it back on the next poll -- which anything watching for
+                // a change (the notch) treats as you having touched the volume.
+                if (text.includes("yes"))
+                    root.muted = true
+                else if (text.includes("no"))
+                    root.muted = false
+            }
         }
     }
 }

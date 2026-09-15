@@ -87,6 +87,12 @@ Singleton {
         command: ["sh", "-c", "nmcli -t -f TYPE,STATE,CONNECTION dev status 2>/dev/null"]
         stdout: StdioCollector {
             onStreamFinished: {
+                // nmcli printing nothing -- a transient failure, NetworkManager
+                // restarting -- is not the same as being offline. Reporting it
+                // as such would flap connectionType and flap it back, and the
+                // notch opens on every one of those.
+                if (text.trim().length === 0)
+                    return
                 let type = "disconnected"
                 let name = ""
                 for (const line of text.trim().split("\n")) {

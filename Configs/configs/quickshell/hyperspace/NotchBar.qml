@@ -130,9 +130,19 @@ PanelWindow {
     // costs nothing extra, and means the notch reacts to the same poll that
     // updates the reading rather than needing new signals in the services.
 
+    // Read the level as the notch opens: the left wing shows the number, and
+    // AudioService only polls it for whoever asks, so without this it renders
+    // whatever the last poll left behind -- 0% until the volume panel has
+    // been opened once.
+    onExpandedChanged: if (root.expanded) Services.AudioService.refreshVolume()
+
     Connections {
         target: Services.AudioService
-        function onVolumeChanged() { root.flash("volume"); }
+        // Not while the pointer is on the notch: it is already open and you
+        // are already looking at the number, so holding it open for another
+        // 2.6s after you move away adds nothing. That also keeps the read
+        // above from registering as an event in its own right.
+        function onVolumeChanged() { if (!hover.containsMouse) root.flash("volume"); }
         function onMutedChanged() { root.flash("volume"); }
     }
 
@@ -145,9 +155,17 @@ PanelWindow {
         function onChargingChanged() { root.flash("battery"); }
     }
 
+    // A count, not the device list. BluetoothService now only reassigns
+    // that list when it genuinely changes, but watching a `property var`
+    // for "something happened" is the wrong shape regardless: an int
+    // notifies when the number moves and never otherwise, which is exactly
+    // the question being asked here. This pair was the bar opening itself
+    // every 15 seconds with nobody touching anything.
+    readonly property int btConnectedCount: Services.BluetoothService.connectedDevices.length
+    onBtConnectedCountChanged: root.flash("bluetooth")
+
     Connections {
         target: Services.BluetoothService
-        function onConnectedDevicesChanged() { root.flash("bluetooth"); }
         function onPoweredChanged() { root.flash("bluetooth"); }
     }
 

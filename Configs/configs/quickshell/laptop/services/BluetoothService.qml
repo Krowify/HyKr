@@ -40,6 +40,23 @@ Singleton {
             devicesProc.running = true
     }
 
+    // Assigning a `property var` a freshly built array emits its change
+    // signal EVERY time, identical contents or not -- and these lists are
+    // rebuilt from bluetoothctl's output on every poll. Anything watching
+    // them for a change therefore sees one on every tick: Hyperspace's
+    // NotchBar counts that as "a device connected" and opened the bar for
+    // 2.6 seconds every 15 seconds, untouched, all day. Compare first and
+    // assign only when something really moved.
+    function sameDevices(a, b) {
+        if (a.length !== b.length)
+            return false
+        for (let i = 0; i < a.length; i++) {
+            if (a[i].mac !== b[i].mac || a[i].name !== b[i].name)
+                return false
+        }
+        return true
+    }
+
     function openManager() {
         Quickshell.execDetached(["sh", "-c", "command -v blueman-manager >/dev/null 2>&1 && blueman-manager"])
     }
@@ -76,15 +93,18 @@ Singleton {
                         return { mac: mac, name: name.length > 0 ? name : mac }
                     })
                 const connected = parseDevices(sections[0])
-                root.connectedDevices = connected
+                if (!root.sameDevices(root.connectedDevices, connected))
+                    root.connectedDevices = connected
                 // `bluetoothctl devices Paired` lists every paired device,
                 // connected ones included, so BluetoothPanel rendered an
                 // active headset twice -- once under "connected", again
                 // under "paired". Keep the paired row for what's actually
                 // just paired.
                 const connectedMacs = connected.map(device => device.mac)
-                root.pairedDevices = parseDevices(sections[1])
+                const paired = parseDevices(sections[1])
                     .filter(device => !connectedMacs.includes(device.mac))
+                if (!root.sameDevices(root.pairedDevices, paired))
+                    root.pairedDevices = paired
             }
         }
     }
