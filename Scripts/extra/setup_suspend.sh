@@ -220,6 +220,107 @@ elif $efi_boot && $initramfs_systemd_hook && (( systemd_version >= 255 )); then
     resume_route="EFI HibernateLocation (systemd ${systemd_version} + systemd initramfs hook)"
 fi
 
+# Walks through what THIS machine needs to resume, rather than printing the
+# generic recipe: which swap it would use, the UUID (and offset, for a
+# swapfile) that resume= wants, where the kernel command line actually lives
+# on this bootloader, and whether the initramfs already handles resume.
+# Prints commands, never runs them -- an edit to the kernel command line is
+# the one change here that can leave a machine unbootable, and that belongs
+# in your hands with the bootloader in front of you.
+print_resume_recipe() {
+    local swap_line swap_name swap_type swap_uuid swap_fstype swap_fs_uuid
+
+    swap_line="$(swapon --show=NAME,TYPE --noheadings 2>/dev/null | head -1 || true)"
+    swap_name="$(awk '{print $1}' <<<"${swap_line}")"
+    swap_type="$(awk '{print $2}' <<<"${swap_line}")"
+
+    print_log "  Wiring up resume on this machine:"
+
+    if [[ -z "${swap_name}" ]]; then
+        print_log "    No swap is active right now (swapon --show is empty), even though"
+        print_log "    /proc/meminfo reports some. Sort that out first."
+        return 0
+    fi
+
+    print_log ""
+    print_log "    1. What resume= needs to point at"
+    if [[ "${swap_type}" == "partition" ]]; then
+        swap_uuid="$(lsblk -no UUID "${swap_name}" 2>/dev/null | head -1 || true)"
+        print_log "       Swap partition: ${swap_name}"
+        if [[ -n "${swap_uuid}" ]]; then
+            print_log "       -> add to the kernel command line:  resume=UUID=${swap_uuid}"
+        else
+            print_log "       -> get its UUID:  sudo blkid -s UUID -o value ${swap_name}"
+            print_log "          then add:      resume=UUID=<that-uuid>"
+        fi
+    else
+        # A swapfile needs two things: the UUID of the filesystem holding it,
+        # and where in that filesystem the file physically starts. The offset
+        # is filesystem-specific and needs root to read, so hand over the
+        # command rather than guessing a number.
+        swap_fs_uuid="$(findmnt -no UUID -T "${swap_name}" 2>/dev/null || true)"
+        swap_fstype="$(findmnt -no FSTYPE -T "${swap_name}" 2>/dev/null || true)"
+        print_log "       Swapfile: ${swap_name} (on a ${swap_fstype:-unknown} filesystem)"
+        print_log "       A swapfile needs BOTH the filesystem's UUID and the file's offset."
+        if [[ -n "${swap_fs_uuid}" ]]; then
+            print_log "       Filesystem UUID: ${swap_fs_uuid}"
+        else
+            print_log "       Filesystem UUID:  findmnt -no UUID -T ${swap_name}"
+        fi
+        if [[ "${swap_fstype}" == "btrfs" ]]; then
+            print_log "       Offset:  sudo btrfs inspect-internal map-swapfile -r ${swap_name}"
+        else
+            print_log "       Offset:  sudo filefrag -v ${swap_name} | awk '\$1==\"0:\" {print \$4}' | tr -d '.'"
+        fi
+        print_log "       -> add to the kernel command line:"
+        print_log "          resume=UUID=${swap_fs_uuid:-<fs-uuid>} resume_offset=<offset>"
+    fi
+
+    print_log ""
+    print_log "    2. Where the kernel command line lives here"
+    if [[ -f /etc/kernel/cmdline ]]; then
+        print_log "       /etc/kernel/cmdline (unified kernel image) -- append it there,"
+        print_log "       then rebuild:  sudo mkinitcpio -P"
+    elif [[ -d /boot/loader/entries ]] && compgen -G "/boot/loader/entries/*.conf" >/dev/null; then
+        print_log "       systemd-boot. Append to the 'options' line of your entry:"
+        local entry
+        for entry in /boot/loader/entries/*.conf; do
+            print_log "         ${entry}"
+        done
+    elif [[ -f /boot/limine.conf ]] || [[ -f /boot/limine/limine.conf ]]; then
+        print_log "       Limine -- append to the CMDLINE of your boot entry in limine.conf."
+    elif [[ -f /etc/default/grub ]]; then
+        print_log "       GRUB. Append inside the quotes of GRUB_CMDLINE_LINUX_DEFAULT in"
+        print_log "       /etc/default/grub, then:  sudo grub-mkconfig -o /boot/grub/grub.cfg"
+    else
+        print_log "       Couldn't identify the bootloader -- add it wherever this system's"
+        print_log "       kernel command line is defined (check /proc/cmdline for what's"
+        print_log "       already there)."
+    fi
+
+    print_log ""
+    print_log "    3. The initramfs side"
+    if $initramfs_systemd_hook; then
+        print_log "       Your HOOKS use the 'systemd' hook, which resumes on its own once"
+        print_log "       resume= is on the command line. Nothing to add -- just rebuild:"
+        print_log "         sudo mkinitcpio -P"
+    elif $initramfs_resume_hook; then
+        print_log "       The 'resume' hook is already in HOOKS. Rebuild after editing the"
+        print_log "       command line:  sudo mkinitcpio -P"
+    else
+        print_log "       Add 'resume' to HOOKS in /etc/mkinitcpio.conf, after 'block' and"
+        print_log "       before 'filesystems', then:  sudo mkinitcpio -P"
+        if [[ -n "${mkinitcpio_hooks}" ]]; then
+            print_log "       Current: ${mkinitcpio_hooks}"
+        fi
+    fi
+
+    print_log ""
+    print_log "    4. Reboot (the command line only changes at boot), then re-run this"
+    print_log "       script -- it should report a resume route, and 'sudo systemctl"
+    print_log "       hibernate' should bring your session back."
+}
+
 kb_to_gib() {
     awk -v kb="$1" 'BEGIN { printf "%.1f", kb / 1048576 }'
 }
@@ -260,6 +361,8 @@ if [[ "${can_hibernate}" == "yes" ]]; then
         print_log "  Test it before trusting it: save your work, then"
         print_log "    sudo systemctl hibernate"
         print_log "  power the machine back on, and see whether the session returns."
+        print_log ""
+        print_resume_recipe
     fi
 fi
 

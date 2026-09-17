@@ -30,6 +30,12 @@ install (package lists, post-install helpers, maintenance utilities).
   255+ on EFI writing a HibernateLocation variable) — logind's own
   `CanHibernate` only answers whether the image can be written, so an
   unset `/sys/power/resume` alongside `CanHibernate=yes` is worth a manual
-  `systemctl hibernate` test. Run it again after a reboot if the first
+  `systemctl hibernate` test. When it finds no resume route, it prints the
+  steps for *this* machine — the swap in use, the UUID (and offset, for a
+  swapfile) `resume=` wants, where the kernel command line lives on this
+  bootloader, and whether HOOKS already covers resume. It prints those
+  commands rather than running them: a bad kernel command line is the one
+  change here that can leave a machine unbootable. Run it again after a
+  reboot if the first
   run happened inside `arch-chroot`, and after any change to swap or the
   resume setup. Needs `sudo`.
