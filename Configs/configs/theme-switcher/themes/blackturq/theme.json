@@ -2,6 +2,12 @@
   "name": "Blackturq",
   "id": "blackturq",
   "default_wallpaper": "wallpapers/blackturq.jpg",
+  "bar": "quickshell-dock",
+
+  "quickshell": {
+    "config": "laptop"
+  },
+
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"

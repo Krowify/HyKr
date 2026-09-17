@@ -55,17 +55,17 @@ hl.window_rule({
     opacity = "{{active_opacity}} {{inactive_opacity}}",
 })
 
--- Layer rules. These name HyKr's own surfaces (waybar/wofi/wlogout), not
--- Blackturq upstream's (which blurs mako and walker instead) -- those two
--- processes are not part of this stack. See this theme's README.md.
-hl.layer_rule({ match = { namespace = "waybar" }, blur = true })
-hl.layer_rule({ match = { namespace = "waybar" }, ignore_alpha = 0.2 })
+-- Layer rules. Blackturq runs the shared Quickshell dock
+-- (`quickshell -c laptop`, per theme.json), not waybar -- so these name
+-- that shell's layer namespaces, the same ones the Laptop theme blurs.
+hl.layer_rule({ match = { namespace = "laptop-dock" }, blur = true })
+hl.layer_rule({ match = { namespace = "laptop-dock" }, ignore_alpha = 0.2 })
+
+hl.layer_rule({ match = { namespace = "laptop-popup" }, blur = true })
+hl.layer_rule({ match = { namespace = "laptop-popup" }, ignore_alpha = 0.2 })
 
 hl.layer_rule({ match = { namespace = "wofi" }, blur = true })
 hl.layer_rule({ match = { namespace = "wofi" }, ignore_alpha = 0.2 })
-
-hl.layer_rule({ match = { namespace = "swaync-notification-window" }, blur = true })
-hl.layer_rule({ match = { namespace = "swaync-control-center" }, blur = true })
 
 hl.layer_rule({ match = { class = "wlogout" }, blur = true })
 hl.layer_rule({ match = { class = "wlogout" }, ignore_alpha = 0.2 })
