@@ -172,6 +172,15 @@ is the very thing being fixed. When it can't, the script prints the
 checklist (swap size, `resume=`, initramfs hook) and leaves plain `suspend`
 in place. That checklist is also what makes wlogout's Hibernate button work.
 
+Writing a hibernation image and resuming from one are separate problems,
+and `CanHibernate` only answers the first — so the report calls out the
+resume route separately (`resume=` plus an initramfs hook, or systemd 255+
+on EFI, where `/sys/power/resume` reads `0:0` and resume still works). When
+it can't find one, it still enables `suspend-then-hibernate` — on
+s2idle-only firmware a bounded drain is the whole point, and a cold boot
+beats a flat battery — but says so, and one manual `sudo systemctl
+hibernate` settles it.
+
 If the firmware offers `deep` (S3) but doesn't use it, the script offers to
 switch — usually the single biggest win. It goes in as
 `/etc/tmpfiles.d/hykr-mem-sleep.conf`, so a machine whose S3 resume turns

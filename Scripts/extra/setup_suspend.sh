@@ -160,6 +160,66 @@ if [[ "${can_hibernate}" == "unknown" ]]; then
     fi
 fi
 
+# --------------------------------------------------- // Can it RESUME
+# Hibernating and resuming are two different problems, and logind only
+# answers the first. CanHibernate=yes with an unset /sys/power/resume is a
+# real combination: writing the image needs swap, reading it back needs
+# something at boot that knows where the image is. Three things can supply
+# that, so look for all three rather than trusting the one sysfs file:
+#
+#   - resume= on the kernel command line (the classic route, needs
+#     mkinitcpio's `resume` hook, or dracut, which ships resume support by
+#     default)
+#   - /sys/power/resume already populated (same thing, seen from the
+#     running kernel, e.g. set by a rule or a systemd generator)
+#   - systemd 255+ on EFI writing a HibernateLocation EFI variable at
+#     hibernate time, which the `systemd` initramfs hook reads back. Here
+#     /sys/power/resume legitimately reads 0:0 while resume works fine.
+#
+# Finding none of them doesn't prove resume is broken -- a UKI or a
+# hand-rolled initramfs can do this in ways this check can't see -- so this
+# warns and tells you how to test it, rather than refusing to configure.
+cmdline_resume=false
+if grep -qE '(^|[[:space:]])resume=' /proc/cmdline 2>/dev/null; then
+    cmdline_resume=true
+fi
+
+efi_boot=false
+if [[ -d /sys/firmware/efi ]]; then
+    efi_boot=true
+fi
+
+# HOOKS can live in mkinitcpio.conf or any drop-in beside it.
+mkinitcpio_hooks="$(cat /etc/mkinitcpio.conf /etc/mkinitcpio.conf.d/*.conf 2>/dev/null \
+    | grep -E '^[[:space:]]*HOOKS=' || true)"
+initramfs_resume_hook=false
+initramfs_systemd_hook=false
+if grep -qE '\bresume\b' <<<"${mkinitcpio_hooks}"; then
+    initramfs_resume_hook=true
+fi
+if grep -qE '\bsystemd\b' <<<"${mkinitcpio_hooks}"; then
+    initramfs_systemd_hook=true
+fi
+# dracut builds resume support in by default, so its presence counts as the
+# initramfs side being handled.
+if command -v dracut &>/dev/null; then
+    initramfs_resume_hook=true
+fi
+
+systemd_version="$(systemctl --version 2>/dev/null | head -1 | grep -oE '[0-9]+' | head -1 || true)"
+: "${systemd_version:=0}"
+
+resume_route=""
+if $resume_configured || $cmdline_resume; then
+    if $initramfs_resume_hook || $initramfs_systemd_hook; then
+        resume_route="resume= plus an initramfs that can use it"
+    else
+        resume_route="resume= is set, but no initramfs resume hook found"
+    fi
+elif $efi_boot && $initramfs_systemd_hook && (( systemd_version >= 255 )); then
+    resume_route="EFI HibernateLocation (systemd ${systemd_version} + systemd initramfs hook)"
+fi
+
 kb_to_gib() {
     awk -v kb="$1" 'BEGIN { printf "%.1f", kb / 1048576 }'
 }
@@ -188,6 +248,20 @@ fi
 print_log "RAM / swap                       : $(kb_to_gib "${mem_total_kb}") GiB / $(kb_to_gib "${swap_total_kb}") GiB"
 print_log "Kernel resume device             : ${resume_dev:-unset}"
 print_log "Hibernation possible             : ${can_hibernate}"
+if [[ "${can_hibernate}" == "yes" ]]; then
+    print_log "Resume after hibernation         : ${resume_route:-no route found}"
+    if [[ -z "${resume_route}" ]]; then
+        print_log "  Hibernation can WRITE the image but nothing here shows how the"
+        print_log "  machine would read it back at boot: no resume= on the kernel"
+        print_log "  command line, /sys/power/resume unset, and no systemd-on-EFI"
+        print_log "  route either. If that's right, hibernating powers the machine"
+        print_log "  off and the next boot is a cold one -- the battery is saved,"
+        print_log "  the open session isn't."
+        print_log "  Test it before trusting it: save your work, then"
+        print_log "    sudo systemctl hibernate"
+        print_log "  power the machine back on, and see whether the session returns."
+    fi
+fi
 
 if systemd_is_live && command -v systemd-analyze &>/dev/null; then
     lid_now="$(systemd-analyze cat-config systemd/logind.conf 2>/dev/null \
@@ -237,6 +311,17 @@ print_log ""
 if $CHECK_ONLY; then
     print_log "--check: nothing written."
     exit 0
+fi
+
+if [[ "${can_hibernate}" == "yes" && -z "${resume_route}" ]]; then
+    # Still worth enabling: on s2idle-only firmware a bounded drain is the
+    # whole point, and a cold boot is a far smaller loss than a flat
+    # battery. But say plainly what the unverified half costs.
+    print_log ""
+    print_log "NOTE: enabling suspend-then-hibernate with resume unverified (see above)."
+    print_log "  Worst case the lid-close saves the battery but not the session."
+    print_log "  'sudo systemctl hibernate' once, by hand, settles it either way."
+    print_log ""
 fi
 
 # --------------------------------------------------- // Lid handling

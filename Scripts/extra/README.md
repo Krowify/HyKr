@@ -25,6 +25,11 @@ install (package lists, post-install helpers, maintenance utilities).
   Offers to switch an s2idle-by-default machine to `deep` (S3) via a
   `tmpfiles.d` drop-in, which is the usual fix for a laptop that goes flat
   with the lid shut. `--check` diagnoses and writes nothing. No-ops on a
-  desktop (no battery, no lid). Run it again after a reboot if the first
+  desktop (no battery, no lid). Reports separately on whether the machine
+  can *resume* from hibernation (`resume=` + initramfs hook, or systemd
+  255+ on EFI writing a HibernateLocation variable) — logind's own
+  `CanHibernate` only answers whether the image can be written, so an
+  unset `/sys/power/resume` alongside `CanHibernate=yes` is worth a manual
+  `systemctl hibernate` test. Run it again after a reboot if the first
   run happened inside `arch-chroot`, and after any change to swap or the
   resume setup. Needs `sudo`.
