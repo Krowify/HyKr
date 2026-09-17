@@ -1,0 +1,98 @@
+{
+    "layer": "top",
+    "position": "top",
+    "exclusive": true,
+    "height": 28,
+    "margin-top": 3,
+    "margin-left": 15,
+    "margin-right": 15,
+    "spacing": 4,
+    "reload_style_on_change": true,
+
+    "modules-left": ["clock", "mpris"],
+    "modules-center": ["hyprland/workspaces"],
+    "modules-right": ["bluetooth", "pulseaudio", "network", "battery", "tray", "custom/notification", "custom/power"],
+
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "format-icons": {
+            "default": "",
+            "active": "",
+            "urgent": ""
+        },
+        "on-click": "activate",
+        "all-outputs": true,
+        "disable-scroll": false
+    },
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "format-alt": "{:%a %d %b %Y}",
+        "tooltip-format": "<tt>{calendar}</tt>"
+    },
+
+    "mpris": {
+        "format": "{title} — {artist}",
+        "format-paused": "{title} — {artist}",
+        "max-length": 45,
+        "tooltip": false,
+        "interval": 2
+    },
+
+    "bluetooth": {
+        "format": "",
+        "format-disabled": "",
+        "format-connected": "",
+        "tooltip-format": "{status}",
+        "on-click": "blueman-manager",
+        "on-click-right": "bluetoothctl power toggle"
+    },
+
+    "pulseaudio": {
+        "format": "{icon}  {volume}%",
+        "format-muted": "󰝟",
+        "format-icons": {
+            "default": ["", "", ""]
+        },
+        "tooltip": false,
+        "on-click": "pavucontrol",
+        "on-click-right": "pactl set-sink-mute @DEFAULT_SINK@ toggle"
+    },
+
+    "network": {
+        "format-wifi": "  {essid}",
+        "format-ethernet": "󰈀",
+        "format-disconnected": "󰖪",
+        "tooltip-format": "{ifname}: {ipaddr}",
+        "on-click": "nm-connection-editor",
+        "on-click-right": "protonvpn-app"
+    },
+
+    "battery": {
+        "format": "{icon}  {capacity}%",
+        "format-charging": "  {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "states": {
+            "warning": 20,
+            "critical": 10
+        },
+        "tooltip-format": "{timeTo}, {power}W",
+        "interval": 5
+    },
+
+    "tray": {
+        "spacing": 8
+    },
+
+    "custom/notification": {
+        "format": "󰂚",
+        "tooltip": false,
+        "on-click": "swaync-client -t -sw"
+    },
+
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "on-click": "wlogout"
+    }
+}

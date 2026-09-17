@@ -1,0 +1,22 @@
+{
+  "name": "Blackturq",
+  "id": "blackturq",
+  "default_wallpaper": "wallpapers/blackturq.jpg",
+  "fonts": {
+    "family": "JetBrainsMono Nerd Font",
+    "family_bold": "JetBrainsMono Nerd Font Bold"
+  },
+
+  "hypr": {
+    "border_size": 2,
+    "gaps_out": 8,
+    "rounding": 2,
+
+    "blur": {
+      "enabled": true,
+      "size": 3,
+      "passes": 2,
+      "vibrancy": 0.1696
+    }
+  }
+}

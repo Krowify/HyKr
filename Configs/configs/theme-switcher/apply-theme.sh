@@ -977,6 +977,90 @@ if [[ -f "$PEACLOCK_TEMPLATE" ]]; then
     "$PEACLOCK_TEMPLATE" > "$PEACLOCK_OUT"
 fi
 
+# --------- btop ----------
+# Two writes, deliberately asymmetric: the .theme file is ours to own and
+# is rewritten wholesale, but btop.conf belongs to the user (scale, update
+# rate, which boxes are shown), so only its color_theme key is touched.
+BTOP_TPL="$BASE/templates/btop.theme.tpl"
+BTOP_DIR="$HOME/.config/btop"
+BTOP_THEME_OUT="$BTOP_DIR/themes/hykr.theme"
+BTOP_CONF="$BTOP_DIR/btop.conf"
+
+if [[ -f "$BTOP_TPL" ]]; then
+  mkdir -p "$BTOP_DIR/themes"
+
+  btop_orange="${orange_hex:-${yellow_hex:-$red_hex}}"
+  btop_pink="${pink_hex:-$red_hex}"
+  btop_teal="${teal_hex:-${green_hex:-$accent_hex}}"
+  btop_overlay="${overlay_hex:-${surface2_hex:-$surface_hex}}"
+
+  sed \
+    -e "s/{{bg}}/$bg_hex/g" \
+    -e "s/{{bg_alt}}/$bg_alt_hex/g" \
+    -e "s/{{fg}}/$fg_hex/g" \
+    -e "s/{{fg_dim}}/$fg_dim_hex/g" \
+    -e "s/{{surface}}/$surface_hex/g" \
+    -e "s/{{surface2}}/$surface2_hex/g" \
+    -e "s/{{overlay}}/$btop_overlay/g" \
+    -e "s/{{accent}}/$accent_hex/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    -e "s/{{green}}/$green_hex/g" \
+    -e "s/{{yellow}}/$yellow_hex/g" \
+    -e "s/{{orange}}/$btop_orange/g" \
+    -e "s/{{blue}}/$blue_hex/g" \
+    -e "s/{{teal}}/$btop_teal/g" \
+    -e "s/{{pink}}/$btop_pink/g" \
+    "$BTOP_TPL" > "$BTOP_THEME_OUT"
+
+  # Point btop at it. btop resolves a bare name against its themes dirs,
+  # so "hykr" is the whole value -- not a path.
+  #
+  # The config may not exist yet (btop writes it on first exit, not first
+  # run), so a missing file gets a one-key config rather than being
+  # skipped: without this, a fresh install renders the theme and then never
+  # selects it.
+  if [[ -f "$BTOP_CONF" ]]; then
+    if grep -q '^[[:space:]]*color_theme[[:space:]]*=' "$BTOP_CONF"; then
+      sed -i 's|^[[:space:]]*color_theme[[:space:]]*=.*|color_theme = "hykr"|' "$BTOP_CONF"
+    else
+      printf '\ncolor_theme = "hykr"\n' >> "$BTOP_CONF"
+    fi
+  else
+    printf 'color_theme = "hykr"\n' > "$BTOP_CONF"
+  fi
+fi
+
+# --------- cava ----------
+# Rendered whole. cava falls back to its own defaults for every key it is
+# not given, so a colours-only file is a valid complete config -- see the
+# note at the top of the template.
+CAVA_TPL="$BASE/templates/cava.config.tpl"
+CAVA_DIR="$HOME/.config/cava"
+CAVA_OUT="$CAVA_DIR/config"
+
+if [[ -f "$CAVA_TPL" ]]; then
+  mkdir -p "$CAVA_DIR"
+
+  cava_orange="${orange_hex:-${yellow_hex:-$red_hex}}"
+  cava_teal="${teal_hex:-${green_hex:-$accent_hex}}"
+  cava_overlay="${overlay_hex:-${surface2_hex:-$surface_hex}}"
+
+  sed \
+    -e "s/{{overlay}}/$cava_overlay/g" \
+    -e "s/{{accent}}/$accent_hex/g" \
+    -e "s/{{blue}}/$blue_hex/g" \
+    -e "s/{{teal}}/$cava_teal/g" \
+    -e "s/{{green}}/$green_hex/g" \
+    -e "s/{{yellow}}/$yellow_hex/g" \
+    -e "s/{{orange}}/$cava_orange/g" \
+    -e "s/{{red}}/$red_hex/g" \
+    "$CAVA_TPL" > "$CAVA_OUT"
+
+  # cava reloads its config on SIGUSR1 -- no restart, no dropped audio
+  # stream. Harmless when nothing is running.
+  pkill -USR1 -x cava >/dev/null 2>&1 || true
+fi
+
 # --------- Obsidian ----------
 OBSIDIAN_TPL="$BASE/templates/obsidian.css.tpl"
 

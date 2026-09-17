@@ -12,5 +12,7 @@ proton-vpn-gtk-app                                     # Official ProtonVPN Linu
 # --------------------------------------------------- // Utilities
 imagemagick                                            # provides `magick`, used (soft-guarded, so silently skipped without it) by waybar's colorpicker.sh to generate a swatch preview thumbnail
 pokeget                                                # random Pokemon sprites, used as fastfetch's logo via Configs/configs/fastfetch/pokemon-logo.sh ("command-raw" in config.jsonc). Optional -- that script falls back to jirachi.txt when pokeget isn't installed, so the fetch still renders without it.
+btop                                                   # resource monitor, themed per-theme via Configs/configs/theme-switcher/templates/btop.theme.tpl (rendered to ~/.config/btop/themes/hykr.theme, and apply-theme.sh sets btop.conf's color_theme to match). Optional -- the template is skipped silently when btop isn't installed.
+cava                                                   # terminal audio visualiser, themed via templates/cava.config.tpl. Reads the PipeWire monitor source by default, so it needs no config beyond the colours apply-theme.sh writes.
 lazygit                                                # terminal git UI, run from kitty
 fzf                                                    # fuzzy history/file search (Ctrl+R and friends) -- wired into Configs/configs/zsh/.zshrc
