@@ -34,7 +34,7 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | `Super+Shift+N` | Toggle blue light filter (hyprsunset) |
 | `Super+Shift+I` | Toggle caffeine (kills/restarts hypridle) |
 | `Super+S` | Quick-settings menu (Wofi) |
-| `Super+Shift+R` | Resync keybinds (reset stuck submap — fixes Super+J etc. going dead after hyprexpo) |
+| `Super+Shift+R` | Reset a stuck submap — fixes *all* binds going dead. Bound globally **and inside every submap**, so it works while stuck. See [Recovering from a stuck submap](#recovering-from-a-stuck-submap) |
 
 ## Launchers and apps
 
@@ -129,3 +129,39 @@ by the EC and never reach the compositor. Check what a key really sends with
 | --- | --- |
 | `Super+LeftClick` (drag) | Move window |
 | `Super+RightClick` (drag) | Resize window |
+
+## Recovering from a stuck submap
+
+`Super+Z` (move), `Super+X` (resize) and hyprexpo's overview each enter a
+Hyprland **submap**. While one is active, only that submap's own binds
+receive keys — every other bind is dead, `Super+Return` included. If the
+submap isn't exited cleanly (hyprexpo leaks it on some overview-close
+paths, upstream sandwichfarm/hyprexpo #99 and #39) it stays active and the
+desktop looks broken while the config is perfectly fine.
+
+Symptoms: no keybind does anything, but `hyprctl configerrors` is empty and
+`hyprctl binds` lists everything as normal. Confirm with:
+
+```bash
+hyprctl submap      # prints the stuck submap's name instead of nothing
+```
+
+Ways out, in order:
+
+1. **`Escape`** — bound to reset in `move` and `resize`; cancels the
+   overview in hyprexpo's.
+2. **`Super+Shift+R`** — re-bound inside every submap precisely so the
+   escape hatch is reachable while stuck.
+3. **From an open terminal**, if neither key reaches the compositor:
+
+   ```bash
+   hyprctl dispatch 'hl.dsp.submap("reset")'
+   ```
+
+   The Lua quoting matters. With a Lua config, hyprctl interpolates the
+   argument straight into `return hl.dispatch(...)`, so a bare
+   `hyprctl dispatch submap reset` fails with a Lua syntax error rather
+   than dispatching anything.
+
+`hyprctl reload` does **not** clear a stuck submap — it returns `ok` and
+leaves you exactly where you were. Don't rely on it here.

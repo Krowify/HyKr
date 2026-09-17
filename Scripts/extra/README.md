@@ -39,3 +39,22 @@ install (package lists, post-install helpers, maintenance utilities).
   reboot if the first
   run happened inside `arch-chroot`, and after any change to swap or the
   resume setup. Needs `sudo`.
+- [`setup_blackarch.sh`](setup_blackarch.sh) — adds the BlackArch
+  repository to this install, without installing any tools. BlackArch is a
+  pacman repo overlay, not a distro to migrate to, so every HyKr config
+  keeps working; what can actually break the desktop is precedence. The
+  script backs up `pacman.conf` and the explicit package list, insists on a
+  full `-Syu` first (a third-party repo on a stale system is how an
+  accidental partial upgrade happens), prints `strap.sh`'s SHA1 for you to
+  check against the published one rather than baking in a checksum that
+  would go stale, then **refuses to continue unless `[blackarch]` is the
+  last repo section** — placed higher, BlackArch's rebuilds of ordinary
+  packages outrank the official ones. It then reports which packages
+  BlackArch also ships, reading the watch list straight out of
+  `pkg_core.lst`/`pkg_extra.lst` so it stays current, and calls out
+  `python-pywal16` by name because it provides/replaces `python-pywal` and
+  a silent swap would cost the `--cols16` flag every theme-switcher
+  template depends on. `--report-only` re-runs just that report on an
+  already-strapped system; `--install "blackarch-recon blackarch-webapp"`
+  installs category groups. Never installs the bare `blackarch` group.
+  Needs `sudo`.

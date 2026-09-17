@@ -308,6 +308,9 @@ hl.define_submap("move", function()
     hl.bind("up", hl.dsp.window.move({ x = 0, y = -30, relative = true }), { repeating = true })
     hl.bind("down", hl.dsp.window.move({ x = 0, y = 30, relative = true }), { repeating = true })
     hl.bind("escape", hl.dsp.submap("reset"))
+    -- The global Super+Shift+R escape hatch is dead while a submap is
+    -- active, so every submap re-binds it. See the note below.
+    hl.bind(var_mainMod .. " + SHIFT + R", hl.dsp.submap("reset"))
 end)
 hl.bind(var_mainMod .. " + X", hl.dsp.submap("resize"))
 hl.define_submap("resize", function()
@@ -316,15 +319,32 @@ hl.define_submap("resize", function()
     hl.bind("up", hl.dsp.window.resize({ x = 0, y = -30, relative = true }), { repeating = true })
     hl.bind("down", hl.dsp.window.resize({ x = 0, y = 30, relative = true }), { repeating = true })
     hl.bind("escape", hl.dsp.submap("reset"))
+    -- The global Super+Shift+R escape hatch is dead while a submap is
+    -- active, so every submap re-binds it. See the note below.
+    hl.bind(var_mainMod .. " + SHIFT + R", hl.dsp.submap("reset"))
 end)
 
--- Escape hatch: hyprexpo's keynav submap (below) isn't always torn down
--- cleanly on every overview-close path (upstream sandwichfarm/hyprexpo
--- #99, #39) -- when that happens every bind outside that submap's own
--- h/l/k/j/return/escape goes dead, Super+J (togglesplit) included, until
--- the submap is forced back to global. `hyprctl reload` also clears it
--- but reparses the whole config and re-pins monitors; this is the same
--- fix without the extra cost.
+-- Escape hatch: a submap that isn't torn down cleanly leaves every bind
+-- outside it dead -- Super+Return included -- until the submap is forced
+-- back to global. hyprexpo's keynav submap is the usual culprit (upstream
+-- sandwichfarm/hyprexpo #99, #39), but `move`/`resize` above can strand
+-- you the same way if their Escape is missed.
+--
+-- This global copy only helps if you are NOT currently in a submap, which
+-- is exactly when you don't need it -- so each submap re-binds
+-- Super+Shift+R itself. This one stays for the case where a submap was
+-- exited but binds still feel wrong.
+--
+-- `hyprctl reload` does NOT clear a stuck submap. Confirmed the hard way:
+-- a session stuck in `move` still reported `hyprctl submap` -> move after
+-- a reload that returned ok. If every bind is dead and no submap's
+-- Super+Shift+R reaches you, recover from an open terminal with
+--
+--     hyprctl dispatch 'hl.dsp.submap("reset")'
+--
+-- Note the Lua quoting: with a Lua config, hyprctl interpolates the
+-- argument straight into `return hl.dispatch(...)`, so a bare
+-- `hyprctl dispatch submap reset` is a Lua syntax error, not a dispatch.
 hl.bind(var_mainMod .. " + SHIFT + R", hl.dsp.submap("reset"))
 
 for i = 1, 10 do
@@ -343,6 +363,11 @@ hl.define_submap("hyprexpo", function()
     hl.bind("j", function() hl.plugin.hyprexpo.kb_focus("down") end)
     hl.bind("return", function() hl.plugin.hyprexpo.kb_confirm() end)
     hl.bind("escape", function() hl.plugin.hyprexpo.expo("cancel") end)
+    -- Same escape hatch. This submap is the one that actually leaks
+    -- (upstream #99, #39): cancelling the overview is what normally
+    -- exits it, so when the overview closes by some other path this
+    -- bind is the only way back to global without a terminal.
+    hl.bind(var_mainMod .. " + SHIFT + R", hl.dsp.submap("reset"))
 end)
 
 -- --------------------------------------------------- // Screenshot
