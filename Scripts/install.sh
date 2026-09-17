@@ -281,6 +281,16 @@ fi
     failed_steps+=("MAC randomization (extra/setup_mac_randomization.sh)")
 }
 
+# --------------------------------------------------- // Suspend / lid
+# Unprompted, like the MAC drop-in: on a desktop it detects no battery and
+# no lid and exits without touching anything, and on a laptop the worst it
+# writes is logind's own defaults, made explicit. The one change with a
+# real trade-off (s2idle -> deep) asks for itself inside the script.
+"${scrDir}/extra/setup_suspend.sh" || {
+    print_log "WARNING: suspend/lid setup failed — continuing."
+    failed_steps+=("suspend/lid setup (extra/setup_suspend.sh)")
+}
+
 # --------------------------------------------------- // sshd
 # Opt-in, and skipped outright over SSH: disabling sshd is what you want on a
 # desktop that never takes inbound connections, but doing it unprompted to a

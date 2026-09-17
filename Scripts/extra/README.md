@@ -16,3 +16,15 @@ install (package lists, post-install helpers, maintenance utilities).
   this runs on both a desktop and a laptop that moves between networks;
   see the note it prints about assigning trusted networks a looser zone.
   Needs `sudo`.
+- [`setup_suspend.sh`](setup_suspend.sh) — lid-close power management:
+  diagnoses what this machine's firmware offers (`/sys/power/mem_sleep`),
+  whether hibernation is actually possible, and whether anything is
+  blocking sleep, then writes explicit `logind`/`sleep` drop-ins for it —
+  `HandleLidSwitch=suspend-then-hibernate` where hibernation works,
+  plain `suspend` where it doesn't (and a checklist of what's missing).
+  Offers to switch an s2idle-by-default machine to `deep` (S3) via a
+  `tmpfiles.d` drop-in, which is the usual fix for a laptop that goes flat
+  with the lid shut. `--check` diagnoses and writes nothing. No-ops on a
+  desktop (no battery, no lid). Run it again after a reboot if the first
+  run happened inside `arch-chroot`, and after any change to swap or the
+  resume setup. Needs `sudo`.

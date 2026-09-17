@@ -38,7 +38,8 @@ HyKr/
 │   ├── global_fn.sh          # shared lib, sourced by every script
 │   ├── link_dots.sh          # symlinks Configs/configs/* into $HOME per Scripts/dots manifest
 │   ├── dots/                 # one .toml manifest per app (source → target)
-│   ├── extra/                # optional/secondary scripts (install_sddm_theme.sh, setup_firewall.sh)
+│   ├── extra/                # optional/secondary scripts (install_sddm_theme.sh, setup_firewall.sh,
+│   │                          #   setup_suspend.sh — lid/suspend power management)
 │   ├── pkg_core.lst          # packages needed to run what's in Configs/
 │   └── pkg_extra.lst         # optional apps (vesktop, spotify, proton mail)
 └── Source/
@@ -79,8 +80,9 @@ cd ~/HyKr/Scripts
 > login screen, no network, no bluetooth after reboot), installs the SDDM
 > theme, applies the security hardening step (firewalld + sysctl
 > anti-spoofing + fail2ban) and the NetworkManager MAC-randomization
-> drop-in. It then **asks** before each of: the Hyprland gesture plugins,
-> disabling `sshd`, and `usbguard`.
+> drop-in, and configures lid-close power management (see below). It then
+> **asks** before each of: the Hyprland gesture plugins, disabling `sshd`,
+> and `usbguard`.
 >
 > A package that fails to build no longer aborts the run — the installer
 > warns, carries on, and lists every skipped step at the end, so a broken
@@ -133,6 +135,52 @@ Check what's actually active at any point with:
 sudo firewall-cmd --state        # "running"
 sudo firewall-cmd --list-all     # zone, services, logging
 ```
+
+<div align="right">
+  <sub><a href="#hykr">🡅 back to top</a></sub>
+</div>
+
+<a id="suspend"></a>
+### The laptop goes flat with the lid closed
+
+Closing the lid suspends — that part is `systemd-logind`'s default and has
+always worked. What decides whether a closed lid *costs* anything is which
+sleep state the firmware gives you, and most laptops built since ~2019 only
+offer `s2idle` ("modern standby"), where the machine stays powered and
+relies on every device idling properly. One that doesn't, and a full battery
+is gone in an afternoon with the lid shut.
+
+```shell
+~/HyKr/Scripts/extra/setup_suspend.sh --check   # diagnose, change nothing
+~/HyKr/Scripts/extra/setup_suspend.sh           # apply
+```
+
+`--check` prints the sleep states the firmware offers, whether hibernation
+is possible, the lid settings currently in force, and anything holding a
+block inhibitor on sleep (which stops a lid close doing *anything* — no
+config overrides that; quit the program holding it).
+
+Applying writes two drop-ins: `/etc/systemd/logind.conf.d/10-hykr-lid.conf`
+pins all three lid cases (battery / external power / docked), and, where
+hibernation is actually possible,
+`/etc/systemd/sleep.conf.d/10-hykr-sleep.conf` sets
+`HibernateDelaySec=45min` so `suspend-then-hibernate` keeps instant resume
+for short breaks and writes RAM to swap for anything longer. Hibernation is
+only turned on once `logind` itself confirms it can — an unbootable
+`suspend-then-hibernate` leaves the machine awake with the lid shut, which
+is the very thing being fixed. When it can't, the script prints the
+checklist (swap size, `resume=`, initramfs hook) and leaves plain `suspend`
+in place. That checklist is also what makes wlogout's Hibernate button work.
+
+If the firmware offers `deep` (S3) but doesn't use it, the script offers to
+switch — usually the single biggest win. It goes in as
+`/etc/tmpfiles.d/hykr-mem-sleep.conf`, so a machine whose S3 resume turns
+out to be buggy is fixed with one `rm` from a TTY rather than a bootloader
+edit.
+
+Measure it rather than trusting it: note
+`/sys/class/power_supply/BAT*/capacity`, close the lid for a few hours, and
+compare.
 
 <div align="right">
   <sub><a href="#hykr">🡅 back to top</a></sub>
