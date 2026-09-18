@@ -38,7 +38,20 @@ install (package lists, post-install helpers, maintenance utilities).
   change here that can leave a machine unbootable. Run it again after a
   reboot if the first
   run happened inside `arch-chroot`, and after any change to swap or the
-  resume setup. Needs `sudo`.
+  resume setup — though `hykr-suspend-refresh.service`, which this script
+  installs and enables, now does that re-check on every boot for you
+  (`--refresh` is the quiet non-interactive mode it runs).
+  Both the battery and external-power lid cases get
+  `suspend-then-hibernate` where hibernation works; `HibernateOnACPower=no`
+  keeps a plugged-in machine merely suspended until the charger comes out,
+  which closes the "closed the lid on AC, unplugged it later, came back to
+  a flat battery" hole. `HandleLidSwitchDocked` stays `ignore` so the lid
+  can be shut while driving an external monitor — `logind` counts any
+  connected display as docked, so the backstop for that is
+  `hypr/idle_sleep.sh` (see `Configs/configs/hypr/`), not this script.
+  Also reports whether an RTC wake alarm exists and is writable, since
+  `suspend-then-hibernate` needs one to wake itself up and finish.
+  Needs `sudo`.
 - [`setup_blackarch.sh`](setup_blackarch.sh) — adds the BlackArch
   repository to this install, without installing any tools. BlackArch is a
   pacman repo overlay, not a distro to migrate to, so every HyKr config

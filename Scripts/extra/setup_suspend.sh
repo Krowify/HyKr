@@ -33,6 +33,7 @@
 #   ./setup_suspend.sh            # diagnose, then apply
 #   ./setup_suspend.sh --check    # diagnose only, write nothing
 #   ./setup_suspend.sh --yes      # don't prompt (assume yes)
+#   ./setup_suspend.sh --refresh  # re-apply quietly; what the boot unit runs
 
 scrDir="$(dirname "$(dirname "$(realpath "$0")")")"
 source "${scrDir}/global_fn.sh" || {
@@ -41,16 +42,29 @@ source "${scrDir}/global_fn.sh" || {
     exit 1
 }
 
+# Everything below shells out through sudo, which is right when a human runs
+# this. The boot refresh unit runs it as root, where sudo is pointless and may
+# not even be installed -- shadow it rather than rewriting a dozen call sites.
+# Defined after global_fn.sh is sourced so enable_service() picks it up too.
+if [[ ${EUID} -eq 0 ]]; then
+    sudo() { "$@"; }
+fi
+
 CHECK_ONLY=false
 ASSUME_YES=false
+REFRESH=false
 
 usage() {
     cat <<'USAGE'
-Usage: setup_suspend.sh [--check] [--yes]
+Usage: setup_suspend.sh [--check] [--yes] [--refresh]
 
   --check, -n   Diagnose only -- print the sleep state, lid config,
                 inhibitors and hibernation readiness, and change nothing.
   --yes,   -y   Don't prompt; take the recommended answer.
+  --refresh     Re-apply non-interactively and always exit 0. This is what
+                hykr-suspend-refresh.service runs at every boot, so that
+                adding swap or fixing resume= takes effect on its own instead
+                of waiting for you to remember to re-run this by hand.
 USAGE
 }
 
@@ -58,6 +72,7 @@ for arg in "$@"; do
     case "$arg" in
         --check|-n) CHECK_ONLY=true ;;
         --yes|-y) ASSUME_YES=true ;;
+        --refresh) REFRESH=true ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown argument: $arg"; usage; exit 1 ;;
     esac
@@ -220,6 +235,36 @@ elif $efi_boot && $initramfs_systemd_hook && (( systemd_version >= 255 )); then
     resume_route="EFI HibernateLocation (systemd ${systemd_version} + systemd initramfs hook)"
 fi
 
+# --------------------------------------------------- // Can it WAKE ITSELF UP
+# suspend-then-hibernate is a timer: systemd suspends, arms an RTC alarm for
+# HibernateDelaySec, and hibernates when that alarm fires. No alarm, no second
+# half -- the machine stays in s2idle until the battery is gone, with a config
+# that says "hibernate" and a journal that says nothing at all, because nothing
+# ever woke up to fail. This was the one thing the rest of this diagnosis never
+# looked at, so a machine could pass every other check here and still flatten
+# itself overnight.
+#
+# /sys/class/rtc/rtc0/wakealarm existing and being writable is necessary but
+# not sufficient -- some firmware accepts the alarm and then never fires it out
+# of s2idle. Only a real lid-close test settles that, which the summary says.
+rtc_wakealarm=""
+for _rtc in /sys/class/rtc/rtc*/wakealarm; do
+    [[ -e "${_rtc}" ]] || continue
+    rtc_wakealarm="${_rtc}"
+    break
+done
+#
+# Tested via the owner-write bit rather than `-w` or `sudo test -w`: systemd
+# writes this file as root, so whether the *current* unprivileged user can
+# write it is the wrong question -- and shelling out to sudo here would turn
+# a --check run, which otherwise touches nothing and needs no password, into
+# a password prompt.
+rtc_alarm_ok=false
+if [[ -n "${rtc_wakealarm}" ]] &&
+   [[ -n "$(find "${rtc_wakealarm}" -maxdepth 0 -perm -u+w 2>/dev/null)" ]]; then
+    rtc_alarm_ok=true
+fi
+
 # Walks through what THIS machine needs to resume, rather than printing the
 # generic recipe: which swap it would use, the UUID (and offset, for a
 # swapfile) that resume= wants, where the kernel command line actually lives
@@ -362,7 +407,28 @@ if [[ "${can_hibernate}" == "yes" ]]; then
         print_log "    sudo systemctl hibernate"
         print_log "  power the machine back on, and see whether the session returns."
         print_log ""
-        print_resume_recipe
+        # Skipped on the boot refresh: ~30 lines of recipe in the journal every
+        # single boot is noise, and nobody is reading it at that moment anyway.
+        $REFRESH || print_resume_recipe
+    fi
+fi
+
+if [[ "${can_hibernate}" == "yes" ]]; then
+    if $rtc_alarm_ok; then
+        print_log "RTC wake alarm                   : ${rtc_wakealarm} (writable)"
+    elif [[ -n "${rtc_wakealarm}" ]]; then
+        print_log "RTC wake alarm                   : ${rtc_wakealarm} NOT writable"
+        print_log "  suspend-then-hibernate arms an RTC alarm to wake the machine and"
+        print_log "  write the hibernation image. Without one it suspends and simply"
+        print_log "  never proceeds -- i.e. plain s2idle drain, from a config that"
+        print_log "  says hibernate."
+    else
+        print_log "RTC wake alarm                   : none found (no /sys/class/rtc/rtc*/wakealarm)"
+        print_log "  suspend-then-hibernate has no way to wake itself up to finish."
+        print_log "  It will suspend and stay suspended until the battery is gone."
+        print_log "  If that is this machine, set HandleLidSwitch=hibernate in"
+        print_log "  ${LOGIND_DROPIN} instead: you lose instant resume, but a closed"
+        print_log "  lid then costs nothing at all."
     fi
 fi
 
@@ -445,15 +511,57 @@ else
     lid_action="suspend"
 fi
 
-print_log "Writing lid handling -> ${LOGIND_DROPIN} (HandleLidSwitch=${lid_action})"
+# HandleLidSwitchExternalPower gets the SAME action as the battery case, not a
+# hardcoded plain `suspend`.
+#
+# The old reasoning -- "plugged in, so the battery isn't the clock" -- only
+# holds while the charger stays connected, and which sleep you get is decided
+# once, at lid-close time. Close the lid on AC and then unplug (or have the
+# cable knocked out, or a power strip switch off) and you are in plain s2idle
+# on battery with no hibernate timer at all, because the operation that would
+# have carried one was never started. That is the "I left it off the charger by
+# accident" case, and it ended with a flat battery every time.
+#
+# What keeps this from hibernating a desk machine that is genuinely plugged in
+# is HibernateOnACPower=no in the sleep drop-in below (systemd 254+): on AC it
+# stays merely suspended for as long as you like, and the moment AC goes away
+# the HibernateDelaySec clock starts applying. On systemd older than 254 that
+# knob does not exist, so there fall back to the old behaviour rather than
+# hibernating a plugged-in machine 45 minutes after every lid close.
+if (( systemd_version >= 254 )); then
+    lid_action_ac="${lid_action}"
+else
+    lid_action_ac="suspend"
+fi
+
+# HandleLidSwitchDocked stays `ignore`, which is also logind's own default:
+# closing the lid to drive an external monitor must not sleep the machine.
+#
+# Worth knowing exactly how wide that net is, because it is wider than "docked"
+# sounds: logind counts ANY connected external display as docked, so a single
+# HDMI cable is enough to route every lid close through this line. Combined
+# with the fact that nothing else in this repo ever suspends -- hypridle only
+# notifies, locks and blanks -- a laptop with a monitor attached and the lid
+# shut used to simply run until the battery died, with a dark screen that
+# looked exactly like sleep.
+#
+# The backstop for that is hypr/idle_sleep.sh, wired into hypridle.conf: idle
+# on battery long enough and it sleeps regardless of what the lid did, while
+# leaving a plugged-in desk machine alone. So this can stay `ignore` and still
+# be safe off the charger.
+print_log "Writing lid handling -> ${LOGIND_DROPIN} (HandleLidSwitch=${lid_action}, external power=${lid_action_ac})"
 sudo mkdir -p "$(dirname "${LOGIND_DROPIN}")"
 sudo tee "${LOGIND_DROPIN}" > /dev/null <<EOF
-# Managed by HyKr -- Scripts/extra/setup_suspend.sh. Re-run that script
-# after changing swap or hibernation setup; delete this file to go back to
-# logind's built-in defaults.
+# Managed by HyKr -- Scripts/extra/setup_suspend.sh, rewritten on every boot by
+# hykr-suspend-refresh.service. Edit that script, not this file; delete it to
+# go back to logind's built-in defaults.
 [Login]
 HandleLidSwitch=${lid_action}
-HandleLidSwitchExternalPower=suspend
+HandleLidSwitchExternalPower=${lid_action_ac}
+# Any connected external display counts as "docked" to logind, not just a real
+# dock. Left on ignore so the laptop can drive a monitor with the lid shut;
+# hypr/idle_sleep.sh is what stops that draining the battery when you are off
+# the charger.
 HandleLidSwitchDocked=ignore
 EOF
 
@@ -462,7 +570,8 @@ if [[ "${can_hibernate}" == "yes" ]]; then
     print_log "Writing hibernation delay -> ${SLEEP_DROPIN} (suspend for 45min, then hibernate)"
     sudo mkdir -p "$(dirname "${SLEEP_DROPIN}")"
     sudo tee "${SLEEP_DROPIN}" > /dev/null <<'EOF'
-# Managed by HyKr -- Scripts/extra/setup_suspend.sh.
+# Managed by HyKr -- Scripts/extra/setup_suspend.sh, rewritten on every boot by
+# hykr-suspend-refresh.service.
 [Sleep]
 # How long suspend-then-hibernate stays merely suspended before writing RAM
 # to swap and powering off. 45 minutes keeps the instant-resume behaviour
@@ -476,6 +585,22 @@ if [[ "${can_hibernate}" == "yes" ]]; then
 # systemd, which has no estimator at all.
 HibernateDelaySec=45min
 EOF
+
+    # What makes it safe for HandleLidSwitchExternalPower to be
+    # suspend-then-hibernate too: on AC the hibernate half simply never fires,
+    # so a plugged-in machine stays suspended for as long as you leave it, and
+    # the 45-minute clock only starts mattering once the charger is gone. That
+    # is precisely the "closed the lid plugged in, came back to it unplugged"
+    # case that used to end flat.
+    #
+    # Appended separately, and only on systemd 254+, because an unknown key in
+    # sleep.conf is a per-boot warning in the journal on anything older.
+    if (( systemd_version >= 254 )); then
+        printf '%s\n' 'HibernateOnACPower=no' | sudo tee -a "${SLEEP_DROPIN}" > /dev/null
+    else
+        print_log "  (systemd ${systemd_version} has no HibernateOnACPower; leaving the"
+        print_log "   external-power lid action on plain suspend instead.)"
+    fi
 else
     print_log "Hibernation is NOT available -- lid close will plain suspend."
     print_log "  Without it, a suspended laptop drains until the battery is gone;"
@@ -543,6 +668,84 @@ EOF
     fi
 fi
 
+# --------------------------------------------------- // Re-apply at every boot
+# Everything above is decided from facts that change after install: whether
+# there is swap, whether it is zram (which cannot hold a hibernation image),
+# whether resume= made it onto the kernel command line, which sleep states the
+# firmware offers. install.sh runs this once, unprompted, on a fresh machine --
+# so a laptop that could not hibernate that day got HandleLidSwitch=suspend
+# written to disk and kept it forever, even after swap was added later. The
+# script said "re-run this afterwards"; nobody remembers to.
+#
+# A oneshot unit re-runs --refresh at every boot instead. The script is
+# idempotent, so a boot where nothing changed rewrites the same bytes.
+#
+# Skipped in --refresh itself: no point reinstalling the unit from inside the
+# unit.
+#
+# The unit runs a script that lives in the repo, i.e. under $HOME, as root.
+# That is deliberate -- pointing it at a copy under /usr/local would go stale
+# the moment you `git pull` -- but it does mean write access to this checkout
+# is root at the next boot. For the owner that is no escalation (they have
+# sudo already); for anyone ELSE with write access it very much is, so check
+# the one thing that would make that true and refuse rather than warn.
+REFRESH_UNIT="/etc/systemd/system/hykr-suspend-refresh.service"
+if ! $REFRESH; then
+    unit_target="${scrDir}/extra/setup_suspend.sh"
+    unsafe_path=""
+    _p="${unit_target}"
+    while [[ "${_p}" != "/" ]]; do
+        # -perm /022: writable by group or other. ! -perm -1000: and NOT
+        # sticky -- a sticky directory (/tmp and friends) does not let one user
+        # replace another's existing file, so flagging it would be a false
+        # positive that refuses to install for no reason.
+        if [[ -n "$(find "${_p}" -maxdepth 0 -perm /022 ! -perm -1000 2>/dev/null)" ]]; then
+            unsafe_path="${_p}"
+            break
+        fi
+        _p="$(dirname "${_p}")"
+    done
+
+    if [[ -n "${unsafe_path}" ]]; then
+        print_log "NOT installing the boot-time re-check: ${unsafe_path} is writable by"
+        print_log "  group or other, and the unit would run this script as root at every"
+        print_log "  boot. Fix with: chmod go-w '${unsafe_path}'  then re-run this script."
+        print_log "  (The lid/sleep drop-ins above were still written -- you just won't"
+        print_log "   get the automatic re-check.)"
+        REFRESH_UNIT=""
+    fi
+fi
+
+if [[ -n "${REFRESH_UNIT}" ]] && ! $REFRESH; then
+    print_log "Installing the boot-time re-check -> ${REFRESH_UNIT}"
+    sudo tee "${REFRESH_UNIT}" > /dev/null <<EOF
+# Managed by HyKr -- Scripts/extra/setup_suspend.sh.
+[Unit]
+Description=HyKr: re-evaluate lid and hibernation configuration for this machine
+# swap.target so SwapTotal is real by the time hibernation is judged, and
+# systemd-logind.service so the CanHibernate query on the system bus has
+# something to answer it.
+After=local-fs.target swap.target systemd-logind.service
+Wants=swap.target
+# The repo can be moved or deleted after install; skip silently rather than
+# logging a failed unit on every boot.
+ConditionPathExists=${scrDir}/extra/setup_suspend.sh
+
+[Service]
+Type=oneshot
+ExecStart=${scrDir}/extra/setup_suspend.sh --refresh
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    sudo systemctl daemon-reload
+    # enable, not enable --now: its whole job is to run at boot, and running it
+    # right here would just re-do what this invocation is already doing.
+    sudo systemctl enable hykr-suspend-refresh.service >/dev/null 2>&1 ||
+        print_log "  (could not enable it -- run: sudo systemctl enable hykr-suspend-refresh.service)"
+fi
+
 # --------------------------------------------------- // Apply
 # Deliberately not restarting systemd-logind: on a live session that can
 # take the session (and every process in it) with it. A reload picks the
@@ -561,9 +764,47 @@ else
     print_log "No live systemd here (chroot) -- both drop-ins apply on first boot."
 fi
 
+# --------------------------------------------------- // What this machine does now
+# The three drop-ins above are individually unremarkable and collectively
+# decide whether a closed lid costs you a battery. Spell the result out in
+# plain terms rather than leaving it to be reconstructed from three files.
+print_log ""
+print_log "--- With the lid closed, this machine will now ------------------"
+if [[ "${lid_action}" == "suspend-then-hibernate" ]]; then
+    print_log "  On battery      : suspend, then hibernate after 45 min"
+    if [[ "${lid_action_ac}" == "suspend-then-hibernate" ]]; then
+        print_log "  On the charger  : suspend, and stay suspended (HibernateOnACPower=no)"
+        print_log "                    -- if the charger comes out while it sleeps, the"
+        print_log "                    45 min hibernate clock starts applying from then."
+    else
+        print_log "  On the charger  : suspend (systemd ${systemd_version} is too old for"
+        print_log "                    HibernateOnACPower, so no hibernate escalation here)"
+    fi
+else
+    print_log "  On battery      : suspend only -- hibernation is not available"
+    print_log "                    (see 'Hibernation possible' above). On s2idle-only"
+    print_log "                    firmware this still drains; fixing swap/resume= and"
+    print_log "                    rebooting is what turns this line into hibernate."
+    print_log "  On the charger  : suspend"
+fi
+print_log "  Lid + a monitor : nothing (logind counts any external display as"
+print_log "                    docked) -- hypr/idle_sleep.sh is the backstop, and"
+print_log "                    sleeps it anyway once idle on battery."
+print_log "-----------------------------------------------------------------"
 print_log ""
 print_log "Done. Check it worked: close the lid, wait a minute, open it and run"
 print_log "  journalctl -b -u systemd-logind --grep 'Lid closed'"
 print_log "  journalctl -b --grep 'PM: suspend (entry|exit)'"
+if [[ "${lid_action}" == "suspend-then-hibernate" ]]; then
+    print_log "And confirm the half that only shows up after 45 minutes -- the RTC"
+    print_log "alarm firing and the image actually being written:"
+    print_log "  sudo systemctl suspend-then-hibernate"
+    print_log "  # wake it, then: journalctl -b -1 --grep 'hibernation|Hibernating'"
+fi
 print_log "To measure the real cost, note /sys/class/power_supply/BAT*/capacity"
 print_log "before and after a long lid-closed stretch."
+
+# --refresh is wired into the boot path, and a boot must not fail because a
+# laptop could not work out its own sleep state.
+$REFRESH && exit 0
+exit 0
