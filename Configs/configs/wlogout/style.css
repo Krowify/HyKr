@@ -40,6 +40,23 @@ button {
     padding: 5px;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
 }
+/* Suspend and Hibernate were missing here while the layout beside this file
+   only had four buttons. Both are in the layout now (and always were in
+   theme-switcher's own wlogout-layout.tpl, which is what an installed system
+   actually runs) -- without a rule each, wlogout renders them as unlabelled
+   blank tiles. sleep.png/pause.png already ship in this directory. */
+#suspend {
+    background-image: image(url("../../.config/wlogout/sleep.png"));
+    margin : 5px 5px 5px 300px;
+    padding: 5px;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+#hibernate {
+    background-image: image(url("../../.config/wlogout/pause.png"));
+    margin : 5px 300px 5px 5px;
+    padding: 5px;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
 
 #lock:focus {
     margin : 5px 5px 5px 200px;
@@ -53,6 +70,12 @@ button {
 }
 #reboot:focus {
     margin : 5px 5px 5px 200px;
+}
+#suspend:focus {
+    margin : 5px 5px 5px 200px;
+}
+#hibernate:focus {
+    margin : 5px 200px 5px 5px;
 }
 button:focus{
     background-color: alpha(@color5,1);

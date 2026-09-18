@@ -1,21 +1,41 @@
 {
-    "label" : "lock",
-    "action" : "hyprlock",
-    "keybind" : "l"
-}
-{
-    "label" : "reboot",
-    "action" : "systemctl reboot || loginctl reboot",
-    "keybind" : "r"
+  "label" : "lock",
+  "action" : "pkill -x wlogout || true; sleep 0.2; ~/.config/hypr/lock.sh",
+  "text" : "Lock",
+  "keybind" : "l"
 }
 
 {
-    "label" : "logout",
-    "action" : "pkill Hyprland || pkill sway || pkill niri || loginctl terminate-user $USER",
-    "keybind" : "e"
+  "label" : "logout",
+  "action" : "hyprctl dispatch 'hl.dsp.exit()'",
+  "text" : "Logout",
+  "keybind" : "e"
 }
+
 {
-    "label" : "shutdown",
-    "action" : "systemctl poweroff || loginctl poweroff",
-    "keybind" : "s"
+  "label" : "suspend",
+  "action" : "systemctl suspend",
+  "text" : "Suspend",
+  "keybind" : "u"
+}
+
+{
+  "label" : "hibernate",
+  "action" : "systemctl hibernate",
+  "text" : "Hibernate",
+  "keybind" : "h"
+}
+
+{
+  "label" : "reboot",
+  "action" : "systemctl reboot",
+  "text" : "Reboot",
+  "keybind" : "r"
+}
+
+{
+  "label" : "shutdown",
+  "action" : "systemctl poweroff",
+  "text" : "Shutdown",
+  "keybind" : "s"
 }
