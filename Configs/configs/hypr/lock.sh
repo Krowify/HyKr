@@ -33,8 +33,63 @@ if pidof hyprlock >/dev/null 2>&1; then
     exit 0
 fi
 
-# Foreground on purpose: this returns when the session is unlocked.
-hyprlock
+# Fail CLOSED.
+#
+# hyprlock's exit status used to be ignored entirely: `hyprlock` on its own
+# line, then restore the bar. If hyprlock could not start at all -- a bad
+# config, an EGL/GPU problem, a missing font -- this script returned cleanly
+# and the session was simply never locked. That matters most on the path you
+# cannot see happening: hypridle.conf sets
+# `before_sleep_cmd = loginctl lock-session`, which routes here, so a
+# hyprlock that fails to start means the laptop suspends unlocked and wakes
+# unlocked.
+#
+# A clean unlock and a failed launch are told apart by how long hyprlock ran:
+# nobody types a password in under LOCK_MIN_SECONDS, and a launch failure is
+# effectively instant. A fast failure is retried a couple of times (the
+# session-lock handshake can lose a race with a compositor that is still
+# coming up); if it still will not hold, the session is terminated rather
+# than left open on an unattended machine.
+#
+# Set HYKR_LOCK_NO_FAILCLOSED=1 if you would rather keep the session on a
+# lock failure -- e.g. while debugging a hyprlock config.
+LOCK_MIN_SECONDS=3
+LOCK_ATTEMPTS=3
+
+lock_held=0
+for (( attempt = 1; attempt <= LOCK_ATTEMPTS; attempt++ )); do
+    started=$SECONDS
+    # Foreground on purpose: this returns when the session is unlocked.
+    hyprlock
+    rc=$?
+    elapsed=$(( SECONDS - started ))
+
+    if (( rc == 0 )) || (( elapsed >= LOCK_MIN_SECONDS )); then
+        # Either a clean unlock, or hyprlock stayed up long enough that the
+        # screen really was locked for that whole time.
+        lock_held=1
+        break
+    fi
+
+    echo "lock.sh: hyprlock exited ${rc} after ${elapsed}s (attempt ${attempt}/${LOCK_ATTEMPTS}) -- retrying" >&2
+    sleep 1
+done
+
+if (( lock_held == 0 )); then
+    echo "lock.sh: hyprlock will not stay up; refusing to leave the session unlocked." >&2
+    if [[ "${HYKR_LOCK_NO_FAILCLOSED:-0}" == "1" ]]; then
+        echo "lock.sh: HYKR_LOCK_NO_FAILCLOSED=1 -- leaving the session open anyway." >&2
+        exit 1
+    fi
+    command -v notify-send >/dev/null 2>&1 &&
+        notify-send -u critical "HyKr" "hyprlock failed to start -- ending the session" || true
+    # Blank the outputs first, so the desktop is not readable during the
+    # second or two it takes logind to tear the session down.
+    hyprctl dispatch 'hl.dsp.dpms({action = "off"})' >/dev/null 2>&1 || true
+    loginctl terminate-session "${XDG_SESSION_ID:-self}" >/dev/null 2>&1 ||
+        hyprctl dispatch 'hl.dsp.exit()' >/dev/null 2>&1 || true
+    exit 1
+fi
 
 restore_bar
 
