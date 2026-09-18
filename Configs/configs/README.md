@@ -71,6 +71,19 @@ Not from elifouts:
   to stack a second hyprlock, and once you unlock calls `start_bar.sh` to
   bring back the active theme's bar — a Quickshell dock doesn't always
   survive hyprlock's session-lock surface, and nothing else supervises it.
+- `hypr/idle_sleep.sh` — the backstop that stops a closed lid costing a
+  battery. `hypridle` on its own only notifies, locks and blanks the screen
+  (DPMS off, which looks exactly like sleep), and `logind`'s lid switch is
+  deliberately set to ignore the lid whenever an external display is
+  connected — and `logind` counts a single HDMI cable as "docked". Between
+  the two, nothing in this repo ever actually suspended a laptop sitting at
+  a desk with the lid shut. `hypridle.conf` calls this at its longest
+  timeout (3600s): it no-ops on a desktop and on the charger, so the
+  drive-a-monitor-with-the-lid-shut workflow still works, and off the
+  charger it sleeps the machine regardless of what the lid did. Asks for
+  `suspend-then-hibernate` rather than plain `suspend` wherever `logind`
+  says hibernation is possible — the hibernate half is a property of the
+  sleep operation, so plain `suspend` here would bound nothing.
 - `hypr/dock_ipc.sh` — calls a function on whichever Quickshell dock the
   active theme runs (`toggle-notifications`, `toggle-dnd`), falling back to
   `swaync-client` under the waybar themes. Used by `Super+N` and the

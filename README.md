@@ -153,6 +153,7 @@ is gone in an afternoon with the lid shut.
 ```shell
 ~/HyKr/Scripts/extra/setup_suspend.sh --check   # diagnose, change nothing
 ~/HyKr/Scripts/extra/setup_suspend.sh           # apply
+~/HyKr/Scripts/extra/setup_suspend.sh --refresh # re-apply quietly (what the boot unit runs)
 ```
 
 `--check` prints the sleep states the firmware offers, whether hibernation
@@ -171,6 +172,57 @@ only turned on once `logind` itself confirms it can — an unbootable
 is the very thing being fixed. When it can't, the script prints the
 checklist (swap size, `resume=`, initramfs hook) and leaves plain `suspend`
 in place. That checklist is also what makes wlogout's Hibernate button work.
+
+The script ends by printing, in plain terms, what a closed lid will now
+actually do on this machine — worth reading, because three drop-ins
+interact to decide it:
+
+| Situation | What happens |
+| --- | --- |
+| Lid closed, on battery | suspend, then hibernate after 45 min |
+| Lid closed, on the charger | suspend, and stay suspended — until the charger comes out, at which point the 45 min clock starts applying |
+| Lid closed, external monitor attached | nothing from `logind` — see below |
+
+**On the charger is not a special case any more.** It used to be pinned to
+plain `suspend`, on the reasoning that the battery isn't the clock while
+you're plugged in. That only holds while the cable stays in: which sleep
+you get is decided once, at lid-close time, so closing the lid plugged in
+and *then* unplugging left the machine in s2idle on battery with no
+hibernate timer at all. Both cases now get `suspend-then-hibernate`, and
+`HibernateOnACPower=no` (systemd 254+) is what keeps a genuinely plugged-in
+machine merely suspended instead of hibernating it 45 minutes into every
+lunch break.
+
+**A single HDMI cable disables the lid switch.** `HandleLidSwitchDocked`
+stays `ignore` so the laptop can drive an external monitor with the lid
+shut — but `logind` counts *any* connected external display as "docked",
+not just a real dock. Nothing else in this repo ever suspended, and
+`hypridle` only notifies, locks and blanks the screen, so a laptop at a
+desk with the lid closed used to run until the battery was gone behind a
+dark screen that looked exactly like sleep. The backstop is
+`~/.config/hypr/idle_sleep.sh`, wired into `hypridle.conf` at a 60-minute
+timeout: on a desktop and on the charger it does nothing, and off the
+charger it sleeps the machine regardless of what the lid did. It asks for
+`suspend-then-hibernate` wherever that works, so the bound holds on
+s2idle-only firmware too.
+
+**It re-checks itself at every boot.** Whether hibernation is possible
+depends on facts that change after install — swap added later, swap that
+turns out to be zram (which can't hold a hibernation image), `resume=`
+finally making it onto the kernel command line. `install.sh` runs this once
+on a fresh machine, so a laptop that couldn't hibernate that day used to
+keep `HandleLidSwitch=suspend` forever. `hykr-suspend-refresh.service` now
+re-runs `setup_suspend.sh --refresh` on every boot and rewrites the
+drop-ins when the answer changes. (It runs the script from this checkout as
+root, so it refuses to install itself if any directory on the path to it is
+group- or world-writable.)
+
+One thing the report can't settle for you: `suspend-then-hibernate` arms an
+RTC wake alarm to wake the machine and write the image, and some firmware
+accepts that alarm and never fires it out of s2idle. The script now checks
+that `/sys/class/rtc/rtc*/wakealarm` exists and is writable and says so, but
+only a real test proves the rest — `sudo systemctl suspend-then-hibernate`,
+wake it, and look for `Hibernating` in `journalctl -b -1`.
 
 Writing a hibernation image and resuming from one are separate problems,
 and `CanHibernate` only answers the first — so the report calls out the
