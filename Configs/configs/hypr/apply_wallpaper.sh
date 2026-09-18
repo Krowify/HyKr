@@ -9,7 +9,34 @@ set -e
 selected_wallpaper="$1"
 [ -z "$selected_wallpaper" ] && exit 0
 
-awww img "$selected_wallpaper" --transition-type any --transition-fps 60 --transition-duration .5
+# Every step from here on is best-effort: this script runs under `set -e`, and
+# an optional tool that is missing, or a daemon that happens not to be running,
+# must not abort the pipeline halfway -- everything downstream (kitty, starship,
+# rofi, wofi, the Quickshell dock palettes, VS Code, the live Hyprland border,
+# spicetify, pywalfox, the pywallpaper.jpg cache) would then silently never run
+# and the wallpaper would change with nothing else following it.
+
+# Mirrors apply-theme.sh's own ensure_swww(): hyprland.lua autostarts
+# awww-daemon, but a picker fired before the session is fully up (or after the
+# daemon has died) would otherwise fail on the very first command.
+ensure_awww() {
+    command -v awww >/dev/null 2>&1 || return 1
+    if ! pgrep -x awww-daemon >/dev/null 2>&1; then
+        awww-daemon >/dev/null 2>&1 &
+    fi
+    for _ in {1..20}; do
+        awww query >/dev/null 2>&1 && return 0
+        sleep 0.05
+    done
+    return 1
+}
+
+if ensure_awww; then
+    awww img "$selected_wallpaper" --transition-type any --transition-fps 60 --transition-duration .5 || true
+else
+    echo "apply_wallpaper.sh: awww-daemon unavailable -- colors still apply, wallpaper not set" >&2
+fi
+
 wal -i "$selected_wallpaper" -n --cols16
 
 # Sourced early (moved up from the end of this script) so every step
@@ -22,7 +49,14 @@ if command -v swayosd-server &>/dev/null; then
     swayosd-server &
 fi
 
-swaync-client --reload-css
+# Guarded, unlike every other optional tool in this script: the three
+# "bar": "quickshell-dock" themes (hyperspace, laptop, blackturq) deliberately
+# pkill swaync, so on those themes swaync is *always* down when a wallpaper is
+# picked and an unguarded swaync-client took the rest of this script with it.
+if command -v swaync-client >/dev/null 2>&1; then
+    swaync-client --reload-css >/dev/null 2>&1 || true
+fi
+
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
 
 # Recolor every already-open kitty window live too, not just ones
