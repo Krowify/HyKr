@@ -165,8 +165,13 @@ Applying writes two drop-ins: `/etc/systemd/logind.conf.d/10-hykr-lid.conf`
 pins all three lid cases (battery / external power / docked), and, where
 hibernation is actually possible,
 `/etc/systemd/sleep.conf.d/10-hykr-sleep.conf` sets
-`HibernateDelaySec=45min` so `suspend-then-hibernate` keeps instant resume
-for short breaks and writes RAM to swap for anything longer. Hibernation is
+`HibernateDelaySec=15min` so `suspend-then-hibernate` keeps instant resume
+for a coffee break and writes RAM to swap for anything longer. Paired with
+`HibernateOnACPower=no` that delay is only ever reached on battery, so it is
+the bound on what a lid closed away from the charger can cost. Raise it with
+`HYKR_HIBERNATE_DELAY=45min ~/HyKr/Scripts/extra/setup_suspend.sh` if losing
+instant resume annoys you more than the drain does (edit the default at the
+top of the script to make it stick, since the boot unit re-reads it there). Hibernation is
 only turned on once `logind` itself confirms it can — an unbootable
 `suspend-then-hibernate` leaves the machine awake with the lid shut, which
 is the very thing being fixed. When it can't, the script prints the
@@ -179,9 +184,9 @@ interact to decide it:
 
 | Situation | What happens |
 | --- | --- |
-| Lid closed, on battery | suspend, then hibernate after 45 min |
-| Lid closed, on the charger | suspend, and stay suspended — until the charger comes out, at which point the 45 min clock starts applying |
-| Lid closed, external monitor attached | nothing from `logind` — see below |
+| Lid closed, on battery | suspend, then hibernate after 15 min |
+| Lid closed, on the charger | suspend, and stay suspended — until the charger comes out, at which point the 15 min clock starts applying |
+| Lid closed, external monitor attached | nothing from `logind`; `idle_sleep.sh` sleeps it after 15 min, so hibernation ~30 min after the lid shuts — see below |
 
 **On the charger is not a special case any more.** It used to be pinned to
 plain `suspend`, on the reasoning that the battery isn't the clock while
@@ -190,8 +195,8 @@ you get is decided once, at lid-close time, so closing the lid plugged in
 and *then* unplugging left the machine in s2idle on battery with no
 hibernate timer at all. Both cases now get `suspend-then-hibernate`, and
 `HibernateOnACPower=no` (systemd 254+) is what keeps a genuinely plugged-in
-machine merely suspended instead of hibernating it 45 minutes into every
-lunch break.
+machine merely suspended instead of hibernating it 15 minutes into every
+coffee break.
 
 **A single HDMI cable disables the lid switch.** `HandleLidSwitchDocked`
 stays `ignore` so the laptop can drive an external monitor with the lid
@@ -200,11 +205,17 @@ not just a real dock. Nothing else in this repo ever suspended, and
 `hypridle` only notifies, locks and blanks the screen, so a laptop at a
 desk with the lid closed used to run until the battery was gone behind a
 dark screen that looked exactly like sleep. The backstop is
-`~/.config/hypr/idle_sleep.sh`, wired into `hypridle.conf` at a 60-minute
-timeout: on a desktop and on the charger it does nothing, and off the
-charger it sleeps the machine regardless of what the lid did. It asks for
-`suspend-then-hibernate` wherever that works, so the bound holds on
-s2idle-only firmware too.
+`~/.config/hypr/idle_sleep.sh`, wired into `hypridle.conf` twice: at 900s
+in `--lid-closed-only` mode, which acts only when the lid is physically
+shut, and at 3600s as a general backstop for "walked away with it open".
+Both no-op on a desktop and on the charger, so the drive-a-monitor-lid-shut
+workflow is untouched; off the charger they sleep the machine regardless of
+what the lid did. Both ask for `suspend-then-hibernate` wherever that
+works, so the bound holds on s2idle-only firmware too.
+
+That makes the docked case 15 min awake plus 15 min suspended — hibernated
+roughly half an hour after the lid shuts, rather than the hour and a
+quarter it would take if the lid had to wait for the general timeout.
 
 **It re-checks itself at every boot.** Whether hibernation is possible
 depends on facts that change after install — swap added later, swap that

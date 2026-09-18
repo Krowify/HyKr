@@ -49,6 +49,10 @@ install (package lists, post-install helpers, maintenance utilities).
   can be shut while driving an external monitor — `logind` counts any
   connected display as docked, so the backstop for that is
   `hypr/idle_sleep.sh` (see `Configs/configs/hypr/`), not this script.
+  `HibernateDelaySec` defaults to 15min — only ever reached on battery, so
+  it is the bound on what a lid closed off the charger costs; override for
+  one run with `HYKR_HIBERNATE_DELAY=45min`, or edit `HIBERNATE_DELAY` near
+  the top of the script to change it for good.
   Also reports whether an RTC wake alarm exists and is writable, since
   `suspend-then-hibernate` needs one to wake itself up and finish.
   Needs `sudo`.

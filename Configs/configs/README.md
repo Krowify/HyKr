@@ -77,10 +77,16 @@ Not from elifouts:
   deliberately set to ignore the lid whenever an external display is
   connected — and `logind` counts a single HDMI cable as "docked". Between
   the two, nothing in this repo ever actually suspended a laptop sitting at
-  a desk with the lid shut. `hypridle.conf` calls this at its longest
-  timeout (3600s): it no-ops on a desktop and on the charger, so the
-  drive-a-monitor-with-the-lid-shut workflow still works, and off the
-  charger it sleeps the machine regardless of what the lid did. Asks for
+  a desk with the lid shut. `hypridle.conf` calls it twice: at
+  900s with `--lid-closed-only`, which reads `/proc/acpi/button/lid` and
+  acts only when the lid is physically shut, and at 3600s with no argument
+  as the general "walked away with it open" backstop. A lid whose state
+  cannot be read is never assumed closed — suspending a machine someone is
+  using because a sysfs file is missing would be much worse than waiting
+  for the general timeout, which still covers it. Both no-op on a desktop
+  and on the charger, so the drive-a-monitor-with-the-lid-shut workflow
+  still works, and off the charger they sleep the machine regardless of
+  what the lid did. Asks for
   `suspend-then-hibernate` rather than plain `suspend` wherever `logind`
   says hibernation is possible — the hibernate half is a property of the
   sleep operation, so plain `suspend` here would bound nothing.

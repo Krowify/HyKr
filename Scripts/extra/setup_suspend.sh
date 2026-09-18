@@ -89,6 +89,20 @@ confirm() {
     [[ "$reply" =~ ^[Yy]$ ]]
 }
 
+# How long suspend-then-hibernate stays merely suspended before writing RAM to
+# swap and powering off. Only ever reached on battery, because the sleep
+# drop-in also sets HibernateOnACPower=no -- so this is, in practice, "lid shut
+# and off the charger, how long until it costs nothing".
+#
+# 15min is a deliberate trade: you lose instant resume for anything longer than
+# a coffee break, and in exchange an accidental night off the charger costs a
+# quarter-hour of s2idle instead of a battery. Raise it if the resume wait
+# starts to annoy you more than the drain does:
+#   HYKR_HIBERNATE_DELAY=45min ~/HyKr/Scripts/extra/setup_suspend.sh
+# The boot refresh unit re-reads this from the script, not the environment, so
+# to make a change stick, edit the default here.
+HIBERNATE_DELAY="${HYKR_HIBERNATE_DELAY:-15min}"
+
 LOGIND_DROPIN="/etc/systemd/logind.conf.d/10-hykr-lid.conf"
 SLEEP_DROPIN="/etc/systemd/sleep.conf.d/10-hykr-sleep.conf"
 MEM_SLEEP_TMPFILES="/etc/tmpfiles.d/hykr-mem-sleep.conf"
@@ -527,7 +541,7 @@ fi
 # stays merely suspended for as long as you like, and the moment AC goes away
 # the HibernateDelaySec clock starts applying. On systemd older than 254 that
 # knob does not exist, so there fall back to the old behaviour rather than
-# hibernating a plugged-in machine 45 minutes after every lid close.
+# hibernating a plugged-in machine ${HIBERNATE_DELAY} after every lid close.
 if (( systemd_version >= 254 )); then
     lid_action_ac="${lid_action}"
 else
@@ -567,29 +581,31 @@ EOF
 
 # --------------------------------------------------- // Hibernation delay
 if [[ "${can_hibernate}" == "yes" ]]; then
-    print_log "Writing hibernation delay -> ${SLEEP_DROPIN} (suspend for 45min, then hibernate)"
+    print_log "Writing hibernation delay -> ${SLEEP_DROPIN} (suspend for ${HIBERNATE_DELAY}, then hibernate)"
     sudo mkdir -p "$(dirname "${SLEEP_DROPIN}")"
-    sudo tee "${SLEEP_DROPIN}" > /dev/null <<'EOF'
+    sudo tee "${SLEEP_DROPIN}" > /dev/null <<EOF
 # Managed by HyKr -- Scripts/extra/setup_suspend.sh, rewritten on every boot by
 # hykr-suspend-refresh.service.
 [Sleep]
 # How long suspend-then-hibernate stays merely suspended before writing RAM
-# to swap and powering off. 45 minutes keeps the instant-resume behaviour
-# for a lunch break or a walk between rooms, and bounds an overnight or
-# over-the-weekend lid-close at roughly one suspend-hour of drain no matter
-# how badly the platform handles s2idle.
+# to swap and powering off. Short on purpose: paired with HibernateOnACPower=no
+# below this is only ever reached on battery, so it is the bound on what a lid
+# closed away from the charger can cost -- a quarter-hour of s2idle rather than
+# a flat battery by morning, no matter how badly the platform handles s2idle.
+# The price is losing instant resume for anything longer than a coffee break.
 #
 # systemd 254 and newer otherwise pick this delay from the battery's own
 # discharge estimate (SuspendEstimationSec); setting it explicitly is the
 # deterministic version of the same idea, and works the same on older
 # systemd, which has no estimator at all.
-HibernateDelaySec=45min
+HibernateDelaySec=${HIBERNATE_DELAY}
 EOF
 
     # What makes it safe for HandleLidSwitchExternalPower to be
     # suspend-then-hibernate too: on AC the hibernate half simply never fires,
     # so a plugged-in machine stays suspended for as long as you leave it, and
-    # the 45-minute clock only starts mattering once the charger is gone. That
+    # the HibernateDelaySec clock only starts mattering once the charger is
+    # gone. That
     # is precisely the "closed the lid plugged in, came back to it unplugged"
     # case that used to end flat.
     #
@@ -771,11 +787,11 @@ fi
 print_log ""
 print_log "--- With the lid closed, this machine will now ------------------"
 if [[ "${lid_action}" == "suspend-then-hibernate" ]]; then
-    print_log "  On battery      : suspend, then hibernate after 45 min"
+    print_log "  On battery      : suspend, then hibernate after ${HIBERNATE_DELAY}"
     if [[ "${lid_action_ac}" == "suspend-then-hibernate" ]]; then
         print_log "  On the charger  : suspend, and stay suspended (HibernateOnACPower=no)"
         print_log "                    -- if the charger comes out while it sleeps, the"
-        print_log "                    45 min hibernate clock starts applying from then."
+        print_log "                    ${HIBERNATE_DELAY} hibernate clock starts applying from then."
     else
         print_log "  On the charger  : suspend (systemd ${systemd_version} is too old for"
         print_log "                    HibernateOnACPower, so no hibernate escalation here)"
@@ -787,16 +803,23 @@ else
     print_log "                    rebooting is what turns this line into hibernate."
     print_log "  On the charger  : suspend"
 fi
-print_log "  Lid + a monitor : nothing (logind counts any external display as"
-print_log "                    docked) -- hypr/idle_sleep.sh is the backstop, and"
-print_log "                    sleeps it anyway once idle on battery."
+print_log "  Lid + a monitor : nothing from logind (it counts any external display"
+print_log "                    as docked). hypr/idle_sleep.sh --lid-closed-only"
+print_log "                    picks it up 15 min later when on battery, so"
+if [[ "${lid_action}" == "suspend-then-hibernate" ]]; then
+    print_log "                    hibernated ~15 min after that. On the charger it"
+    print_log "                    stays awake, which is the point of Docked=ignore."
+else
+    print_log "                    suspended then. On the charger it stays awake,"
+    print_log "                    which is the point of Docked=ignore."
+fi
 print_log "-----------------------------------------------------------------"
 print_log ""
 print_log "Done. Check it worked: close the lid, wait a minute, open it and run"
 print_log "  journalctl -b -u systemd-logind --grep 'Lid closed'"
 print_log "  journalctl -b --grep 'PM: suspend (entry|exit)'"
 if [[ "${lid_action}" == "suspend-then-hibernate" ]]; then
-    print_log "And confirm the half that only shows up after 45 minutes -- the RTC"
+    print_log "And confirm the half that only shows up after ${HIBERNATE_DELAY} -- the RTC"
     print_log "alarm firing and the image actually being written:"
     print_log "  sudo systemctl suspend-then-hibernate"
     print_log "  # wake it, then: journalctl -b -1 --grep 'hibernation|Hibernating'"
