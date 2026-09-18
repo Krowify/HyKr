@@ -74,7 +74,12 @@ confirm() {
     print_logo
     local reply
     read -rp "$1 [Y/n] " reply
-    [[ "${reply,,}" != "n" ]]
+    # Anything but an explicit no means yes (the prompt defaults to Y). Matching
+    # only the single character "n" was wrong in the dangerous direction: typing
+    # the perfectly natural "no" to "Enable usbguard?" or "Disable sshd?" read as
+    # yes and did the thing. Same shape as setup_suspend.sh/setup_blackarch.sh's
+    # own confirm(), just with the opposite default.
+    [[ ! "${reply,,}" =~ ^(n|no)$ ]]
 }
 
 # --------------------------------------------------- // Preflight
@@ -173,14 +178,24 @@ if [[ ${EUID} -eq 0 ]]; then
         print_log "Removing a stale ${SUDOERS_DROPIN} left by an interrupted install"
         rm -f "${SUDOERS_DROPIN}"
     fi
-    echo "${TARGET_USER} ALL=(ALL) NOPASSWD: ALL" > "${SUDOERS_DROPIN}"
+
+    # Arm the cleanup BEFORE the file exists, not after it is written and
+    # validated. global_fn.sh sets `set -e`, so a failure anywhere in the
+    # write/chmod/validate sequence below used to exit the script with the
+    # drop-in already on disk and no trap installed to remove it -- i.e.
+    # permanent passwordless root for ${TARGET_USER}, with nothing to notice
+    # it but a re-run of this same script. Removing a file that was never
+    # created is a no-op, so arming early costs nothing.
+    trap 'rm -f "${SUDOERS_DROPIN}"' EXIT
+
+    # umask so the file is never briefly group/world-readable between creation
+    # and the chmod below.
+    ( umask 0377 && echo "${TARGET_USER} ALL=(ALL) NOPASSWD: ALL" > "${SUDOERS_DROPIN}" )
     chmod 0440 "${SUDOERS_DROPIN}"
     if ! visudo -cf "${SUDOERS_DROPIN}"; then
         print_log "Generated sudoers drop-in failed validation, aborting."
-        rm -f "${SUDOERS_DROPIN}"
         exit 1
     fi
-    trap 'rm -f "${SUDOERS_DROPIN}"' EXIT
 
     print_log "Re-running install.sh as ${TARGET_USER}"
     su - "${TARGET_USER}" -c "HYKR_OVER_SSH='${HYKR_OVER_SSH}' bash '${scrDir}/install.sh'"
@@ -195,9 +210,18 @@ print_logo
 if ! command -v yay &>/dev/null; then
     print_log "yay (AUR helper) not found — installing it"
     sudo pacman -Syu --needed --noconfirm git base-devel
-    git clone https://aur.archlinux.org/yay.git /tmp/hykr-yay
-    (cd /tmp/hykr-yay && makepkg -si --noconfirm)
-    rm -rf /tmp/hykr-yay
+    # mktemp -d, not a fixed /tmp/hykr-yay: a predictable path in a
+    # world-writable directory can be pre-created by any other local user, and
+    # `git clone` into an existing empty directory succeeds -- leaving a window
+    # in which the PKGBUILD that `makepkg -si` is about to execute can be
+    # swapped out from under us. (apply-theme.sh already avoids /tmp for
+    # exactly this reason; this was the one place left that didn't.)
+    yay_build_dir="$(mktemp -d)"
+    trap 'rm -rf "${yay_build_dir}"' EXIT
+    git clone https://aur.archlinux.org/yay.git "${yay_build_dir}/yay"
+    (cd "${yay_build_dir}/yay" && makepkg -si --noconfirm)
+    rm -rf "${yay_build_dir}"
+    trap - EXIT
 fi
 
 # Steps that failed but were not fatal; summarised at the end so a warning
