@@ -1,38 +1,58 @@
--- Per-machine monitor layout. Copy this to `monitors.lua` (same directory)
--- and edit it for YOUR outputs:
+-- Per-machine monitor layout. hyprland.lua does an optional
+-- `pcall(require, "monitors")`, so with no monitors.lua present it falls back
+-- to the `output = ""` catch-all (preferred mode, auto position, AUTO SCALE)
+-- and everything still works -- just not necessarily at the scale you want.
 --
---     cp ~/.config/hypr/monitors.lua.example ~/.config/hypr/monitors.lua
+-- The easy way to create one is not to edit this file at all. Arrange your
+-- displays however you like, confirm it looks right, then freeze it:
 --
--- hyprland.lua does an optional `pcall(require, "monitors")`, so with no
--- monitors.lua present Hyprland just uses the `output = ""` catch-all
--- (preferred mode, auto position, auto scale) and everything works.
--- monitors.lua is gitignored, so your layout survives `git pull` and never
--- lands in a commit.
+--     ~/HyKr/Scripts/snapshot_monitors.sh
 --
--- Get the real values for this machine from:
+-- That reads the live layout out of `hyprctl monitors` and writes
+-- ~/.config/hypr/monitors.lua with the real output names, modes, positions,
+-- scales and rotations for THIS machine. Re-run it after rearranging
+-- displays. `--print` shows what it would write without writing it.
 --
---     hyprctl monitors
+-- Copy this file to `monitors.lua` beside it only if you would rather write it
+-- by hand. Either way it is gitignored, so it survives `git pull` and can
+-- never be committed onto someone else's outputs.
 --
--- Why this is not in hyprland.lua any more: output names like HDMI-A-1, DP-2
--- and eDP-1 are the first HDMI/DisplayPort/internal panel on almost any
--- machine, so shipping them in the tracked config meant anyone installing
+-- Why it is not in hyprland.lua any more: output names are not distinctive.
+-- HDMI-A-1 is the first HDMI output and eDP-1 the internal panel on nearly any
+-- machine, so a layout committed to the tracked config meant anyone installing
 -- HyKr whose output happened to match got the author's resolution, position
--- and -- worst of all -- rotation applied on first login, before they had a
--- terminal open to undo it.
+-- and rotation applied on first login, before they had a terminal open to undo
+-- it. The catch-all never helped: the explicit rules match first.
 --
--- `transform` is worth pinning when you use it: it is NOT one of the things
--- that survives a config reload on its own. A rotation set live (hyprmod, or
--- a one-off `hyprctl keyword monitor ...`) never gets written back, so
--- without it here every `hyprctl reload` silently resets to unrotated.
---   0 = normal, 1 = 90 deg, 2 = 180 deg, 3 = 270 deg
+-- Two things worth pinning even when the rest is fine, because NEITHER
+-- survives a config reload on its own -- set one live with `hyprctl keyword`
+-- and it is never written back, so the next `hyprctl reload` drops it:
+--
+--   scale      the catch-all's `scale = "auto"` picks a DPI-derived, often
+--              fractional scale. If your scaling ever changes for no visible
+--              reason, this is why, and `scale = 1` here is the fix.
+--   transform  0 = normal, 1 = 90 deg, 2 = 180 deg, 3 = 270 deg
+--
+-- Get the real values for this machine from:  hyprctl monitors
 
--- The author's desktop, as an example of the shape:
--- hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "0x370", scale = 1, transform = 1 }) -- 90 deg
--- hl.monitor({ output = "DP-2", mode = "2560x1440@240", position = "1080x0", scale = 1, transform = 2 }) -- 180 deg
--- hl.monitor({ output = "DP-3", mode = "1920x1080@239.96", position = "1080x1440", scale = 1 })
+-- ---------------------------------------------------------------- Examples
 
--- The author's laptop (MSI Venture A16 AI, 16" FHD+ touch). 1920x1200@60 is
--- MSI's listed spec and has not been confirmed against the actual EDID --
--- check `hyprctl monitors` before trusting it, or just delete the line and
--- let the catch-all in hyprland.lua pick the preferred mode.
--- hl.monitor({ output = "eDP-1", mode = "1920x1200@60", position = "0x0", scale = 1 })
+-- A single laptop panel -- the common case. `preferred` lets the panel report
+-- its own native resolution and refresh rate rather than hardcoding a guess,
+-- while scale stays pinned so it cannot drift to something automatic.
+-- hl.monitor({ output = "eDP-1", mode = "preferred", position = "0x0", scale = 1 })
+
+-- The same panel with everything pinned explicitly (1080p, 144 Hz):
+-- hl.monitor({ output = "eDP-1", mode = "1920x1080@144", position = "0x0", scale = 1 })
+
+-- A three-monitor desktop, two of them rotated. Positions are the top-left
+-- corner of each output in the combined layout, in post-rotation pixels --
+-- which is why the 1080-wide gap in front of DP-2 and DP-3 is the height of
+-- the 90-degree-rotated HDMI-A-1 beside them.
+-- hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144",    position = "0x370",     scale = 1, transform = 1 }) -- 90 deg
+-- hl.monitor({ output = "DP-2",     mode = "2560x1440@239.96", position = "1080x0",    scale = 1, transform = 2 }) -- 180 deg
+-- hl.monitor({ output = "DP-3",     mode = "1920x1080@239.96", position = "1080x1440", scale = 1 })
+
+-- Anything this file does not name falls through to hyprland.lua's catch-all,
+-- so an occasionally-plugged-in external monitor needs no entry -- unless you
+-- want a fixed scale or position for it, which is exactly when to add one.

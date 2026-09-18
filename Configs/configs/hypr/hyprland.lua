@@ -10,10 +10,19 @@
 -- it. The catch-all below never helped, because the explicit rules match
 -- first.
 --
--- Put your own layout in ~/.config/hypr/monitors.lua (gitignored; copy
--- monitors.lua.example next to it as a starting point, and see that file
--- for why `transform` in particular is worth pinning). With no monitors.lua
--- present the catch-all alone is a perfectly good default.
+-- Put your own layout in ~/.config/hypr/monitors.lua (gitignored). The way to
+-- create one is not to write it by hand: arrange the displays how you like,
+-- then freeze the live layout with
+--
+--     ~/HyKr/Scripts/snapshot_monitors.sh
+--
+-- monitors.lua.example covers the by-hand route and explains why `scale` and
+-- `transform` in particular are worth pinning.
+--
+-- With no monitors.lua present the catch-all below is a working default, but
+-- note that its `scale = "auto"` means a DPI-derived (often fractional) scale
+-- rather than whatever you had -- the usual cause of "my scaling changed and
+-- I do not know why".
 --
 -- pcall, not a bare require: require() on a missing module is a hard error
 -- that takes down the whole config -- every keybind with it -- which is

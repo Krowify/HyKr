@@ -71,6 +71,14 @@ Not from elifouts:
   to stack a second hyprlock, and once you unlock calls `start_bar.sh` to
   bring back the active theme's bar — a Quickshell dock doesn't always
   survive hyprlock's session-lock surface, and nothing else supervises it.
+- `hypr/monitors.lua` — per-machine monitor layout, **gitignored**, optional.
+  `hyprland.lua` `pcall`-requires it and falls back to a bare
+  `output = ""` catch-all when it is absent. Generate it with
+  `Scripts/snapshot_monitors.sh` rather than by hand; `monitors.lua.example`
+  documents the by-hand route. Worth having even on a single-monitor machine:
+  the catch-all's `scale = "auto"` is a DPI-derived, often fractional scale,
+  and neither scale nor rotation survives a `hyprctl reload` unless pinned
+  here.
 - `hypr/idle_sleep.sh` — the backstop that stops a closed lid costing a
   battery. `hypridle` on its own only notifies, locks and blanks the screen
   (DPMS off, which looks exactly like sleep), and `logind`'s lid switch is
