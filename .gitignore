@@ -4,6 +4,13 @@
 Configs/configs/hypr/hyprland-gui.conf
 Configs/configs/hypr/hyprland-gui.lua
 
+# Per-machine monitor layout (output names, modes, positions, rotations).
+# hyprland.lua pcall-requires it and falls back to the `output = ""` catch-all
+# when it is absent. Copy Configs/configs/hypr/monitors.lua.example to
+# monitors.lua and edit -- untracked, so it survives `git pull` and can never
+# be committed onto someone else's outputs.
+Configs/configs/hypr/monitors.lua
+
 # Per-user runtime state, rewritten by apply-theme.sh/apply_wallpaper.sh on
 # every theme switch or wallpaper pick -- apply-theme.sh already falls back
 # to $default_wallpaper when current-wallpaper.txt is missing, so these

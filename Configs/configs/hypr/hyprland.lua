@@ -1,19 +1,43 @@
--- Monitors: pinned explicitly (name/resolution/refresh/position/transform)
--- so this survives reboots and config reloads instead of Hyprland
--- re-guessing a layout each time -- transform is NOT one of the things
--- that survives a reload on its own: a rotation set live (hyprmod, or a
--- one-off `hyprctl keyword monitor ...`) never gets written back here, so
--- without pinning it explicitly every `hyprctl reload` silently reset both
--- of these back to unrotated.
--- From `hyprctl monitors`:
-hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@144", position = "0x370", scale = 1, transform = 1 }) -- 90 deg
-hl.monitor({ output = "DP-2", mode = "2560x1440@240", position = "1080x0", scale = 1, transform = 2 }) -- 180 deg
-hl.monitor({ output = "DP-3", mode = "1920x1080@239.96", position = "1080x1440", scale = 1 })
--- MSI Venture A16 AI's internal panel (16" FHD+ touch) -- verify against
--- `hyprctl monitors` once installed, 1920x1200@60 is MSI's listed spec
--- but hasn't been confirmed against the actual EDID yet.
-hl.monitor({ output = "eDP-1", mode = "1920x1200@60", position = "0x0", scale = 1 })
--- Fallback for any monitor not listed above
+-- Monitors: per-machine, so they live OUTSIDE this tracked file.
+--
+-- This block used to pin HDMI-A-1 / DP-2 / DP-3 / eDP-1 by name, with
+-- explicit modes, positions and rotations, straight out of the author's
+-- `hyprctl monitors`. Those names are not distinctive: HDMI-A-1 is the
+-- first HDMI output and eDP-1 the internal panel on nearly any machine, so
+-- anyone else installing HyKr whose output happened to match got a display
+-- rotated 90 degrees, positioned at 0x370, at a mode their panel may not
+-- even support -- on first login, before they had a terminal open to fix
+-- it. The catch-all below never helped, because the explicit rules match
+-- first.
+--
+-- Put your own layout in ~/.config/hypr/monitors.lua (gitignored; copy
+-- monitors.lua.example next to it as a starting point, and see that file
+-- for why `transform` in particular is worth pinning). With no monitors.lua
+-- present the catch-all alone is a perfectly good default.
+--
+-- pcall, not a bare require: require() on a missing module is a hard error
+-- that takes down the whole config -- every keybind with it -- which is
+-- exactly what this file already guards against for plugins via
+-- is_plugin_loaded(). Same reasoning, same treatment.
+local ok_monitors, monitors_err = pcall(require, "monitors")
+if not ok_monitors then
+    -- Not found is the normal, supported case and stays quiet. A monitors.lua
+    -- that exists but has a syntax error is not, and silently swallowing that
+    -- would look identical to "my monitor config does nothing" -- so that one
+    -- goes to the Hyprland log (`journalctl --user -u hyprland`, or the
+    -- terminal Hyprland was started from).
+    --
+    -- Plain `print`, and string.find with plain=true: this is the file's
+    -- safety net, so it must not itself depend on an hl.* helper or on Lua
+    -- pattern escaping being right.
+    local msg = tostring(monitors_err)
+    if not string.find(msg, "module 'monitors' not found", 1, true) then
+        print("HyKr: ~/.config/hypr/monitors.lua failed to load: " .. msg)
+    end
+end
+
+-- Fallback for any monitor monitors.lua did not name (and, with no
+-- monitors.lua at all, for every monitor).
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 
 -- Caps Lock does nothing when pressed -- a Wayland/libinput setting
