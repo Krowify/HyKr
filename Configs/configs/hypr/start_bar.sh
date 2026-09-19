@@ -32,10 +32,24 @@ bar_mode="waybar"
 # newly added Quickshell theme needs no edit here -- just the two keys in
 # its theme.json.
 qs_config="laptop"
-if command -v jq >/dev/null 2>&1 && [[ -r "$CURRENT" ]]; then
+# Say so when the fallback is taken, rather than defaulting in silence. Every
+# way of not resolving the active theme ends at bar_mode=waybar, so on a
+# Quickshell theme (Hyperspace, Laptop, Blackturq) a missing or unreadable
+# current-theme.json means you log in to waybar instead of your dock, with
+# nothing anywhere saying why -- which reads as "my theme switched by itself".
+if ! command -v jq >/dev/null 2>&1; then
+  echo "start_bar.sh: jq not installed -- cannot read the active theme, defaulting to waybar" >&2
+elif [[ ! -r "$CURRENT" ]]; then
+  echo "start_bar.sh: ${CURRENT} missing or unreadable -- defaulting to waybar." >&2
+  echo "start_bar.sh:   Apply a theme to recreate it: ~/.config/theme-switcher/theme-picker.sh" >&2
+else
   theme="$(jq -r '.theme // empty' "$CURRENT" 2>/dev/null || true)"
   theme_json="$BASE/themes/$theme/theme.json"
-  if [[ -n "$theme" && -r "$theme_json" ]]; then
+  if [[ -z "$theme" ]]; then
+    echo "start_bar.sh: ${CURRENT} names no theme -- defaulting to waybar" >&2
+  elif [[ ! -r "$theme_json" ]]; then
+    echo "start_bar.sh: active theme '${theme}' has no readable ${theme_json} -- defaulting to waybar" >&2
+  else
     bar_mode="$(jq -r '.bar // "waybar"' "$theme_json" 2>/dev/null || echo waybar)"
     qs_config="$(jq -r '.quickshell.config // "laptop"' "$theme_json" 2>/dev/null || echo laptop)"
   fi

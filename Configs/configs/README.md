@@ -71,6 +71,19 @@ Not from elifouts:
   to stack a second hyprlock, and once you unlock calls `start_bar.sh` to
   bring back the active theme's bar — a Quickshell dock doesn't always
   survive hyprlock's session-lock surface, and nothing else supervises it.
+- `hypr/restore_theme.sh` — puts back at login what the theme switcher last
+  set. Runs from `hyprland.lua`'s autostart, before `start_bar.sh`. Two things
+  were never restored on a relog: the **wallpaper** (the autostart started
+  `awww-daemon` and stopped there — nothing ever ran `awww img`, so whether it
+  came back was down to the daemon's own cache), and a **missing generated
+  file**. `hyprland.lua` now `pcall`-requires `generated-theme.lua` and
+  `colors-hyprland.lua` instead of hard-requiring them, so their absence no
+  longer aborts the whole config — but it degrades to Hyprland's defaults, and
+  this re-renders them. It deliberately does *not* re-apply a theme that does
+  not need it: `apply-theme.sh` restarts bars and re-runs matugen, so that is
+  the repair path, not the happy path. A dynamic theme with no resolvable
+  wallpaper is skipped rather than re-applied, because invoked without one it
+  opens a wallpaper picker — at login, a menu waiting for nobody.
 - `hypr/monitors.lua` — per-machine monitor layout, **gitignored**, optional.
   `hyprland.lua` `pcall`-requires it and falls back to a bare
   `output = ""` catch-all when it is absent. Generate it with
