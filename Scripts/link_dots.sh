@@ -22,6 +22,15 @@ done
 # nothing else populates -- link it to the repo's bundled wallpaper set.
 link_dot "${repoDir}/Source/wallpapers" "$HOME/wallpapers"
 
+# Launcher overrides (e.g. hiding avahi's bvnc/bssh/avahi-discover entries).
+# Linked per file, not as a directory manifest: other apps (browsers' web
+# apps, Steam, ...) write their own entries into ~/.local/share/applications,
+# so it has to stay a real directory.
+for entry in "${repoDir}/Configs/.local/share/applications/"*.desktop; do
+    [ -e "$entry" ] || continue
+    link_dot "$entry" "$HOME/.local/share/applications/$(basename "$entry")"
+done
+
 # hyprland.lua does require("colors-hyprland") and require("generated-theme")
 # unconditionally -- unlike the old hyprlang `source = ...` line, a missing
 # require() target is a hard error that stops Hyprland's config from loading
