@@ -236,6 +236,14 @@ failed_steps=()
     failed_steps+=("GPU drivers")
 }
 
+# --------------------------------------------------- // Avahi launchers
+# Before the package install, so the NoExtract line is already in
+# pacman.conf when avahi comes in as a dependency.
+"${scrDir}/extra/hide_avahi_launchers.sh" || {
+    print_log "WARNING: hiding avahi's launchers failed — continuing."
+    failed_steps+=("avahi launchers (extra/hide_avahi_launchers.sh)")
+}
+
 # --------------------------------------------------- // Packages
 # global_fn.sh sets `set -e`, and yay exits non-zero if ANY package in the
 # batch fails -- one broken AUR build (proton-mail-bin and friends are not

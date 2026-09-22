@@ -1,9 +1,0 @@
-# Shadows /usr/share/applications/bvnc.desktop from the avahi package, which
-# can't be uninstalled on its own (it comes in as a dependency) and adds
-# launchers to wofi/rofi that nobody needs. Same desktop ID, so this file wins.
-[Desktop Entry]
-Type=Application
-Name=Avahi VNC Server Browser
-Exec=bvnc
-NoDisplay=true
-Hidden=true

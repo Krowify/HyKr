@@ -7,6 +7,11 @@ install (package lists, post-install helpers, maintenance utilities).
   `Configs/sddm/pixel-sakura` system-wide as the active SDDM theme.
   Separate from `link_dots.sh` because it targets `/usr/share/sddm`,
   not `$HOME`, and needs `sudo`.
+- [`hide_avahi_launchers.sh`](hide_avahi_launchers.sh) — keeps avahi's
+  `bvnc`/`bssh`/`avahi-discover` launchers out of wofi. avahi is pulled in
+  as a dependency, so instead of uninstalling it this adds a `NoExtract`
+  line to `/etc/pacman.conf` and deletes any copies already on disk.
+  Idempotent; run by `install.sh` before packages. Needs `sudo`.
 - [`setup_firewall.sh`](setup_firewall.sh) — system hardening: `firewalld`
   (deny incoming by default, allow outgoing, log denials; removes ssh/mdns/
   samba-client/dhcpv6-client from the public zone — re-add whatever you
