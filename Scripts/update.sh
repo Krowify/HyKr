@@ -85,6 +85,9 @@ command -v pacman &>/dev/null || {
 
 # --------------------------------------------------- // 1. HyKr repo
 repo_changed_files=""
+# Cleared when the checkout is stuck mid-merge/rebase: syncing configs out of
+# a tree like that can copy conflict markers straight into ~/.config.
+repo_usable=1
 
 if [[ -n "${RESUME_FROM}" ]]; then
     # Second pass after a re-exec: the pull already happened in the first.
@@ -114,6 +117,8 @@ elif [[ ${SKIP_REPO} -eq 0 ]]; then
     if [[ -n "${repo_blocker}" ]]; then
         print_log "Skipping the repo update: ${repo_blocker}."
         print_log "  cd ${repoDir} to sort it out, then re-run this script."
+        print_log "  Config sync and theme re-apply are skipped until then."
+        repo_usable=0
         failed_steps+=("repo update (${repo_blocker%% -- *})")
     else
         old_head="$(git -C "${repoDir}" rev-parse HEAD)"
@@ -210,7 +215,7 @@ if [[ ${SKIP_SYSTEM} -eq 0 ]]; then
 fi
 
 # --------------------------------------------------- // 5. Configs
-if [[ ${SKIP_REPO} -eq 0 ]]; then
+if [[ ${SKIP_REPO} -eq 0 && ${repo_usable} -eq 1 ]]; then
     section "Syncing repo configs into ~/.config"
     "${scrDir}/sync_configs.sh" --apply || failed_steps+=("config sync (sync_configs.sh --apply)")
 
