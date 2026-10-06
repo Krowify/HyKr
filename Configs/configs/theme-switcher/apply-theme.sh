@@ -361,8 +361,12 @@ accent="$(hex_to_rgba_ff "$accent_hex")"
 gaps_in="5"
 layout="dwindle"
 
-border_active="$accent"
-border_inactive="$bg"
+# colors.json's own border_active/border_inactive (the jq read above
+# already falls back to accent/surface when a theme leaves them out), not
+# accent/bg unconditionally -- otherwise a theme that picks a distinct
+# border (Minimal's white, Graphite's lighter slate) never gets it.
+border_active="$(hex_to_rgba_ff "${border_active_hex:-$accent_hex}")"
+border_inactive="$(hex_to_rgba_ff "${border_inactive_hex:-$bg_hex}")"
 
 # border_active stays a SINGLE colour. Hyprland's Lua config validates
 # col.active_border as one colour value, not as hyprlang's
@@ -419,25 +423,20 @@ mv "$tmp_out" "$OUT"
 # the old hyprlang `source = ...`, a missing require() target is a hard
 # error that would stop the whole config (and Hyprland) from loading.
 #
-# For a dynamic_colors theme, the whole point is that the border tracks
-# the wallpaper-derived accent that was just computed above -- so that
-# takes priority unconditionally, rather than letting a stale pywal
-# history (from whatever wallpaper was last picked through the
-# wallpaper-picker, unrelated to this theme) override it.
+# Applying a theme is the latest write, so the theme's own border colors
+# win -- for every theme, not just dynamic_colors ones. This used to copy
+# ~/.cache/wal/colors-hyprland.lua over it whenever pywal had ever run, but
+# apply-theme.sh never runs wal itself: that cache is whatever wallpaper was
+# last picked through the wallpaper-picker, often under a different theme
+# entirely. So switching to e.g. Everforest kept a red border left over
+# from some earlier wallpaper while everything else turned green.
 #
-# Otherwise: if wal has already run at least once, use its live colors
-# (matches the "last write wins" convention every other pywal-driven
-# surface follows); fall back to this theme's own border colors so a
-# completely fresh install still boots.
-WAL_HYPR_LUA="$HOME/.cache/wal/colors-hyprland.lua"
+# "Last write wins" still holds the other way round: picking a wallpaper
+# afterwards runs hypr/apply_wallpaper.sh, which rewrites this file (and
+# the live border) from pywal's colors.
 GEN_HYPR_LUA="$HOME/.config/hypr/colors-hyprland.lua"
-if [[ "$dynamic_colors" == "true" ]]; then
-  printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
-elif [[ -f "$WAL_HYPR_LUA" ]]; then
-  cp "$WAL_HYPR_LUA" "$GEN_HYPR_LUA"
-elif [[ ! -f "$GEN_HYPR_LUA" ]]; then
-  printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
-fi
+mkdir -p "$(dirname "$GEN_HYPR_LUA")"
+printf 'var_color4 = "%s"\nvar_backgroundCol = "%s"\n' "$border_active" "$border_inactive" > "$GEN_HYPR_LUA"
 
 # --------- Wallpaper - SWWW ----------
 wp_rel=""

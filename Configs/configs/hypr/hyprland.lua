@@ -131,10 +131,11 @@ hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
 hl.env("XCURSOR_SIZE", "24")
 
--- Pywal border colors always win over the active theme's border colors,
--- same as every other "last write wins" surface in this repo (kitty,
--- starship, spicetify) -- var_color4/var_backgroundCol come from the
--- require("colors-hyprland") above.
+-- Border colors follow "last write wins", same as every other such surface
+-- in this repo (kitty, starship, spicetify): apply-theme.sh writes the
+-- theme's own border colors into colors-hyprland.lua, and a later wallpaper
+-- pick (apply_wallpaper.sh) overwrites them with pywal's --
+-- var_color4/var_backgroundCol come from the require("colors-hyprland") above.
 hl.config({
     general = {
         col = {
