@@ -37,6 +37,7 @@ HyKr/
 │   ├── enable_services.sh    # enables sddm/NetworkManager/bluetooth/power-profiles — not optional
 │   ├── global_fn.sh          # shared lib, sourced by every script
 │   ├── link_dots.sh          # symlinks Configs/configs/* into $HOME per Scripts/dots manifest
+│   ├── update.sh             # full system update: repo pull -> yay -Syu -> flatpak -> configs
 │   ├── snapshot_monitors.sh  # freeze this machine's live monitor layout -> hypr/monitors.lua
 │   ├── dots/                 # one .toml manifest per app (source → target)
 │   ├── extra/                # optional/secondary scripts (install_sddm_theme.sh, setup_firewall.sh,
