@@ -24,6 +24,7 @@ hyprpolkitagent                                        # polkit authentication a
 psmisc                                                 # provides killall, used unconditionally by waybar's colorpicker.sh to stop any stale hyprpicker before relaunching it — was never listed as a dependency
 xdg-desktop-portal-hyprland                            # xdg desktop portal for hyprland
 xdg-desktop-portal-gtk                                 # file picker / dbus integration
+gvfs                                                   # GIO virtual filesystems: trash and MTP/phone access in GTK apps and the GTK file picker (xdg-desktop-portal-gtk) -- Dolphin itself uses KIO, not this
 qt5-wayland                                            # wayland support for qt5 apps
 qt6-wayland                                            # wayland support for qt6 apps
 
@@ -37,7 +38,6 @@ materia-gtk-theme                                      # GTK widget theme (Mater
 qogir-icon-theme                                       # icon theme (Qogir-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
 illogical-impulse-bibata-modern-classic-bin            # cursor theme — from elifouts/Dotfiles' fullinstall.sh package list
 nwg-look                                                # GUI to apply/preview the GTK theme (also reads gtk-{3,4}.0/settings.ini)
-qt5ct                                                   # Qt5 theming, needed for kate/qt apps to match
 qt6ct-kde                                              # Qt6 theming, patched fork of qt6ct (AUR) -- plain qt6ct doesn't style KDE Frameworks apps (dolphin) correctly, only generic Qt6 apps. Same config path/format as qt6ct, same QT_QPA_PLATFORMTHEME=qt6ct env value.
 
 # --------------------------------------------------- // Waybar
@@ -53,7 +53,6 @@ rofi                                                    # icon-grid picker used 
 
 # --------------------------------------------------- // Swaync
 swaync
-gvfs                                                   # needed for swaync's file actions
 libnotify                                              # provides notify-send, used across the stack
 
 # --------------------------------------------------- // Hyprlock
@@ -97,7 +96,6 @@ power-profiles-daemon                                   # CPU power/performance 
 hyprsunset                                              # blue light filter, Super+Shift+N
 quickshell                                              # widget panel, Super+M — see Configs/configs/quickshell/hykr/shell.qml
 wlogout                                                 # logout menu, Super+Escape
-swayosd                                                  # on-screen volume/brightness display, used by wallpaper.sh if present (guarded, optional)
 cliphist                                                # clipboard history, Super+V
 matugen                                                 # generates colors.json from wallpaper for theme-switcher's "dynamic" theme
 
@@ -105,7 +103,6 @@ matugen                                                 # generates colors.json 
 dolphin                                                 # file manager, Super+E — matches HyDE's own choice, pairs with kate (both KDE)
 ark                                                     # archive tool, Dolphin's native extract/compress integration (HyDE uses this too, not file-roller)
 kde-cli-tools                                           # file type default associations for Dolphin
-qt5-imageformats                                        # image thumbnails in Dolphin
 ffmpegthumbs                                            # video thumbnails in Dolphin
 kate                                                     # text editor, Super+C
 brave-bin                                                # web browser, Super+B (AUR — Brave has no official Arch package)
@@ -116,10 +113,5 @@ celluloid                                                # video player (GTK fro
 sddm
 qt6-declarative
 qt6-5compat
-qt6-svg
 qt6-multimedia
 qt6-multimedia-ffmpeg
-gst-plugins-base
-gst-plugins-good
-gst-plugins-bad
-gst-plugins-ugly

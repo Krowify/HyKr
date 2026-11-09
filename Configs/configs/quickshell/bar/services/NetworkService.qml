@@ -8,7 +8,7 @@
 // nmcli-backed connection status (wifi vs ethernet vs disconnected) plus
 // best-effort ProtonVPN status via protonvpn-cli, guarded behind
 // command -v since it's an optional CLI (same defensive pattern the rest
-// of HyKr uses for pywalfox/swayosd -- not in pkg_core.lst).
+// of HyKr uses for pywalfox -- not in pkg_core.lst).
 pragma Singleton
 
 import Quickshell

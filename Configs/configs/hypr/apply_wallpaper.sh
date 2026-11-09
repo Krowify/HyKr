@@ -44,11 +44,6 @@ wal -i "$selected_wallpaper" -n --cols16
 # plain bash variables to render with, not just files under ~/.cache.
 source ~/.cache/wal/colors.sh
 
-if command -v swayosd-server &>/dev/null; then
-    pkill swayosd-server || true
-    swayosd-server &
-fi
-
 # Guarded, unlike every other optional tool in this script: the
 # "bar": "quickshell-dock" themes (every shipped theme now) deliberately
 # pkill swaync, so on those themes swaync is *always* down when a wallpaper is

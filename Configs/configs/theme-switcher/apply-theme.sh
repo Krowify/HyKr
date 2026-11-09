@@ -270,7 +270,7 @@ hex_to_rgba_ff() {
   echo "rgba(${h}ff)"
 }
 
-# qt5ct/qt6ct color scheme files want #AARRGGBB, alpha first.
+# qt6ct color scheme files want #AARRGGBB, alpha first.
 hex_to_argb() {
   local h="${1#\#}" alpha="${2:-ff}"
   [[ "$h" =~ ^[0-9a-fA-F]{6}$ ]] || { echo "Invalid hex: $1" >&2; exit 1; }
@@ -1107,28 +1107,6 @@ if [[ -d "$WLOGOUT_TPL_DIR" ]]; then
       -e "s/{{font_family_bold}}/$font_family_bold/g" \
       "$WLOGOUT_STYLE_TPL" > "$WLOGOUT_STYLE_OUT"
   fi
-fi
-
-# --------- Peaclock ----------
-PEACLOCK_TEMPLATE="$BASE/templates/peaclock.conf.tpl"
-PEACLOCK_DIR="$HOME/.config/peaclock"
-PEACLOCK_OUT="$PEACLOCK_DIR/config"
-
-if [[ -f "$PEACLOCK_TEMPLATE" ]]; then
-  mkdir -p "$PEACLOCK_DIR"
-
-  peaclock_lavender="${lavender_hex:-${accent_alt_hex:-$accent_hex}}"
-  peaclock_red="${red_hex:-#f38ba8}"
-
-  sed \
-    -e "s/{{bg}}/$bg_hex/g" \
-    -e "s/{{fg}}/$fg_hex/g" \
-    -e "s/{{blue}}/$blue_hex/g" \
-    -e "s/{{accent}}/$accent_hex/g" \
-    -e "s/{{red}}/$peaclock_red/g" \
-    -e "s/{{font_family}}/$font_family/g" \
-    -e "s/{{font_family_bold}}/$font_family_bold/g" \
-    "$PEACLOCK_TEMPLATE" > "$PEACLOCK_OUT"
 fi
 
 # --------- btop ----------

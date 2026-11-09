@@ -113,8 +113,7 @@ Singleton {
 
     // GPU utilisation, cheapest source first: amdgpu (and some Intel) expose
     // it as a plain sysfs file; NVIDIA needs nvidia-smi; nvtop -s is the
-    // GPU-agnostic fallback the old waybar module (waybar/scripts/
-    // gpu_usage.sh) used. Prints nothing when none of them work, which leaves
+    // GPU-agnostic fallback. Prints nothing when none of them work, which leaves
     // gpu at -1 and the module hidden.
     Process {
         id: gpuProc

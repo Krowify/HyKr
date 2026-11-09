@@ -7,7 +7,7 @@
 # Wallpaper picker: rofi's icon grid if installed (reliable click-to-select),
 # else wofi's plain text list as a fallback -> awww + pywal. Adapted from
 # elifouts/Dotfiles (cava color sync removed — no cava config in this repo;
-# pywalfox/swayosd calls guarded since they're optional, not in
+# pywalfox call guarded since it's optional, not in
 # pkg_core.lst). wofi's own image-grid mode (allow_images + img: prefix) is
 # deliberately not used here: its GtkFlowBox click-to-activate is flaky
 # (same reason apply-theme.sh's dynamic-theme picker prefers rofi's grid

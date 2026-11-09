@@ -21,7 +21,7 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | fastfetch | `assets/hykr-logo.txt` — a "HyKr" wordmark instead of the random-Pokémon logo, centred against the info column (`padding_top: 4`) and shaded row by row with the same accent→text gradient as the info keys (`$1`–`$8`; `$9` is the dim `hyprland · arch` tag), filled from the palette on every apply |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |
-| Wofi / rofi, kitty, starship, wlogout, GTK 3/4, Qt6, VS Code, Obsidian, spicetify, peaclock | The shared templates in `../../templates/`, same as every other theme |
+| Wofi / rofi, kitty, starship, wlogout, GTK 3/4, Qt6, VS Code, Obsidian, spicetify | The shared templates in `../../templates/`, same as every other theme |
 
 Because the palette lives in `colors.json`, every one of those shared
 templates renders in Default with no per-theme file — which is why this
