@@ -89,7 +89,7 @@ pamixer                                                 # volume keys (F10/F11/F
 brightnessctl                                           # quick-settings brightness slider
 power-profiles-daemon                                   # CPU power/performance profile switching -- no-op on a desktop with no battery, needed for laptop battery life; enabled in enable_services.sh
 hyprsunset                                              # blue light filter, Super+Shift+N
-quickshell                                              # widget panel, Super+M — see Configs/configs/quickshell/hykr/shell.qml
+quickshell                                              # every bar, plus the desktop shell (launcher, clipboard, pickers, control centre) — see Configs/configs/quickshell/hykr/shell.qml
 wlogout                                                 # logout menu, Super+Escape
 cliphist                                                # clipboard history, Super+V
 matugen                                                 # generates colors.json from wallpaper for theme-switcher's "dynamic" theme

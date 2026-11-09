@@ -1329,7 +1329,7 @@ fi
 # the process to actually be gone: a plain SIGTERM followed straight by the
 # replacement's launch raced, the old shell still holding its layer-shell
 # surface when the new one mapped. See its header for what counts as a bar
-# (only bars are ever stopped -- never the wallpaper picker or Super+M).
+# (only bars are ever stopped -- never the desktop shell, quickshell/hykr).
 QS_STOP="$BASE/qs-stop.sh"
 qs_stop() {
   bash "$QS_STOP" "$@" || true

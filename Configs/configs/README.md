@@ -47,8 +47,14 @@ Not from elifouts:
     colours come from its wallpaper opens the wallpaper picker on its own
     wallpapers -- and so does `apply-theme.sh <theme>` given no wallpaper.
     Replaces `theme-picker.sh`'s rofi/wofi menu (it now just opens this).
-  - `LegacyPanel.qml` — the original `Super+M` quick-settings panel, until
-    the control centre replaces it.
+  - `ControlCentre.qml` — control centre (`Super+M`, `Super+S`), top-right
+    under the bar: Wi-Fi / Bluetooth / Do Not Disturb / Caffeine / Night
+    Light / Airplane tiles, volume and brightness sliders, CPU/RAM/disk, the
+    playing MPRIS track with controls, and the notification count (opening
+    the bar's notification centre -- notifications stay in the bar's
+    process). `status.sh` reads all of it in one pass, every 2s, only while
+    the panel is open. Replaces the old `Super+M` panel and the `Super+S`
+    wofi menu (`hypr/quick_settings.sh`).
   - `Theme.qml` / `colors.json` — palette, rewritten by `apply-theme.sh` and
     `apply_wallpaper.sh` like every bar's; `qs-stop.sh` excludes this config
     so a theme switch never mistakes it for a bar.
@@ -90,7 +96,7 @@ Not from elifouts:
   `settings.json` is *merged* into, not overwritten: it is a file you own too,
   and every preference changed in VS Code's UI lands in it.
 - `hypr/lock.sh` — the single path to a locked session: `Super+L`, wlogout's
-  Lock button, `quick_settings.sh` and hypridle's `lock_cmd` (so
+  Lock button, the control centre and hypridle's `lock_cmd` (so
   `loginctl lock-session` and the pre-suspend hook too) all run it. Refuses
   to stack a second hyprlock, and once you unlock calls `start_bar.sh` to
   bring back the active theme's bar — a Quickshell dock doesn't always
@@ -137,11 +143,9 @@ Not from elifouts:
   sleep operation, so plain `suspend` here would bound nothing.
 - `hypr/dock_ipc.sh` — calls a function on whichever Quickshell dock the
   active theme runs (`toggle-notifications`, `toggle-dnd`). Used by `Super+N` and the
-  quick-settings DND entry, which previously hardcoded
+  control centre's DND tile (and `is-dnd` / `count` for its notification
+  card), which previously hardcoded
   `quickshell -c laptop` and so did nothing under any other Quickshell theme.
-- `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
-  existing actions (wallpaper picker, hyprlock, wlogout, hyprsunset/
-  hypridle toggles) plus Wi-Fi/Bluetooth/DND toggles with no dedicated keybind.
 - `hypr/fn_keys.sh` — the three laptop function-row actions that need a
   device name looked up first (keyboard backlight, touchpad toggle, airplane
   mode), so they can't be a one-line `exec_cmd` in `hyprland.lua`. Finds the

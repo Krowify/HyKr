@@ -3,7 +3,7 @@
 #
 #   hykr.sh launcher            (Super+Tab)
 #   hykr.sh clipboard           (Super+V)
-#   hykr.sh panel               (Super+M)
+#   hykr.sh control             (Super+M, Super+S)
 #   hykr.sh wallpaper           (Super+Shift+W)
 #   hykr.sh themes              (Super+Shift+T)
 #   hykr.sh <target> open|close|toggle

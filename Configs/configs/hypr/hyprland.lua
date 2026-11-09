@@ -297,7 +297,7 @@ hl.bind(var_mainMod .. " + ESCAPE", hl.dsp.exec_cmd("wlogout"))
 -- lock.sh, not hyprlock directly: it guards against a second instance and,
 -- once you unlock, brings back the bar the active theme wants (a Quickshell
 -- dock does not always survive hyprlock's session-lock surface). Every other
--- way of locking -- wlogout, quick_settings.sh, hypridle's lock_cmd, and so
+-- way of locking -- wlogout, the control centre, hypridle's lock_cmd, and so
 -- `loginctl lock-session` too -- goes through the same script.
 hl.bind(var_mainMod .. " + L", hl.dsp.exec_cmd("~/.config/hypr/lock.sh"))
 
@@ -314,7 +314,7 @@ hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
 -- The launcher, clipboard picker and this panel are the desktop shell
 -- (quickshell/hykr), always running beside the bar; hykr.sh toggles one of
 -- its surfaces over IPC and starts the shell first if it isn't up.
-hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh panel"))
+hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh control"))
 -- Toggles the active theme's Quickshell bar.
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.sh --toggle"))
 -- Notification center. dock_ipc.sh resolves the ACTIVE theme's Quickshell
@@ -322,7 +322,9 @@ hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.
 hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("~/.config/hypr/dock_ipc.sh toggle-notifications"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset -t 5000"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))
-hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/quick_settings.sh"))
+-- Same control centre as Super+M (Super+S was the wofi quick-settings menu
+-- it replaced).
+hl.bind(var_mainMod .. " + S", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh control"))
 hl.bind(var_mainMod .. " + O", function()
     if is_plugin_loaded("hyprexpo") then hl.plugin.hyprexpo.expo("toggle") end
 end)
@@ -492,8 +494,8 @@ hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -q set +5%"), { lo
 -- uses rather than adding wpctl.
 hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("pamixer --default-source -t"), { locked = true })
 
--- F6 -- bluetooth. Same toggle quick_settings.sh already offers from its
--- wofi menu, so the key and the menu can't disagree.
+-- F6 -- bluetooth. Same toggle as the control centre's Bluetooth tile, so
+-- the key and the panel can't disagree.
 hl.bind("XF86Bluetooth", hl.dsp.exec_cmd("bluetoothctl power \"$(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)\""))
 
 -- F12 -- airplane mode. Via the helper because a bare `rfkill block all`

@@ -65,9 +65,10 @@ sound-effect hooks).
 
 ## Quick Settings
 
-`Configs/configs/quickshell/hykr/shell.qml` (widget panel, `Super+M`) and
-`Configs/configs/hypr/quick_settings.sh` (wofi menu, `Super+S`) are
-original — written for this repo, not sourced from any of the repos above.
+The original quick-settings panel (`Super+M`) and wofi menu (`Super+S`)
+were original — written for this repo, not sourced from any of the repos
+above; both are now the desktop shell's control centre
+(`Configs/configs/quickshell/hykr/ControlCentre.qml`).
 The panel was originally built in Eww, then rebuilt in Quickshell — see
 [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland), whose own
 shell explicitly replaced an earlier Eww/AGS attempt with Quickshell.

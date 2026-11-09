@@ -28,12 +28,12 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | `Super+T` | Toggle floating |
 | `Super+G` | Toggle group |
 | `Super+J` | Swap split (window positions — `togglesplit` is broken upstream in Hyprland 0.56.2, [hyprwm/Hyprland#15106](https://github.com/hyprwm/Hyprland/issues/15106)) |
-| `Super+M` | Toggle quick-settings panel (desktop shell) |
+| `Super+M` | Control centre (desktop shell) — Wi-Fi, Bluetooth, DND, caffeine, night light, airplane, volume/brightness, CPU/RAM/disk, media, notifications |
 | `Super+Ctrl+B` | Toggle the active theme's Quickshell bar |
 | `Super+N` | Toggle notification center (the active theme's Quickshell bar) |
 | `Super+Shift+N` | Toggle blue light filter (hyprsunset) |
 | `Super+Shift+I` | Toggle caffeine (kills/restarts hypridle) |
-| `Super+S` | Quick-settings menu (Wofi) |
+| `Super+S` | Control centre (same as `Super+M`) |
 | `Super+Shift+R` | Reset a stuck submap — fixes *all* binds going dead. Bound globally **and inside every submap**, so it works while stuck. See [Recovering from a stuck submap](#recovering-from-a-stuck-submap) |
 
 ## Launchers and apps

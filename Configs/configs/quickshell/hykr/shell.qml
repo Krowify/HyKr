@@ -8,7 +8,7 @@
 //   quickshell -c hykr ipc call wallpaper toggle    (Super+Shift+W)
 //   quickshell -c hykr ipc call wallpaper forTheme <id>
 //   quickshell -c hykr ipc call themes toggle       (Super+Shift+T)
-//   quickshell -c hykr ipc call panel toggle        (Super+M)
+//   quickshell -c hykr ipc call control toggle      (Super+M, Super+S)
 //
 // hypr/hykr.sh wraps those calls and starts the shell first if it isn't up.
 //
@@ -33,7 +33,7 @@ ShellRoot {
         launcher.open = which === "launcher";
         clipboard.open = which === "clipboard";
         themes.open = which === "themes";
-        panel.open = which === "panel";
+        control.open = which === "control";
         if (which !== "wallpaper")
             wallpaper.open = false;
     }
@@ -60,8 +60,10 @@ ShellRoot {
         onWallpaperWanted: (themeId, themeName) => root.showWallpaper(themeId, themeName)
     }
 
-    LegacyPanel {
-        id: panel
+    ControlCentre {
+        id: control
+        onThemesWanted: root.show("themes")
+        onWallpaperWanted: root.showWallpaper("", "")
     }
 
     IpcHandler {
@@ -96,9 +98,9 @@ ShellRoot {
     }
 
     IpcHandler {
-        target: "panel"
-        function toggle(): void { root.show(panel.open ? "" : "panel"); }
-        function open(): void { root.show("panel"); }
-        function close(): void { panel.open = false; }
+        target: "control"
+        function toggle(): void { root.show(control.open ? "" : "control"); }
+        function open(): void { root.show("control"); }
+        function close(): void { control.open = false; }
     }
 }

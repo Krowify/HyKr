@@ -2,7 +2,7 @@
 # Lock the session, and make sure the bar is back once you unlock.
 #
 # Every way of locking in this repo routes through here -- the Super+L
-# keybind, wlogout's Lock button, quick_settings.sh's "Lock Screen", and
+# keybind, wlogout's Lock button, the control centre's lock button, and
 # hypridle's lock_cmd (which is also what `loginctl lock-session` and the
 # before-suspend hook trigger). One path, so the unlock side below can't be
 # skipped depending on how you happened to lock.

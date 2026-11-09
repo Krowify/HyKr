@@ -44,7 +44,7 @@ ShellRoot {
         return DockState.activeScreen;
     }
 
-    // Lets Hyprland keybinds and quick_settings.sh reach this shell. Both
+    // Lets Hyprland keybinds and the control centre reach this shell. Both
     // call sites go through hypr/dock_ipc.sh, which resolves the ACTIVE
     // theme's quickshell config name (so the same keybind reaches
     // `-c laptop` or `-c bar` as appropriate). The target name stays "dock", identical to the
@@ -57,11 +57,21 @@ ShellRoot {
             DockState.toggle(root.focusedScreen(), "notifications");
         }
 
-        // The quick-settings menu's "Toggle DND" entry. This is the exact
+        // The control centre's Do Not Disturb tile. This is the exact
         // property NotificationCenterPanel's DND switch flips, so the two
         // stay in sync either way you toggle it.
         function toggleDnd(): void {
             Services.NotificationService.doNotDisturb = !Services.NotificationService.doNotDisturb;
+        }
+
+        // Read by the control centre (quickshell/hykr) through dock_ipc.sh,
+        // since notifications live in this process, not that one.
+        function isDnd(): bool {
+            return Services.NotificationService.doNotDisturb;
+        }
+
+        function count(): int {
+            return Services.NotificationService.historyCount;
         }
     }
 
