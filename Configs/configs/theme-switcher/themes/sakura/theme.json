@@ -7,6 +7,15 @@
   "quickshell": {
     "config": "laptop"
   },
+
+  "fastfetch": {
+    "logo": {
+      "type": "file",
+      "source": "../default/assets/hykr-logo.txt",
+      "padding_top": 4
+    }
+  },
+
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"
