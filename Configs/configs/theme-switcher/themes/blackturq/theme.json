@@ -7,10 +7,11 @@
   "quickshell": {
     "config": "laptop",
     "rounded": true,
-    "radius": 10,
+    "radius": 15,
     "gap": 8,
-    "border": "#6b6f75",
-    "clockSize": 14
+    "border": "#9aa3a8",
+    "clockSize": 14,
+    "dateSize": 14
   },
 
   "fonts": {

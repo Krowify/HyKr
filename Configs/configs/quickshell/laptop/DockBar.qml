@@ -289,12 +289,15 @@ PanelWindow {
                     TapHandler { onTapped: DockState.toggle(root.targetScreen, "bluetooth") }
                 }
 
+                // BarStyle.dateSize (12 unless the theme bumps it), and the
+                // theme's Nerd Font rather than "monospace" -- the same soft,
+                // pixelated rendering the clock had at 12px.
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Qt.formatDateTime(clock.now, "ddd d")
                     color: "#c8d4d1"
-                    font.pixelSize: 12
-                    font.family: "monospace"
+                    font.pixelSize: BarStyle.dateSize
+                    font.family: "JetBrainsMono Nerd Font"
                 }
 
                 Item {

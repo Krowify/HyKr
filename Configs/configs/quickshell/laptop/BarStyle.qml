@@ -14,7 +14,8 @@
 //     "radius": 10,
 //     "gap": 8,
 //     "border": "#6b6f75",
-//     "clockSize": 14
+//     "clockSize": 14,
+//     "dateSize": 14
 //   }
 //
 // A theme that says nothing (Laptop) gets an empty file, i.e. every default
@@ -57,6 +58,13 @@ Singleton {
         return isFinite(n) && n >= 8 && n <= 24 ? Math.round(n) : 12;
     }
 
+    // Size of the "ddd d" date readout at the right of the bar, same idea and
+    // same 12px default as the clock.
+    readonly property int dateSize: {
+        const n = Number(adapter.dateSize);
+        return isFinite(n) && n >= 8 && n <= 24 ? Math.round(n) : 12;
+    }
+
     // Where the bar's bottom edge sits from the top of the screen: what the
     // layer surface's height and exclusive zone are, and the line the popup
     // panels and toasts hang below.
@@ -74,6 +82,7 @@ Singleton {
             property real gap: 8
             property string border: ""
             property real clockSize: 12
+            property real dateSize: 12
         }
     }
 }
