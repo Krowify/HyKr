@@ -85,23 +85,31 @@ ShellRoot {
         NotificationToasts {}
     }
 
+    // barHeight / rightOffset follow BarStyle.qml: a floating bar (Blackturq)
+    // sits BarStyle.gap lower and BarStyle.sideGap further in from the right edge
+    // than the flat one, so the panels move with it. Both are 0 for the flat
+    // Laptop bar, which leaves these at the values they always had.
     VolumePanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "volume"
-        rightOffset: 170
+        barHeight: BarStyle.barBottom
+        rightOffset: 170 + BarStyle.sideGap
     }
     NetworkPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "network"
-        rightOffset: 130
+        barHeight: BarStyle.barBottom
+        rightOffset: 130 + BarStyle.sideGap
     }
     BluetoothPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "bluetooth"
-        rightOffset: 90
+        barHeight: BarStyle.barBottom
+        rightOffset: 90 + BarStyle.sideGap
     }
     NotificationCenterPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "notifications"
+        barHeight: BarStyle.barBottom
     }
 }

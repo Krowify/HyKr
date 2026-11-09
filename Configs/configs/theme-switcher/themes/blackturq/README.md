@@ -13,7 +13,7 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Surface | How |
 | --- | --- |
 | Window borders | Flat `#adf0e9` active border, via `templates/hyprland.lua.tpl` |
-| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — a flat, top-anchored, full-width bar per screen |
+| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — floating 8px in from the top and sides, 10px rounded corners, a grey `#6b6f75` outline and a 14px clock, all set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/BarStyle.qml`). The Laptop theme runs the same shell flat and edge-to-edge |
 | Notifications | That same Quickshell process, via its own native notification daemon — not swaync |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |

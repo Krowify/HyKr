@@ -37,12 +37,15 @@ PanelWindow {
     required property var modelData
     readonly property var targetScreen: modelData
 
-    readonly property int barHeight: 34
+    // The bar's own height comes from BarStyle.qml; the layer surface is that
+    // plus the gap a rounded (floating) bar keeps from the top edge -- zero
+    // for the flat bar, so its surface is exactly the 34px it always was.
+    readonly property int barHeight: BarStyle.barHeight
 
     screen: targetScreen
     color: "transparent"
-    implicitHeight: barHeight
-    exclusiveZone: barHeight
+    implicitHeight: BarStyle.barBottom
+    exclusiveZone: BarStyle.barBottom
 
     anchors { top: true; left: true; right: true }
 
@@ -67,15 +70,28 @@ PanelWindow {
     // transparency" since a slightly-faded bar reads the same as an
     // opaque one at a glance. Content now lives as siblings below,
     // full opacity, on top of this.
+    //
+    // Inset by BarStyle.gap and rounded by BarStyle.radius when the theme asks for
+    // a floating bar (Blackturq); both are 0 for the flat one (Laptop). The
+    // strip around a floating bar is fully transparent, which the theme's
+    // ignore_alpha = 0.2 layer rule keeps out of the blur -- only the
+    // rounded shape itself gets blurred.
     Rectangle {
+        id: barBackground
         anchors.fill: parent
+        anchors.topMargin: BarStyle.gap
+        anchors.leftMargin: BarStyle.sideGap
+        anchors.rightMargin: BarStyle.sideGap
+        radius: BarStyle.radius
         color: Qt.rgba(0.039, 0.078, 0.071, 0.55) // #0a1412 at 55% alpha
         border.width: 1
-        border.color: Qt.rgba(1, 1, 1, 0.06)
+        border.color: BarStyle.borderColour
     }
 
+    // Content tracks the background exactly, so a floating bar's icons stay
+    // inside its rounded outline rather than lining up with the screen.
     Item {
-        anchors.fill: parent
+        anchors.fill: barBackground
 
         RowLayout {
             anchors.fill: parent
@@ -311,12 +327,17 @@ PanelWindow {
         // groups are different widths, so centering this within the
         // RowLayout's flexible space wouldn't land it in the middle of
         // the whole bar.
+        //
+        // The theme's Nerd Font rather than the generic "monospace" alias,
+        // and BarStyle.clockSize (12 unless the theme bumps it): "monospace" at
+        // 12px resolved to a face that rendered visibly soft/pixelated.
         Text {
             anchors.centerIn: parent
             text: Qt.formatDateTime(clock.now, "hh:mm")
             color: "#eaf0ee"
-            font.pixelSize: 12
-            font.family: "monospace"
+            font.pixelSize: BarStyle.clockSize
+            font.family: "JetBrainsMono Nerd Font"
+            font.weight: BarStyle.clockSize > 12 ? Font.DemiBold : Font.Normal
         }
     }
 

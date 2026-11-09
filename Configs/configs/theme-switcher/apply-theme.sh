@@ -603,6 +603,24 @@ done
 # built-in fallbacks until the first wallpaper pick).
 if [[ "$bar_mode" == "quickshell-dock" ]]; then
   write_qs_colors "$QS_BASE/$qs_config"
+
+  # The bar's SHAPE, as opposed to its colours: everything in theme.json's
+  # "quickshell" block except "config" (rounded, radius, gap, border,
+  # clockSize -- see quickshell/laptop/BarStyle.qml). Lets two themes share
+  # one shell and still draw different bars: Laptop's flat strip and
+  # Blackturq's floating rounded one both run `quickshell -c laptop`.
+  #
+  # Every key is written every time, defaults first and the theme's own
+  # values over them, so switching from a theme that set a key to one that
+  # doesn't resets it -- rather than relying on the running shell's
+  # JsonAdapter to forget a key that disappeared from the file.
+  if [[ -d "$QS_BASE/$qs_config" ]]; then
+    jq '{rounded: false, radius: 10, gap: 8, border: "", clockSize: 12}
+        + ((.quickshell // {}) | del(.config))' \
+      "$THEME_JSON" > "$QS_BASE/$qs_config/style.json.tmp" \
+      && mv "$QS_BASE/$qs_config/style.json.tmp" "$QS_BASE/$qs_config/style.json" \
+      || rm -f "$QS_BASE/$qs_config/style.json.tmp"
+  fi
 fi
 
 # --------- Fastfetch ----------

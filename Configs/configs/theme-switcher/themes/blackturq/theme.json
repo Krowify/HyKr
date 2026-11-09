@@ -5,7 +5,12 @@
   "bar": "quickshell-dock",
 
   "quickshell": {
-    "config": "laptop"
+    "config": "laptop",
+    "rounded": true,
+    "radius": 10,
+    "gap": 8,
+    "border": "#6b6f75",
+    "clockSize": 14
   },
 
   "fonts": {

@@ -20,10 +20,11 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "laptop-popup"
 
-    // 34 (DockBar.barHeight) + 10 gap -- toasts sit below the top bar
-    // now instead of flush against the screen edge.
+    // Bar bottom (34, plus BarStyle.gap for a floating bar) + 10 -- toasts sit
+    // below the top bar instead of flush against the screen edge, and line
+    // up with a floating bar's inset right edge.
     anchors { top: true; right: true }
-    margins { top: 44; right: 14 }
+    margins { top: BarStyle.barBottom + 10; right: 14 + BarStyle.sideGap }
     implicitWidth: 280
     // With no toasts queued the Column measures 0, which left this mapped
     // as a zero-height layer-shell surface the whole time the dock was up.
