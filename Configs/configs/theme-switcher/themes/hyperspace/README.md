@@ -26,7 +26,8 @@ whatever the last apply generated.
 `theme.json`'s `"quickshell": { "config": "bar", "style": "notch" }` tells
 `apply-theme.sh` (and `hypr/start_bar.sh`, and `hypr/dock_ipc.sh`) to run
 `quickshell -c bar`. That shell
-carries the bar, the notification daemon and the popup panels — full
+carries the bar, the notification daemon and its notification centre
+(volume, network and Bluetooth open the desktop shell's quick panels) — full
 details in `Configs/configs/quickshell/bar/README.md`, including the
 bar styles it ships. Hyperspace picks the dynamic notch via `"style":
 "notch"`; `"islands"` (three floating pills) is the other one it was built

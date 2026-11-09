@@ -56,6 +56,16 @@ Not from elifouts:
     process). `status.sh` reads all of it in one pass, every 2s, only while
     the panel is open. Replaces the old `Super+M` panel and the `Super+S`
     wofi menu (`hypr/quick_settings.sh`).
+  - `AudioPanel.qml`, `BluetoothPanel.qml`, `NetworkPanel.qml` — quick
+    panels opened by every bar's volume / Bluetooth / network icon (and the
+    chevrons in the control centre), styled like it (`QuickPanel.qml`,
+    `ListRow.qml`, `LevelSlider.qml`). Sound: output and mic volume, choose
+    the output / input, per-app volume (`audio.sh`, pactl). Bluetooth: power,
+    connect / disconnect / forget, scan and pair (`bluetooth.sh`,
+    bluetoothctl). Network: Wi-Fi on/off, join a network with the password
+    typed in place, forget saved ones, wired status, ProtonVPN (`wifi.sh`,
+    nmcli). Blueman / nm-connection-editor stay a link away for what these
+    don't cover (a PIN-pairing keyboard, enterprise Wi-Fi).
   - `Osd.qml` — on-screen display for the volume, mic and brightness keys
     (`hypr/osd.sh` makes the change, then calls it over IPC): a click-through
     pill near the bottom of the focused screen, gone 1.5s after the last key.
@@ -69,8 +79,9 @@ Not from elifouts:
   cog opening the desktop shell's control centre). In the islands layout a
   fourth island carries the playing MPRIS track (art, title, previous /
   play-pause / next, a progress line) whenever there is a player and room
-  for it before the clock island. Four
-  popup panels, and a native notification daemon with a toast stack. Exposes an `IpcHandler` on target `dock`
+  for it before the clock island. Volume, network and Bluetooth open the
+  desktop shell's quick panels; the notification centre and a native
+  notification daemon with a toast stack stay in this process. Exposes an `IpcHandler` on target `dock`
   (reached through `hypr/dock_ipc.sh`) so `Super+N` and the quick-settings
   DND entry reach it. Same not-runtime-tested caveat as
   `quickshell/hykr/` above.

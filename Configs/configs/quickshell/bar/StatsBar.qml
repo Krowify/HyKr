@@ -278,7 +278,7 @@ PanelWindow {
             text: type === "wifi" ? (name.length > 18 ? name.slice(0, 17) + "\u2026" : name)
                 : type === "ethernet" ? "Wired" : "Offline"
             tint: type === "disconnected" ? Colors.bad : root.tint(Colors.good, "network")
-            onLeftClicked: DockState.toggle(root.targetScreen, "network", root.anchorFor(networkChip))
+            onLeftClicked: DockState.openQuickPanel("network")
             onRightClicked: Services.NetworkService.openNetworkManager()
         }
 
@@ -288,7 +288,7 @@ PanelWindow {
                 : Services.AudioService.volume < 34 ? "\uF026" : Services.AudioService.volume < 67 ? "\uF027" : "\uF028"
             text: Services.AudioService.muted ? "Muted" : Services.AudioService.volume + "%"
             tint: root.tint(Colors.orange, "volume")
-            onLeftClicked: DockState.toggle(root.targetScreen, "volume", root.anchorFor(volumeChip))
+            onLeftClicked: DockState.openQuickPanel("audio")
             onRightClicked: Services.AudioService.toggleMute()
             onMiddleClicked: Quickshell.execDetached(["pavucontrol"])
             onScrolled: dir => Services.AudioService.stepVolume(dir * 5)

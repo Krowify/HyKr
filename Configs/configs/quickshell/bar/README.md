@@ -2,7 +2,8 @@
 
 A shared, palette-driven shell any theme can run: a top bar on every screen
 — in one of several styles, a dynamic notch or three floating islands so
-far — a native notification daemon with toasts, and four popup panels. A
+far — a native notification daemon with toasts, and its notification centre
+(volume, network and Bluetooth open the desktop shell's quick panels). A
 theme picks it in its `theme.json`:
 
 ```json
@@ -136,13 +137,15 @@ and stats bars, from the icon's mapped window position — and hands it to
 `DockState`, which each panel turns into its own right margin (clamped so a
 panel near a screen edge stays on screen). Nothing carries a hardcoded
 per-icon offset the way the Laptop dock does, which is what lets the same
-four panels serve every layout.
+panels serve every layout. (Only the notification centre is still one of
+this shell's own panels; volume, network and Bluetooth open the desktop
+shell's quick panels, top-right like its control centre.)
 
 | Icon | Left click | Right click |
 | --- | --- | --- |
-| Volume | Level, drag-to-set bar, mute | — |
-| Network | Current connection + ProtonVPN (connect/disconnect via `protonvpn-cli`, or open the GUI app) | NetworkManager (`nm-connection-editor`, else `kitty nmtui`) |
-| Bluetooth | Adapter on/off, known devices (tap a row to connect/disconnect), open blueman-manager | — |
+| Volume | The desktop shell's sound panel: output and mic volume, choose the output / input, per-app volume | — |
+| Network | The desktop shell's network panel: Wi-Fi on/off, join a network (password in place), wired status, ProtonVPN | NetworkManager (`nm-connection-editor`, else `kitty nmtui`) |
+| Bluetooth | The desktop shell's Bluetooth panel: power, connect / disconnect / forget, scan and pair new devices | — |
 | Bell | History, Do Not Disturb, clear all | — |
 
 ## Colours

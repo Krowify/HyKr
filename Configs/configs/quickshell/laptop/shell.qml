@@ -104,29 +104,10 @@ ShellRoot {
         NotificationToasts {}
     }
 
-    // barHeight / rightOffset follow Colors.qml: a floating bar sits
-    // Colors.barTopGap lower and Colors.barGap further in from the right edge
-    // than the flat one, so the panels move with it. The base offsets include
-    // the control-centre cog at the right end of the bar (20px + 16px
-    // spacing): every icon these panels hang under sits that much further in.
-    VolumePanel {
-        anchorScreen: DockState.activeScreen
-        visible: DockState.activePanel === "volume"
-        barHeight: Colors.barBottom
-        rightOffset: 206 + Colors.barGap
-    }
-    NetworkPanel {
-        anchorScreen: DockState.activeScreen
-        visible: DockState.activePanel === "network"
-        barHeight: Colors.barBottom
-        rightOffset: 166 + Colors.barGap
-    }
-    BluetoothPanel {
-        anchorScreen: DockState.activeScreen
-        visible: DockState.activePanel === "bluetooth"
-        barHeight: Colors.barBottom
-        rightOffset: 126 + Colors.barGap
-    }
+    // Volume, network and Bluetooth have no popups here any more: the icons
+    // open the desktop shell's quick panels (DockState.openQuickPanel), the
+    // same themed panels every bar uses. The notification centre stays in
+    // this process, next to the notification server it shows.
     NotificationCenterPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "notifications"

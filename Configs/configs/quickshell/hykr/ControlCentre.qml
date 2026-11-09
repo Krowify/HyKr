@@ -26,6 +26,11 @@ PanelWindow {
 
     signal themesWanted()
     signal wallpaperWanted()
+    // The chevrons on the Wi-Fi / Bluetooth tiles and the volume slider:
+    // shell.qml opens that quick panel (with a back arrow to here).
+    signal networkWanted()
+    signal bluetoothWanted()
+    signal audioWanted()
 
     readonly property string home: Quickshell.env("HOME") || ""
     readonly property string hypr: root.home + "/.config/hypr"
@@ -165,7 +170,11 @@ PanelWindow {
         property string detail: ""
         property bool active: false
         property bool available: true
+        // A chevron at the right edge opening the full panel; the rest of
+        // the tile still toggles.
+        property bool hasDetails: false
         signal clicked()
+        signal detailsClicked()
 
         height: 58
         radius: Theme.radius - 4
@@ -192,8 +201,8 @@ PanelWindow {
         Column {
             anchors.left: tileIcon.right
             anchors.leftMargin: 10
-            anchors.right: parent.right
-            anchors.rightMargin: 10
+            anchors.right: tile.hasDetails ? chevron.left : parent.right
+            anchors.rightMargin: tile.hasDetails ? 2 : 10
             anchors.verticalCenter: parent.verticalCenter
 
             Label {
@@ -218,91 +227,32 @@ PanelWindow {
             enabled: tile.available
             onClicked: tile.clicked()
         }
-    }
-
-    // A slider: drag or click the track. Reports a 0-100 value on release (and
-    // while dragging, throttled), and ignores status refreshes while held so
-    // the knob doesn't jump back under your finger.
-    component Slider: Item {
-        id: slider
-        property string glyph: ""
-        property int value: 0
-        property bool muted: false
-        readonly property bool held: track.pressed
-        signal moved(int value)
-        signal glyphClicked()
-
-        height: 36
-
-        Glyph {
-            id: sliderGlyph
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            width: 28
-            text: slider.glyph
-            color: slider.muted ? Theme.textFaint : Theme.text
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: slider.glyphClicked()
-            }
-        }
 
         Rectangle {
-            id: bar
-            anchors.left: sliderGlyph.right
-            anchors.leftMargin: 8
-            anchors.right: percent.left
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            height: 10
-            radius: 5
-            color: Theme.hover
+            id: chevron
+            visible: tile.hasDetails
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            anchors.margins: 6
+            width: 28
+            radius: Theme.radiusSmall - 2
+            color: chevronMouse.containsMouse ? Qt.rgba(0, 0, 0, 0.14) : "transparent"
 
-            Rectangle {
-                width: Math.max(bar.height, bar.width * Math.max(0, Math.min(100, track.pressed ? track.dragValue : slider.value)) / 100)
-                height: parent.height
-                radius: parent.radius
-                color: slider.muted ? Theme.textFaint : Theme.accent
+            Glyph {
+                anchors.centerIn: parent
+                text: "\u{F0142}"
+                font.pixelSize: 15
+                color: tile.active ? Theme.onAccent : Theme.textDim
             }
 
             MouseArea {
-                id: track
-                property int dragValue: 0
+                id: chevronMouse
                 anchors.fill: parent
-                anchors.margins: -10
-                function valueAt(x) {
-                    return Math.round(Math.max(0, Math.min(100, (x - 10) / bar.width * 100)));
-                }
-                onPressed: mouse => { track.dragValue = track.valueAt(mouse.x); slider.moved(track.dragValue); }
-                onPositionChanged: mouse => {
-                    if (!track.pressed)
-                        return;
-                    const v = track.valueAt(mouse.x);
-                    if (v !== track.dragValue) {
-                        track.dragValue = v;
-                        throttle.restart();
-                    }
-                }
-                onReleased: slider.moved(track.dragValue)
+                hoverEnabled: true
+                enabled: tile.available
+                onClicked: tile.detailsClicked()
             }
-
-            Timer {
-                id: throttle
-                interval: 80
-                onTriggered: slider.moved(track.dragValue)
-            }
-        }
-
-        Label {
-            id: percent
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            width: 40
-            horizontalAlignment: Text.AlignRight
-            text: (track.pressed ? track.dragValue : slider.value) + "%"
-            color: Theme.textDim
-            font.pixelSize: Theme.fontSmall
         }
     }
 
@@ -337,31 +287,6 @@ PanelWindow {
             text: stat.title
             color: Theme.textFaint
             font.pixelSize: Theme.fontSmall - 1
-        }
-    }
-
-    component IconButton: Rectangle {
-        id: btn
-        property string glyph: ""
-        property bool accent: false
-        signal clicked()
-
-        width: 38
-        height: 38
-        radius: 19
-        color: btn.accent ? Theme.accent : (btnMouse.containsMouse ? Theme.hover : "transparent")
-
-        Glyph {
-            anchors.centerIn: parent
-            text: btn.glyph
-            color: btn.accent ? Theme.onAccent : Theme.text
-        }
-
-        MouseArea {
-            id: btnMouse
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: btn.clicked()
         }
     }
 
@@ -412,10 +337,10 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 2
-                    IconButton { glyph: "\u{F03D8}"; onClicked: { root.open = false; root.themesWanted(); } }
-                    IconButton { glyph: "\u{F02E9}"; onClicked: { root.open = false; root.wallpaperWanted(); } }
-                    IconButton { glyph: "\u{F033E}"; onClicked: root.runClosed([root.hypr + "/lock.sh"]) }
-                    IconButton { glyph: "\u{F0425}"; onClicked: root.runClosed(["wlogout"]) }
+                    RoundButton { glyph: "\u{F03D8}"; onClicked: { root.open = false; root.themesWanted(); } }
+                    RoundButton { glyph: "\u{F02E9}"; onClicked: { root.open = false; root.wallpaperWanted(); } }
+                    RoundButton { glyph: "\u{F033E}"; onClicked: root.runClosed([root.hypr + "/lock.sh"]) }
+                    RoundButton { glyph: "\u{F0425}"; onClicked: root.runClosed(["wlogout"]) }
                 }
             }
 
@@ -432,6 +357,8 @@ PanelWindow {
                     detail: root.st.wifi === "none" ? "Unavailable" : (root.on("wifi") ? (root.st.ssid || "On") : "Off")
                     active: root.on("wifi")
                     available: root.st.wifi !== "none"
+                    hasDetails: true
+                    onDetailsClicked: { root.open = false; root.networkWanted(); }
                     onClicked: root.run(["sh", "-c", "nmcli radio wifi \"$(nmcli -t -f WIFI general | grep -q enabled && echo off || echo on)\""])
                 }
                 Tile {
@@ -441,6 +368,8 @@ PanelWindow {
                     detail: root.st.bt === "none" ? "Unavailable" : (root.on("bt") ? (root.st.btdev || "On") : "Off")
                     active: root.on("bt")
                     available: root.st.bt !== "none"
+                    hasDetails: true
+                    onDetailsClicked: { root.open = false; root.bluetoothWanted(); }
                     onClicked: root.run(["sh", "-c", "bluetoothctl power \"$(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)\""])
                 }
                 Tile {
@@ -491,17 +420,38 @@ PanelWindow {
                     anchors.leftMargin: 12
                     anchors.rightMargin: 12
 
-                    Slider {
+                    // Volume, with a chevron to the sound panel (outputs,
+                    // mic, per-app volume).
+                    Item {
                         width: parent.width
+                        height: 36
                         visible: root.num("volume") >= 0
-                        glyph: root.st.muted === "true" ? "\u{F075F}" : "\u{F057E}"
-                        muted: root.st.muted === "true"
-                        value: Math.max(0, root.num("volume"))
-                        onMoved: v => Quickshell.execDetached(["pamixer", "--set-volume", String(v)])
-                        onGlyphClicked: root.run(["pamixer", "-t"])
+
+                        LevelSlider {
+                            anchors.left: parent.left
+                            anchors.right: soundMore.left
+                            anchors.rightMargin: 2
+                            anchors.verticalCenter: parent.verticalCenter
+                            glyph: root.st.muted === "true" ? "\u{F075F}" : "\u{F057E}"
+                            muted: root.st.muted === "true"
+                            value: Math.max(0, root.num("volume"))
+                            onMoved: v => Quickshell.execDetached(["pamixer", "--set-volume", String(v)])
+                            onGlyphClicked: root.run(["pamixer", "-t"])
+                        }
+                        RoundButton {
+                            id: soundMore
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            size: 28
+                            glyphSize: 15
+                            glyph: "\u{F0142}"
+                            onClicked: { root.open = false; root.audioWanted(); }
+                        }
                     }
-                    Slider {
-                        width: parent.width
+                    LevelSlider {
+                        // Lines up with the volume slider, which gives up
+                        // room on its right for the chevron.
+                        width: parent.width - 30
                         visible: root.num("brightness") >= 0
                         glyph: "\u{F00DF}"
                         value: Math.max(0, root.num("brightness"))
@@ -614,17 +564,17 @@ PanelWindow {
                     anchors.rightMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 0
-                    IconButton {
+                    RoundButton {
                         glyph: "\u{F04AE}"
                         opacity: root.player && root.player.canGoPrevious ? 1 : 0.35
                         onClicked: if (root.player && root.player.canGoPrevious) root.player.previous()
                     }
-                    IconButton {
+                    RoundButton {
                         glyph: root.player && root.player.isPlaying ? "\u{F03E4}" : "\u{F040A}"
                         accent: true
                         onClicked: if (root.player && root.player.canTogglePlaying) root.player.togglePlaying()
                     }
-                    IconButton {
+                    RoundButton {
                         glyph: "\u{F04AD}"
                         opacity: root.player && root.player.canGoNext ? 1 : 0.35
                         onClicked: if (root.player && root.player.canGoNext) root.player.next()

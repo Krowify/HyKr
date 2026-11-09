@@ -6,6 +6,8 @@
 #   hykr.sh control             (Super+M, Super+S)
 #   hykr.sh wallpaper           (Super+Shift+W)
 #   hykr.sh themes              (Super+Shift+T)
+#   hykr.sh audio | bluetooth | network   (the bars' volume / Bluetooth /
+#                                          network icons)
 #   hykr.sh <target> open|close|toggle
 #   hykr.sh wallpaper forTheme <theme-id>   (extra arguments are passed on)
 #

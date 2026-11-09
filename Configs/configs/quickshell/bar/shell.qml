@@ -148,24 +148,8 @@ ShellRoot {
     // so the panels are too now. The same wandering error is documented in
     // ../laptop/shell.qml, which still has a panels/ directory; if it turns
     // up there, this is the fix.
-    VolumePanel {
-        colors: Colors
-        dock: DockState
-        anchorScreen: DockState.activeScreen
-        visible: DockState.activePanel === "volume"
-    }
-    NetworkPanel {
-        colors: Colors
-        dock: DockState
-        anchorScreen: DockState.activeScreen
-        visible: DockState.activePanel === "network"
-    }
-    BluetoothPanel {
-        colors: Colors
-        dock: DockState
-        anchorScreen: DockState.activeScreen
-        visible: DockState.activePanel === "bluetooth"
-    }
+    // Volume, network and Bluetooth open the desktop shell's quick panels
+    // instead (DockState.openQuickPanel): one themed set for every bar.
     NotificationCenterPanel {
         colors: Colors
         dock: DockState

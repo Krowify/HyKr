@@ -298,7 +298,7 @@ PanelWindow {
                         }
 
                         TapHandler {
-                            onTapped: DockState.toggle(root.targetScreen, "volume", root.anchorFor(volumeItem))
+                            onTapped: DockState.openQuickPanel("audio")
                         }
                     }
 
@@ -354,7 +354,7 @@ PanelWindow {
 
                         TapHandler {
                             acceptedButtons: Qt.LeftButton
-                            onTapped: DockState.toggle(root.targetScreen, "network", root.anchorFor(networkItem))
+                            onTapped: DockState.openQuickPanel("network")
                         }
                         TapHandler {
                             acceptedButtons: Qt.RightButton
@@ -381,7 +381,7 @@ PanelWindow {
                                 : Colors.icon
                         }
                         TapHandler {
-                            onTapped: DockState.toggle(root.targetScreen, "bluetooth", root.anchorFor(bluetoothItem))
+                            onTapped: DockState.openQuickPanel("bluetooth")
                         }
                     }
                 }

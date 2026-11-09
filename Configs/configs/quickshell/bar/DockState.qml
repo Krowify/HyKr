@@ -151,6 +151,14 @@ Singleton {
         return Math.max(root.islandMargin, Math.min(ideal, maxMargin));
     }
 
+    // Volume, network and Bluetooth open the desktop shell's quick panels
+    // (quickshell/hykr: AudioPanel, NetworkPanel, BluetoothPanel) -- the same
+    // themed panels on every bar, with device switching, pairing and Wi-Fi
+    // joining built in -- rather than popups of this shell's own.
+    function openQuickPanel(name) {
+        Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/hykr.sh", name]);
+    }
+
     function toggle(screen, name, fromRight) {
         // Closing just clears activePanel ("" matches no panel's visible
         // binding) -- activeScreen is left as-is rather than reset to null,

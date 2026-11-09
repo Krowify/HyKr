@@ -441,8 +441,7 @@ PanelWindow {
                         // from under the pointer, dropping the hover and
                         // flickering the label on and off. Either way nothing
                         // to the right (volume, network, bluetooth, date,
-                        // bell) shifts by a pixel, so the popup panels'
-                        // rightOffset values stay correct.
+                        // bell) shifts by a pixel.
                         Text {
                             id: batteryPercent
                             anchors.verticalCenter: parent.verticalCenter
@@ -521,7 +520,7 @@ PanelWindow {
                         font.pixelSize: 15
                         color: DockState.isActive(root.targetScreen, "volume") ? Colors.accent : Colors.icon
                     }
-                    TapHandler { onTapped: DockState.toggle(root.targetScreen, "volume") }
+                    TapHandler { onTapped: DockState.openQuickPanel("audio") }
                 }
 
                 Item {
@@ -537,7 +536,7 @@ PanelWindow {
                     }
                     TapHandler {
                         acceptedButtons: Qt.LeftButton
-                        onTapped: DockState.toggle(root.targetScreen, "network")
+                        onTapped: DockState.openQuickPanel("network")
                     }
                     TapHandler {
                         acceptedButtons: Qt.RightButton
@@ -556,7 +555,7 @@ PanelWindow {
                         color: DockState.isActive(root.targetScreen, "bluetooth") ? Colors.accent
                             : (Services.BluetoothService.powered ? Colors.icon : Colors.muted)
                     }
-                    TapHandler { onTapped: DockState.toggle(root.targetScreen, "bluetooth") }
+                    TapHandler { onTapped: DockState.openQuickPanel("bluetooth") }
                 }
 
                 // Colors.dateSize (12 unless the theme bumps it), and the
@@ -593,8 +592,7 @@ PanelWindow {
                 }
 
                 // Control centre (the desktop shell's -- Wi-Fi, Bluetooth,
-                // sliders, media, ...), as Super+M. Its 20px + the row's 16px
-                // spacing are built into shell.qml's panel rightOffsets.
+                // sliders, media, ...), as Super+M.
                 Item {
                     width: 20; height: 20
                     anchors.verticalCenter: parent.verticalCenter

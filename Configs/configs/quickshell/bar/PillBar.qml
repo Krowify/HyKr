@@ -262,7 +262,7 @@ PanelWindow {
                     : Services.AudioService.volume < 67 ? "" : ""
                 label: Services.AudioService.muted ? "Muted" : Services.AudioService.volume + "%"
                 tint: root.tint(Colors.orange, "volume")
-                onLeftClicked: DockState.toggle(root.targetScreen, "volume", root.anchorFor(volumeModule))
+                onLeftClicked: DockState.openQuickPanel("audio")
                 onRightClicked: Services.AudioService.toggleMute()
                 // The full mixer is still one click away, just not the
                 // primary one any more.
@@ -284,7 +284,7 @@ PanelWindow {
                 label: type === "wifi" ? (name.length > 18 ? name.slice(0, 17) + "…" : name)
                     : type === "ethernet" ? "Wired" : "Offline"
                 tint: type === "disconnected" ? Colors.bad : root.tint(Colors.good, "network")
-                onLeftClicked: DockState.toggle(root.targetScreen, "network", root.anchorFor(networkModule))
+                onLeftClicked: DockState.openQuickPanel("network")
                 onRightClicked: Services.NetworkService.openNetworkManager()
             }
 
@@ -302,7 +302,7 @@ PanelWindow {
                 tint: !Services.BluetoothService.powered && !DockState.isActive(root.targetScreen, "bluetooth")
                     ? Colors.textDim
                     : root.tint(Colors.blue, "bluetooth")
-                onLeftClicked: DockState.toggle(root.targetScreen, "bluetooth", root.anchorFor(bluetoothModule))
+                onLeftClicked: DockState.openQuickPanel("bluetooth")
                 onRightClicked: Services.BluetoothService.togglePower()
             }
 

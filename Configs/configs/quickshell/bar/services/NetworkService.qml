@@ -33,6 +33,19 @@ Singleton {
     // thing this shell did at idle.
     property bool detailsWanted: false
 
+    // The network icon colours itself by vpnConnected (and the notch flashes
+    // on a change), but the panel that used to set detailsWanted now lives
+    // in the desktop shell. Check once a minute instead: one protonvpn-cli
+    // run a minute is cheap, every 5 seconds was not (see above). Only when
+    // the CLI is actually installed.
+    Timer {
+        interval: 60000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: if (!vpnProc.running) vpnProc.running = true
+    }
+
     onDetailsWantedChanged: if (detailsWanted) vpnProc.running = true
 
     function refresh() {

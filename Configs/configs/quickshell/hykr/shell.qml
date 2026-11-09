@@ -9,6 +9,9 @@
 //   quickshell -c hykr ipc call wallpaper forTheme <id>
 //   quickshell -c hykr ipc call themes toggle       (Super+Shift+T)
 //   quickshell -c hykr ipc call control toggle      (Super+M, Super+S)
+//   quickshell -c hykr ipc call audio toggle        (the bars' volume icon)
+//   quickshell -c hykr ipc call bluetooth toggle    (the bars' Bluetooth icon)
+//   quickshell -c hykr ipc call network toggle      (the bars' network icon)
 //   quickshell -c hykr ipc call osd show <volume|mic|brightness> <0-100> <muted>
 //                                                   (hypr/osd.sh, the volume
 //                                                   and brightness keys)
@@ -37,6 +40,9 @@ ShellRoot {
         clipboard.open = which === "clipboard";
         themes.open = which === "themes";
         control.open = which === "control";
+        audio.open = which === "audio";
+        bluetooth.open = which === "bluetooth";
+        network.open = which === "network";
         if (which !== "wallpaper")
             wallpaper.open = false;
     }
@@ -67,10 +73,35 @@ ShellRoot {
         id: osd
     }
 
+    // Quick panels. Opened from the control centre they show a back arrow
+    // to it; opened from the bar they don't.
+    AudioPanel {
+        id: audio
+        onBack: root.show("control")
+    }
+
+    BluetoothPanel {
+        id: bluetooth
+        onBack: root.show("control")
+    }
+
+    NetworkPanel {
+        id: network
+        onBack: root.show("control")
+    }
+
+    function showPanel(panel, which, fromControl) {
+        panel.showBack = fromControl;
+        root.show(which);
+    }
+
     ControlCentre {
         id: control
         onThemesWanted: root.show("themes")
         onWallpaperWanted: root.showWallpaper("", "")
+        onAudioWanted: root.showPanel(audio, "audio", true)
+        onBluetoothWanted: root.showPanel(bluetooth, "bluetooth", true)
+        onNetworkWanted: root.showPanel(network, "network", true)
     }
 
     IpcHandler {
@@ -107,6 +138,27 @@ ShellRoot {
     IpcHandler {
         target: "osd"
         function show(kind: string, value: int, muted: bool): void { osd.show(kind, value, muted); }
+    }
+
+    IpcHandler {
+        target: "audio"
+        function toggle(): void { if (audio.open) audio.open = false; else root.showPanel(audio, "audio", false); }
+        function open(): void { root.showPanel(audio, "audio", false); }
+        function close(): void { audio.open = false; }
+    }
+
+    IpcHandler {
+        target: "bluetooth"
+        function toggle(): void { if (bluetooth.open) bluetooth.open = false; else root.showPanel(bluetooth, "bluetooth", false); }
+        function open(): void { root.showPanel(bluetooth, "bluetooth", false); }
+        function close(): void { bluetooth.open = false; }
+    }
+
+    IpcHandler {
+        target: "network"
+        function toggle(): void { if (network.open) network.open = false; else root.showPanel(network, "network", false); }
+        function open(): void { root.showPanel(network, "network", false); }
+        function close(): void { network.open = false; }
     }
 
     IpcHandler {
