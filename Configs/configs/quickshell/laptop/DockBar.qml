@@ -113,15 +113,24 @@ PanelWindow {
 
     // CPU/RAM join the left island only when, at the even width they'd
     // force, BOTH side islands still clear the centre one -- computed from
-    // the pieces' own widths (not leftGroup's, which depends on this) so the
+    // the pieces' own widths (not the island's, which depends on this) so the
     // check can't feed back into itself. On a narrow screen they're simply
     // left out rather than clipped. Per screen: each monitor's bar decides
     // for itself.
     readonly property bool showStats: root.islands
-        && Math.max(workspaceRow.implicitWidth + leftGroup.spacing + statsRow.implicitWidth,
+        && Math.max(workspaceRow.implicitWidth + root.statsGap * 2 + statsRow.implicitWidth,
                     rightGroup.implicitWidth) + root.islandPad * 2 <= root.sideRoom
 
-    readonly property real sideWidth: Math.max(leftGroup.implicitWidth, rightGroup.implicitWidth) + root.islandPad * 2
+    // Minimum space either side of the CPU/RAM readout -- between it and the
+    // last dot, and between it and the island's edge.
+    readonly property int statsGap: 16
+
+    // What the left island has to hold: the dots, plus the readout and its
+    // clearance when it's shown.
+    readonly property real leftContentWidth: workspaceRow.implicitWidth
+        + (root.showStats ? root.statsGap * 2 + statsRow.implicitWidth : 0)
+
+    readonly property real sideWidth: Math.max(root.leftContentWidth, rightGroup.implicitWidth) + root.islandPad * 2
 
     component Island: Rectangle {
         y: Colors.barGap
@@ -153,6 +162,40 @@ PanelWindow {
         width: root.sideWidth
     }
 
+    // CPU / RAM utilisation. Islands layout only, and only when it fits --
+    // see showStats above.
+    //
+    // Not part of the workspace row: it's centred in the free space between
+    // the last workspace dot and the left island's right edge. The island is
+    // as wide as the right one, so that space is usually much wider than the
+    // readout, and packing the readout up against the dots left it lopsided.
+    // Placed in window coordinates: the content rows start islandPad in from
+    // the bar's (= the left island's) left edge.
+    Row {
+        id: statsRow
+        readonly property real gapLeft: Colors.barGap + root.islandPad + workspaceRow.width
+        readonly property real gapRight: Colors.barGap + root.sideWidth
+        x: Math.round((gapLeft + gapRight - width) / 2)
+        y: Colors.barGap + Math.round((Colors.barHeight - height) / 2)
+        spacing: 12
+        visible: root.showStats
+
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "CPU " + (Services.SystemStatsService.cpu >= 0 ? Services.SystemStatsService.cpu + "%" : "\u2026")
+            color: Colors.textSoft
+            font.pixelSize: 11
+            font.family: Colors.textFont
+        }
+        Text {
+            anchors.verticalCenter: parent.verticalCenter
+            text: "RAM " + (Services.SystemStatsService.memory >= 0 ? Services.SystemStatsService.memory + "%" : "\u2026")
+            color: Colors.textSoft
+            font.pixelSize: 11
+            font.family: Colors.textFont
+        }
+    }
+
     // Content tracks the background exactly, so a floating bar's icons stay
     // inside its rounded outline rather than lining up with the screen.
     Item {
@@ -164,7 +207,7 @@ PanelWindow {
             anchors.rightMargin: 14
             spacing: 18
 
-            // ---- left: workspaces, then CPU/RAM when they fit ----
+            // ---- left: workspaces (CPU/RAM sit beside them, see statsRow) ----
             Row {
                 id: leftGroup
                 Layout.alignment: Qt.AlignVCenter
@@ -198,30 +241,6 @@ PanelWindow {
                                 onTapped: Hyprland.dispatch("workspace " + modelData)
                             }
                         }
-                    }
-                }
-
-                // CPU / RAM utilisation. Islands layout only, and only when it
-                // fits -- see showStats above.
-                Row {
-                    id: statsRow
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 12
-                    visible: root.showStats
-
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "CPU " + (Services.SystemStatsService.cpu >= 0 ? Services.SystemStatsService.cpu + "%" : "\u2026")
-                        color: Colors.textSoft
-                        font.pixelSize: 11
-                        font.family: Colors.textFont
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "RAM " + (Services.SystemStatsService.memory >= 0 ? Services.SystemStatsService.memory + "%" : "\u2026")
-                        color: Colors.textSoft
-                        font.pixelSize: 11
-                        font.family: Colors.textFont
                     }
                 }
             }
