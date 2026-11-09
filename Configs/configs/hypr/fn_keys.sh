@@ -53,11 +53,44 @@ kbd_light() {
     return 0
 }
 
+# Set one input device's enabled state at runtime. Prints nothing; returns
+# 0 only if Hyprland replied "ok".
+#
+# Lua config first: `hyprctl eval` running hl.device(), the Lua config's
+# per-device block. Hyprland's Lua IPC has no `keyword` request at all, so
+# the keyword forms below only ever got "unknown request" back there and
+# the touchpad never toggled. hl.device() merges the one key into any
+# existing per-device settings rather than replacing them, and schedules an
+# input-device refresh, so it takes effect immediately.
+#
+# Then hyprlang: `keyword`, whose path changed shape across versions
+# (device:<name>:enabled became device[<name>]:enabled), so try the bracket
+# form first and fall back to the colon form rather than pinning one.
+#
+# Every step checks the reply text, not hyprctl's exit status: hyprctl can
+# exit 0 on "unknown request" or an "error: ..." reply, which made the old
+# `||` chain stop at the first call even when nothing had changed.
+set_device_enabled() {
+    local name="$1" want="$2" lua_name reply
+    # Escape for a Lua double-quoted string. `hyprctl devices` names are
+    # already sanitised (lowercase, dashes), so this is belt and braces.
+    lua_name="${name//\\/\\\\}"
+    lua_name="${lua_name//\"/\\\"}"
+
+    reply="$(hyprctl eval "hl.device({ name = \"$lua_name\", enabled = $want })" 2>/dev/null)" || reply=""
+    [[ "$reply" == ok* ]] && return 0
+
+    reply="$(hyprctl keyword "device[$name]:enabled" "$want" 2>/dev/null)" || reply=""
+    [[ "$reply" == ok* ]] && return 0
+
+    reply="$(hyprctl keyword "device:$name:enabled" "$want" 2>/dev/null)" || reply=""
+    [[ "$reply" == ok* ]] && return 0
+
+    return 1
+}
+
 # Hyprland disables a pointer by device name, which has to come from
-# `hyprctl devices` -- it differs per machine. The keyword path changed
-# shape across Hyprland versions (device:<name>:enabled became
-# device[<name>]:enabled), so try the bracket form first and fall back to
-# the colon form rather than pinning one and breaking on an upgrade.
+# `hyprctl devices` -- it differs per machine.
 touchpad_toggle() {
     command -v hyprctl >/dev/null 2>&1 || return 0
     command -v jq >/dev/null 2>&1 || { echo "fn_keys.sh: jq not installed" >&2; return 0; }
@@ -69,13 +102,18 @@ touchpad_toggle() {
     [[ -n "$name" ]] || { echo "fn_keys.sh: no touchpad in 'hyprctl devices'" >&2; return 0; }
 
     # No query for a device's current enabled state, so track it ourselves.
+    # Only flip the marker once Hyprland has accepted the change: flipping it
+    # first meant a rejected call left the marker saying "disabled" while the
+    # touchpad was still on, so the next press "enabled" it -- a no-op.
     local state_file="${XDG_RUNTIME_DIR:-/tmp}/hykr-touchpad-disabled"
-    local want
-    if [[ -f "$state_file" ]]; then want=true; rm -f "$state_file"; else want=false; touch "$state_file"; fi
+    local want=false
+    [[ -f "$state_file" ]] && want=true
 
-    hyprctl keyword "device[$name]:enabled" "$want" >/dev/null 2>&1 \
-        || hyprctl keyword "device:$name:enabled" "$want" >/dev/null 2>&1 \
-        || echo "fn_keys.sh: hyprctl rejected both device keyword forms" >&2
+    if set_device_enabled "$name" "$want"; then
+        if [[ "$want" == true ]]; then rm -f "$state_file"; else touch "$state_file"; fi
+    else
+        echo "fn_keys.sh: hyprctl rejected hl.device() and both device keyword forms for '$name'" >&2
+    fi
     return 0
 }
 
