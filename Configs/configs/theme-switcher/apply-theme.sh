@@ -712,10 +712,31 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
   # doesn't resets it -- rather than relying on the running shell's
   # JsonAdapter to forget a key that disappeared from the file. Each shell
   # reads only its own keys; the rest are ignored.
+  #
+  # "font": "kitty" is resolved here to kitty.conf's own font_family, so a
+  # theme can say "use whatever my terminal uses" and keep following it --
+  # change kitty's font and the next theme apply carries it to the bar.
+  # Both kitty forms are read: the newer `font_family family='Name' ...`
+  # and the plain `font_family Name`. Unresolvable (no kitty.conf, or kitty
+  # left on "monospace"/"auto") means "" -- the shell's own default font.
+  kitty_font=""
+  if [[ -r "$HOME/.config/kitty/kitty.conf" ]]; then
+    kitty_font_line="$(grep -m1 -E '^[[:space:]]*font_family[[:space:]]' "$HOME/.config/kitty/kitty.conf" 2>/dev/null || true)"
+    kitty_font_line="${kitty_font_line#*font_family}"
+    if [[ "$kitty_font_line" =~ family=\'([^\']+)\' || "$kitty_font_line" =~ family=\"([^\"]+)\" ]]; then
+      kitty_font="${BASH_REMATCH[1]}"
+    else
+      kitty_font="$(sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$kitty_font_line")"
+    fi
+    case "$kitty_font" in monospace | auto) kitty_font="" ;; esac
+  fi
+
   if [[ -d "$QS_BASE/$qs_config" ]]; then
-    jq '{layout: "single", rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
+    jq --arg kitty_font "$kitty_font" \
+       '{layout: "single", font: "", rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
          style: "notch", colorful: false, alpha: 0.55}
-        + ((.quickshell // {}) | del(.config))' \
+        + ((.quickshell // {}) | del(.config))
+        | if .font == "kitty" then .font = $kitty_font else . end' \
       "$THEME_JSON" > "$QS_BASE/$qs_config/style.json.tmp" \
       && mv "$QS_BASE/$qs_config/style.json.tmp" "$QS_BASE/$qs_config/style.json" \
       || rm -f "$QS_BASE/$qs_config/style.json.tmp"

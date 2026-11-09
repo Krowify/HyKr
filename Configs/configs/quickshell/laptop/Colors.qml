@@ -175,6 +175,14 @@ Singleton {
         return isFinite(n) && n >= 8 && n <= 24 ? Math.round(n) : 12;
     }
 
+    // Font for the dock's TEXT -- clock, date, battery percentage, CPU/RAM.
+    // A theme can name one ("font" in its "quickshell" block); apply-theme.sh
+    // resolves "font": "kitty" to whatever kitty.conf's font_family is, so
+    // the bar matches the terminal. Icons don't use this: they stay on
+    // JetBrainsMono Nerd Font, which is known to carry every glyph the dock
+    // draws, whatever font the text is in.
+    readonly property string textFont: (typeof style.font === "string" && style.font.length > 0) ? style.font : "JetBrainsMono Nerd Font"
+
     // Where the bar's bottom edge sits from the top of the screen: the layer
     // surface's height and exclusive zone, and the line the popup panels and
     // toasts hang below.
@@ -188,6 +196,7 @@ Singleton {
         JsonAdapter {
             id: style
             property string layout: "single"
+            property string font: ""
             property bool rounded: false
             property real radius: 10
             property real gap: 8

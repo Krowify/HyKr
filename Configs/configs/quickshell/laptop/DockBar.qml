@@ -214,14 +214,14 @@ PanelWindow {
                         text: "CPU " + (Services.SystemStatsService.cpu >= 0 ? Services.SystemStatsService.cpu + "%" : "\u2026")
                         color: Colors.textSoft
                         font.pixelSize: 11
-                        font.family: "JetBrainsMono Nerd Font"
+                        font.family: Colors.textFont
                     }
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: "RAM " + (Services.SystemStatsService.memory >= 0 ? Services.SystemStatsService.memory + "%" : "\u2026")
                         color: Colors.textSoft
                         font.pixelSize: 11
-                        font.family: "JetBrainsMono Nerd Font"
+                        font.family: Colors.textFont
                     }
                 }
             }
@@ -275,7 +275,7 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                             text: Services.BatteryService.percent + "%"
                             font.pixelSize: 11
-                            font.family: "monospace"
+                            font.family: Colors.textFont
                             color: Services.BatteryService.low ? Colors.red : Colors.textSoft
                             // Animating width rather than toggling visible
                             // slides the label out from behind the icon, and
@@ -394,7 +394,7 @@ PanelWindow {
                     text: Qt.formatDateTime(clock.now, "ddd d")
                     color: Colors.textSoft
                     font.pixelSize: Colors.dateSize
-                    font.family: "JetBrainsMono Nerd Font"
+                    font.family: Colors.textFont
                 }
 
                 Item {
@@ -437,7 +437,7 @@ PanelWindow {
             text: Qt.formatDateTime(clock.now, "hh:mm")
             color: Colors.text
             font.pixelSize: Colors.clockSize
-            font.family: "JetBrainsMono Nerd Font"
+            font.family: Colors.textFont
             font.weight: Colors.clockSize > 12 ? Font.DemiBold : Font.Normal
         }
     }
