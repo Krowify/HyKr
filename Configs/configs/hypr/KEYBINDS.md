@@ -103,6 +103,9 @@ The `F10`-`F12` set is what the desktop keyboard sends; the `XF86Audio*` set
 is what a laptop's dedicated volume keys send. Both are bound, so either
 keyboard works from the same config.
 
+Volume, mic-mute and brightness keys all run `hypr/osd.sh`, which makes the
+change and shows the new level in the desktop shell's on-screen display.
+
 ### Laptop function row
 
 The rest of the Fn row, by the keysym the key emits rather than its F-number

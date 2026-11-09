@@ -55,13 +55,20 @@ Not from elifouts:
     process). `status.sh` reads all of it in one pass, every 2s, only while
     the panel is open. Replaces the old `Super+M` panel and the `Super+S`
     wofi menu (`hypr/quick_settings.sh`).
+  - `Osd.qml` — on-screen display for the volume, mic and brightness keys
+    (`hypr/osd.sh` makes the change, then calls it over IPC): a click-through
+    pill near the bottom of the focused screen, gone 1.5s after the last key.
   - `Theme.qml` / `colors.json` — palette, rewritten by `apply-theme.sh` and
     `apply_wallpaper.sh` like every bar's; `qs-stop.sh` excludes this config
     so a theme switch never mistakes it for a bar.
 - `quickshell/laptop/` — the Sakura and Default themes' whole bar stack,
   bar and notifications in one process (`quickshell -c laptop`): a horizontal
   top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
-  date/notifications — hover the battery for the exact percentage), four
+  date/notifications — hover the battery for the exact percentage — and a
+  cog opening the desktop shell's control centre). In the islands layout a
+  fourth island carries the playing MPRIS track (art, title, previous /
+  play-pause / next, a progress line) whenever there is a player and room
+  for it before the clock island. Four
   popup panels, and a native notification daemon with a toast stack. Exposes an `IpcHandler` on target `dock`
   (reached through `hypr/dock_ipc.sh`) so `Super+N` and the quick-settings
   DND entry reach it. Same not-runtime-tested caveat as

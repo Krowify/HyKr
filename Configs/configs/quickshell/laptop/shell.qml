@@ -106,25 +106,26 @@ ShellRoot {
 
     // barHeight / rightOffset follow Colors.qml: a floating bar sits
     // Colors.barTopGap lower and Colors.barGap further in from the right edge
-    // than the flat one, so the panels move with it. Both are 0 for the flat
-    // Sakura bar, which leaves these at the values they always had.
+    // than the flat one, so the panels move with it. The base offsets include
+    // the control-centre cog at the right end of the bar (20px + 16px
+    // spacing): every icon these panels hang under sits that much further in.
     VolumePanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "volume"
         barHeight: Colors.barBottom
-        rightOffset: 170 + Colors.barGap
+        rightOffset: 206 + Colors.barGap
     }
     NetworkPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "network"
         barHeight: Colors.barBottom
-        rightOffset: 130 + Colors.barGap
+        rightOffset: 166 + Colors.barGap
     }
     BluetoothPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "bluetooth"
         barHeight: Colors.barBottom
-        rightOffset: 90 + Colors.barGap
+        rightOffset: 126 + Colors.barGap
     }
     NotificationCenterPanel {
         anchorScreen: DockState.activeScreen

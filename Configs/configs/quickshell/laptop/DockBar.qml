@@ -27,6 +27,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Wayland
+import Quickshell.Services.Mpris
 import QtQuick
 import QtQuick.Layouts
 import "./services" as Services
@@ -160,6 +161,159 @@ PanelWindow {
         visible: root.islands
         x: root.width - Colors.barGap - width
         width: root.sideWidth
+    }
+
+    // ---- media island (islands layout) ----
+    // The playing MPRIS track -- or the last player there is, so pausing
+    // doesn't make the island vanish -- in its own island just right of the
+    // left one: art, title, previous / play-pause / next, and a progress line
+    // along its bottom edge. Clicking the art or title opens the desktop
+    // shell's control centre, which has the full media card. Shown only when
+    // there is a player and room for it before the centre island; on a narrow
+    // screen it simply isn't there.
+    readonly property var player: {
+        const ps = Mpris.players.values;
+        for (let i = 0; i < ps.length; i++) {
+            if (ps[i] && ps[i].isPlaying)
+                return ps[i];
+        }
+        return ps.length > 0 ? ps[0] : null;
+    }
+    readonly property real mediaRoom: (root.width - root.centreWidth) / 2 - Colors.barGap - root.sideWidth - root.islandSpacing * 2
+    readonly property bool showMedia: root.islands && root.player !== null && root.mediaRoom >= 170
+    readonly property real mediaWidth: Math.min(280, root.mediaRoom)
+
+    // MprisPlayer.position only updates when asked to. Every 5s, and only
+    // while something plays -- a 2px line doesn't need more, and the dock
+    // avoids waking up any more often than it must (see the clock below).
+    Timer {
+        interval: 5000
+        running: root.showMedia && root.player.isPlaying
+        repeat: true
+        onTriggered: root.player.positionChanged()
+    }
+
+    Island {
+        id: mediaIsland
+        visible: root.showMedia
+        x: Colors.barGap + root.sideWidth + root.islandSpacing
+        width: root.mediaWidth
+        clip: true
+
+        Rectangle {
+            id: mediaArt
+            anchors.left: parent.left
+            anchors.leftMargin: 7
+            anchors.verticalCenter: parent.verticalCenter
+            width: Colors.barHeight - 12
+            height: width
+            radius: 5
+            color: Colors.muted
+
+            Image {
+                anchors.fill: parent
+                visible: status === Image.Ready
+                source: root.player ? (root.player.trackArtUrl || "") : ""
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                sourceSize.width: 64
+            }
+            Text {
+                anchors.centerIn: parent
+                visible: !root.player || !root.player.trackArtUrl
+                text: "\u{F075A}"
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 12
+                color: Colors.icon
+            }
+        }
+
+        Text {
+            anchors.left: mediaArt.right
+            anchors.leftMargin: 8
+            anchors.right: mediaControls.left
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            text: {
+                if (!root.player)
+                    return "";
+                const t = root.player.trackTitle || root.player.identity || "";
+                const a = root.player.trackArtist || "";
+                return a.length > 0 ? t + " \u00b7 " + a : t;
+            }
+            elide: Text.ElideRight
+            color: Colors.textSoft
+            font.pixelSize: 11
+            font.family: Colors.textFont
+        }
+
+        // Art and title: open the control centre.
+        MouseArea {
+            anchors.left: parent.left
+            anchors.right: mediaControls.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            onClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/hykr.sh", "control"])
+        }
+
+        Row {
+            id: mediaControls
+            anchors.right: parent.right
+            anchors.rightMargin: 8
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 4
+
+            Item {
+                width: 20; height: 20
+                opacity: root.player && root.player.canGoPrevious ? 1 : 0.35
+                Text {
+                    anchors.centerIn: parent
+                    text: "\u{F04AE}"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    color: Colors.icon
+                }
+                TapHandler { onTapped: if (root.player && root.player.canGoPrevious) root.player.previous() }
+            }
+            Rectangle {
+                width: 22; height: 22
+                radius: 11
+                color: Colors.accent
+                Text {
+                    anchors.centerIn: parent
+                    text: root.player && root.player.isPlaying ? "\u{F03E4}" : "\u{F040A}"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 12
+                    color: Colors.text
+                }
+                TapHandler { onTapped: if (root.player && root.player.canTogglePlaying) root.player.togglePlaying() }
+            }
+            Item {
+                width: 20; height: 20
+                opacity: root.player && root.player.canGoNext ? 1 : 0.35
+                Text {
+                    anchors.centerIn: parent
+                    text: "\u{F04AD}"
+                    font.family: "JetBrainsMono Nerd Font"
+                    font.pixelSize: 13
+                    color: Colors.icon
+                }
+                TapHandler { onTapped: if (root.player && root.player.canGoNext) root.player.next() }
+            }
+        }
+
+        // Progress, along the island's bottom edge.
+        Rectangle {
+            anchors.left: parent.left
+            anchors.bottom: parent.bottom
+            anchors.leftMargin: Colors.barRadius / 2
+            height: 2
+            radius: 1
+            color: Colors.accent
+            opacity: 0.8
+            width: root.player && root.player.length > 0
+                ? Math.min(1, root.player.position / root.player.length) * (parent.width - Colors.barRadius) : 0
+        }
     }
 
     // CPU / RAM utilisation. Islands layout only, and only when it fits --
@@ -436,6 +590,26 @@ PanelWindow {
                         anchors.right: parent.right
                     }
                     TapHandler { onTapped: DockState.toggle(root.targetScreen, "notifications") }
+                }
+
+                // Control centre (the desktop shell's -- Wi-Fi, Bluetooth,
+                // sliders, media, ...), as Super+M. Its 20px + the row's 16px
+                // spacing are built into shell.qml's panel rightOffsets.
+                Item {
+                    width: 20; height: 20
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    Text {
+                        anchors.centerIn: parent
+                        // nf-md-cog
+                        text: "\u{F0493}"
+                        font.family: "JetBrainsMono Nerd Font"
+                        font.pixelSize: 15
+                        color: Colors.icon
+                    }
+                    TapHandler {
+                        onTapped: Quickshell.execDetached([Quickshell.env("HOME") + "/.config/hypr/hykr.sh", "control"])
+                    }
                 }
             }
         }

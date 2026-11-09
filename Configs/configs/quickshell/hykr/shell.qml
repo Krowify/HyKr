@@ -9,6 +9,9 @@
 //   quickshell -c hykr ipc call wallpaper forTheme <id>
 //   quickshell -c hykr ipc call themes toggle       (Super+Shift+T)
 //   quickshell -c hykr ipc call control toggle      (Super+M, Super+S)
+//   quickshell -c hykr ipc call osd show <volume|mic|brightness> <0-100> <muted>
+//                                                   (hypr/osd.sh, the volume
+//                                                   and brightness keys)
 //
 // hypr/hykr.sh wraps those calls and starts the shell first if it isn't up.
 //
@@ -60,6 +63,10 @@ ShellRoot {
         onWallpaperWanted: (themeId, themeName) => root.showWallpaper(themeId, themeName)
     }
 
+    Osd {
+        id: osd
+    }
+
     ControlCentre {
         id: control
         onThemesWanted: root.show("themes")
@@ -95,6 +102,11 @@ ShellRoot {
         function toggle(): void { root.show(themes.open ? "" : "themes"); }
         function open(): void { root.show("themes"); }
         function close(): void { themes.open = false; }
+    }
+
+    IpcHandler {
+        target: "osd"
+        function show(kind: string, value: int, muted: bool): void { osd.show(kind, value, muted); }
     }
 
     IpcHandler {

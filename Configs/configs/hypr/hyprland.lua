@@ -446,9 +446,11 @@ hl.bind(var_mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("grim -g \"$(slurp)\" ~/P
 
 -- --------------------------------------------------- // Other (hardware, media, no modifier)
 hl.bind("SHIFT + F11", hl.dsp.window.fullscreen())
-hl.bind("F10", hl.dsp.exec_cmd("pamixer -t"), { locked = true })
-hl.bind("F11", hl.dsp.exec_cmd("pamixer -d 5"), { locked = true, repeating = true })
-hl.bind("F12", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true, repeating = true })
+-- osd.sh runs the same pamixer / brightnessctl command these keys always
+-- ran, then shows the new level in the desktop shell's on-screen display.
+hl.bind("F10", hl.dsp.exec_cmd("~/.config/hypr/osd.sh volume mute"), { locked = true })
+hl.bind("F11", hl.dsp.exec_cmd("~/.config/hypr/osd.sh volume down"), { locked = true, repeating = true })
+hl.bind("F12", hl.dsp.exec_cmd("~/.config/hypr/osd.sh volume up"), { locked = true, repeating = true })
 
 -- The same three actions on the XF86 media keycodes. The F10/F11/F12 binds
 -- above are what the desktop's keyboard sends; a laptop's dedicated volume
@@ -463,9 +465,9 @@ hl.bind("F12", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true, repeating = tru
 -- Same pamixer/step/flags as above deliberately, so both sets of keys
 -- behave identically. locked = true keeps them working on the hyprlock
 -- screen; repeating = true lets holding the key ramp.
-hl.bind("XF86AudioMute", hl.dsp.exec_cmd("pamixer -t"), { locked = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("pamixer -d 5"), { locked = true, repeating = true })
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true, repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("~/.config/hypr/osd.sh volume mute"), { locked = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("~/.config/hypr/osd.sh volume down"), { locked = true, repeating = true })
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("~/.config/hypr/osd.sh volume up"), { locked = true, repeating = true })
 
 -- --------------------------------------------------- // Laptop function row
 -- The rest of the MSI's Fn row. Each of these is a standard XF86 keysym
@@ -486,13 +488,13 @@ hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("pamixer -i 5"), { locked = true
 
 -- F9 / F10 -- screen brightness. brightnessctl is already in pkg_core.lst
 -- (listed for the quick-settings slider). 5% steps match the volume keys.
-hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -q set 5%-"), { locked = true, repeating = true })
-hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -q set +5%"), { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("~/.config/hypr/osd.sh brightness down"), { locked = true, repeating = true })
+hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("~/.config/hypr/osd.sh brightness up"), { locked = true, repeating = true })
 
 -- F5 -- mic mute. pamixer's --default-source is the input-side counterpart
 -- of the -t above, so this stays on the one audio CLI the rest of the row
 -- uses rather than adding wpctl.
-hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("pamixer --default-source -t"), { locked = true })
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("~/.config/hypr/osd.sh mic mute"), { locked = true })
 
 -- F6 -- bluetooth. Same toggle as the control centre's Bluetooth tile, so
 -- the key and the panel can't disagree.
