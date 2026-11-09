@@ -94,8 +94,8 @@ ShellRoot {
         NotificationToasts {}
     }
 
-    // barHeight / rightOffset follow Colors.qml: a floating bar (Default)
-    // sits Colors.barGap lower and Colors.barGap further in from the right edge
+    // barHeight / rightOffset follow Colors.qml: a floating bar sits
+    // Colors.barTopGap lower and Colors.barGap further in from the right edge
     // than the flat one, so the panels move with it. Both are 0 for the flat
     // Sakura bar, which leaves these at the values they always had.
     VolumePanel {

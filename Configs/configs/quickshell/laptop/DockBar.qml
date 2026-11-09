@@ -79,7 +79,7 @@ PanelWindow {
     Rectangle {
         id: barBackground
         anchors.fill: parent
-        anchors.topMargin: Colors.barGap
+        anchors.topMargin: Colors.barTopGap
         anchors.leftMargin: Colors.barGap
         anchors.rightMargin: Colors.barGap
         radius: Colors.barRadius
@@ -133,7 +133,7 @@ PanelWindow {
     readonly property real sideWidth: Math.max(root.leftContentWidth, rightGroup.implicitWidth) + root.islandPad * 2
 
     component Island: Rectangle {
-        y: Colors.barGap
+        y: Colors.barTopGap
         height: Colors.barHeight
         radius: Colors.barRadius
         color: Colors.barBg
@@ -176,7 +176,7 @@ PanelWindow {
         readonly property real gapLeft: Colors.barGap + root.islandPad + workspaceRow.width
         readonly property real gapRight: Colors.barGap + root.sideWidth
         x: Math.round((gapLeft + gapRight - width) / 2)
-        y: Colors.barGap + Math.round((Colors.barHeight - height) / 2)
+        y: Colors.barTopGap + Math.round((Colors.barHeight - height) / 2)
         spacing: 12
         visible: root.showStats
 

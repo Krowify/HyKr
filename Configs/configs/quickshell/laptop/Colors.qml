@@ -20,13 +20,16 @@ pragma Singleton
 // unread red all come from the theme too.
 //
 // SHAPE -- style.json, written by apply-theme.sh from theme.json's
-// "quickshell" block on every theme apply. Sakura says nothing and gets the
-// flat edge-to-edge strip this dock has always been; Default asks for a
-// floating, rounded bar with a light outline and a larger clock and date:
+// "quickshell" block on every theme apply. A theme that says nothing gets
+// the flat edge-to-edge strip this dock has always been; Default asks for
+// floating, rounded islands with a light outline and a larger clock and date:
 //
 //   "quickshell": { "config": "laptop", "layout": "islands",
 //                   "rounded": true, "radius": 15, "gap": 8,
 //                   "border": "#9aa3a8", "clockSize": 14, "dateSize": 14 }
+//
+// Sakura asks for islands too, squarer and tucked closer to the top edge
+// ("radius": 8, "gap": 10, "topGap": 4).
 //
 // The shape lived in a BarStyle.qml singleton of its own for a while. On a
 // live install every BarStyle.* read in the dock came back undefined -- a
@@ -158,6 +161,15 @@ Singleton {
     // Zero when flat: a square bar runs edge to edge as it always has.
     readonly property int barGap: root.barRounded ? Math.max(0, Math.min(40, Number(style.gap) || 0)) : 0
 
+    // The top edge's share of that, when a theme wants it different from
+    // the sides ("topGap"). Unset (-1, apply-theme.sh's default) means the
+    // same as gap, so a theme that only sets gap looks as it always did.
+    readonly property int barTopGap: {
+        if (!root.barRounded) return 0;
+        const n = Number(style.topGap);
+        return isFinite(n) && n >= 0 ? Math.min(40, Math.round(n)) : root.barGap;
+    }
+
     readonly property int barRadius: root.barRounded ? Math.max(0, Math.min(root.barHeight / 2, Number(style.radius) || 0)) : 0
 
     // The outline: the theme's colour when it names one, otherwise the faint
@@ -186,7 +198,7 @@ Singleton {
     // Where the bar's bottom edge sits from the top of the screen: the layer
     // surface's height and exclusive zone, and the line the popup panels and
     // toasts hang below.
-    readonly property int barBottom: root.barGap + root.barHeight
+    readonly property int barBottom: root.barTopGap + root.barHeight
 
     FileView {
         path: Quickshell.shellPath("style.json")
@@ -200,6 +212,7 @@ Singleton {
             property bool rounded: false
             property real radius: 10
             property real gap: 8
+            property real topGap: -1
             property string border: ""
             property real clockSize: 12
             property real dateSize: 12

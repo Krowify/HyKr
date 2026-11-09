@@ -704,7 +704,7 @@ write_qs_colors "$QS_BASE/$qs_config"
 # and still draw different bars:
 #
 #   quickshell/laptop/Colors.qml  layout (single/islands), rounded, radius,
-#                                   gap, border, clockSize, dateSize
+#                                   gap, topGap, border, clockSize, dateSize
 #                                   (Sakura's flat strip vs Default's
 #                                   floating rounded bar)
 #   quickshell/bar/DockState.qml    style (notch/islands/pill/stats),
@@ -737,7 +737,7 @@ fi
 
 if [[ -d "$QS_BASE/$qs_config" ]]; then
   jq --arg kitty_font "$kitty_font" \
-     '{layout: "single", font: "", rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
+     '{layout: "single", font: "", rounded: false, radius: 10, gap: 8, topGap: -1, border: "", clockSize: 12, dateSize: 12,
        style: "notch", colorful: false, alpha: 0.55}
       + ((.quickshell // {}) | del(.config))
       | if .font == "kitty" then .font = $kitty_font else . end' \

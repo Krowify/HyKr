@@ -9,6 +9,7 @@
     "layout": "islands",
     "radius": 8,
     "gap": 10,
+    "topGap": 4,
     "clockSize": 14,
     "dateSize": 13
   },
