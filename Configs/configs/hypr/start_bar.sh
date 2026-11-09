@@ -9,6 +9,10 @@
 #   start_bar.sh            start the active theme's bar, if not already
 #                           running (safe to run more than once)
 #   start_bar.sh --toggle   stop it if it's running, start it if it isn't
+#
+# A bar that dies during startup (a QML error in its config) is reported on
+# stderr and on screen via `hyprctl notify`, and makes this exit 1; the
+# shell's output is kept in $XDG_RUNTIME_DIR/hykr-bar.log.
 set -uo pipefail
 
 BASE="$HOME/.config/theme-switcher"
@@ -55,6 +59,12 @@ fi
 QS_STOP="$BASE/qs-stop.sh"
 QS_PATTERN="quickshell -c $qs_config"
 
+# The bar's own output, rewritten on every start. $XDG_RUNTIME_DIR, not
+# /tmp: it is per-user and 0700, so no other local user can pre-create
+# this path. (Quickshell also keeps its own log; the path is in the first
+# lines of this file.)
+BAR_LOG="${XDG_RUNTIME_DIR:-$HOME/.cache}/hykr-bar.log"
+
 # Every OTHER bar shell: one left running by a theme switch that didn't go
 # through apply-theme.sh, a login where the previous session's shell was
 # still up, or a config no theme names any more (`-c hyperspace`, from
@@ -89,13 +99,45 @@ start_bar() {
   pkill -x swaync >/dev/null 2>&1 || true
   stop_other_qs_shells
 
-  if command -v quickshell >/dev/null 2>&1; then
-    running || {
-      nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
-      disown
+  if ! command -v quickshell >/dev/null 2>&1; then
+    report_failure "quickshell is not installed -- the $qs_config bar was not started"
+    return
+  fi
+  running && return
+
+  # The shell's output goes to a file, not /dev/null: a config that fails
+  # to load (a QML error) makes quickshell exit within a second, and with
+  # its output discarded that looked exactly like a successful start --
+  # no bar, and nothing anywhere saying why.
+  nohup quickshell -c "$qs_config" >"$BAR_LOG" 2>&1 &
+  local pid=$!
+  disown
+
+  # Watch it briefly. A load failure exits well inside this window; a
+  # shell still alive at the end of it has loaded its config.
+  local _
+  for _ in {1..12}; do
+    sleep 0.25
+    kill -0 "$pid" 2>/dev/null || {
+      echo "start_bar.sh: 'quickshell -c $qs_config' exited during startup. Its output:" >&2
+      tail -n 15 "$BAR_LOG" | sed 's/^/  /' >&2
+      report_failure "the $qs_config bar failed to start -- see $BAR_LOG"
+      return
     }
-  else
-    echo "start_bar.sh: quickshell not found -- $qs_config bar/notifications not started" >&2
+  done
+}
+
+# Say so on screen as well as on stderr: at login (hyprland.lua's autostart)
+# and after an unlock (lock.sh) there is no terminal to read. notify-send is
+# no use here -- the bar IS the notification daemon, so it is exactly what is
+# missing -- but `hyprctl notify` is drawn by Hyprland itself.
+failed=0
+report_failure() {
+  failed=1
+  echo "start_bar.sh: $1" >&2
+  if command -v hyprctl >/dev/null 2>&1 &&
+     [[ -n "${WAYLAND_DISPLAY:-}" || -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    timeout 3 hyprctl notify 3 15000 "rgb(ff5555)" "HyKr: $1" >/dev/null 2>&1 || true
   fi
 }
 
@@ -108,5 +150,6 @@ case "${1:-}" in
     ;;
 esac
 
-# "The bar I wanted is already running" is not a failure.
-exit 0
+# Non-zero only when the bar was supposed to start and didn't (apply-theme.sh
+# reports it). "The bar I wanted is already running" is not a failure.
+exit "$failed"

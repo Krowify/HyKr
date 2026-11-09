@@ -1388,7 +1388,15 @@ qs_stop --keep "$qs_config"
 # over it), and Quickshell only re-reads a config at startup.
 qs_stop --only "$qs_config"
 
-if command -v quickshell >/dev/null 2>&1; then
+# The launch itself is start_bar.sh's: it reads the current-theme.json
+# written above (so it starts this same config) and watches the shell for a
+# few seconds, reporting a config that fails to load -- which a bare
+# `nohup quickshell ... >/dev/null &` here could not tell from a success.
+# The direct launch is only for an install whose ~/.config/hypr predates it.
+START_BAR="$HOME/.config/hypr/start_bar.sh"
+if [[ -x "$START_BAR" ]]; then
+  "$START_BAR" || echo "Warning: the $qs_config bar failed to start (details above)" >&2
+elif command -v quickshell >/dev/null 2>&1; then
   nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
   disown
 else
