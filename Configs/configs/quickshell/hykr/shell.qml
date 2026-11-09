@@ -5,6 +5,9 @@
 //
 //   quickshell -c hykr ipc call launcher toggle     (Super+Tab)
 //   quickshell -c hykr ipc call clipboard toggle    (Super+V)
+//   quickshell -c hykr ipc call wallpaper toggle    (Super+Shift+W)
+//   quickshell -c hykr ipc call wallpaper forTheme <id>
+//   quickshell -c hykr ipc call themes toggle       (Super+Shift+T)
 //   quickshell -c hykr ipc call panel toggle        (Super+M)
 //
 // hypr/hykr.sh wraps those calls and starts the shell first if it isn't up.
@@ -29,7 +32,15 @@ ShellRoot {
     function show(which) {
         launcher.open = which === "launcher";
         clipboard.open = which === "clipboard";
+        themes.open = which === "themes";
         panel.open = which === "panel";
+        if (which !== "wallpaper")
+            wallpaper.open = false;
+    }
+
+    function showWallpaper(themeId, themeName) {
+        root.show("wallpaper");
+        wallpaper.show(themeId, themeName);
     }
 
     Launcher {
@@ -38,6 +49,15 @@ ShellRoot {
 
     ClipboardPicker {
         id: clipboard
+    }
+
+    WallpaperPicker {
+        id: wallpaper
+    }
+
+    ThemePicker {
+        id: themes
+        onWallpaperWanted: (themeId, themeName) => root.showWallpaper(themeId, themeName)
     }
 
     LegacyPanel {
@@ -56,6 +76,23 @@ ShellRoot {
         function toggle(): void { root.show(clipboard.open ? "" : "clipboard"); }
         function open(): void { root.show("clipboard"); }
         function close(): void { clipboard.open = false; }
+    }
+
+    IpcHandler {
+        target: "wallpaper"
+        function toggle(): void { if (wallpaper.open) wallpaper.open = false; else root.showWallpaper("", ""); }
+        function open(): void { root.showWallpaper("", ""); }
+        function close(): void { wallpaper.open = false; }
+        // Pick a wallpaper for a theme whose colours come from one (apply-theme.sh
+        // calls this when such a theme is applied without a wallpaper).
+        function forTheme(theme: string): void { root.showWallpaper(theme, theme); }
+    }
+
+    IpcHandler {
+        target: "themes"
+        function toggle(): void { root.show(themes.open ? "" : "themes"); }
+        function open(): void { root.show("themes"); }
+        function close(): void { themes.open = false; }
     }
 
     IpcHandler {

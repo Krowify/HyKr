@@ -1,7 +1,8 @@
 // The search box at the top of every picker. Owns the list-navigation keys
 // so each picker only has to say what Enter and Escape do.
 //
-//   Up / Down, Ctrl+K / Ctrl+J   move one row      -> navigate(-1 / +1)
+//   Up / Down, Ctrl+K / Ctrl+J   move one row      -> navigate(-/+ rowStep)
+//   Left / Right (gridNav only)  move one cell     -> navigate(-1 / +1)
 //   Page Up / Page Down          move eight rows   -> navigate(-8 / +8)
 //   Enter                        accepted()
 //   Escape                       dismissed()
@@ -15,6 +16,10 @@ Rectangle {
     property alias text: input.text
     property string placeholder: "Search"
     property string glyph: "\u{F0349}"
+    // Grid pickers: Up/Down move a whole row, Left/Right move one cell
+    // instead of moving the text cursor.
+    property int rowStep: 1
+    property bool gridNav: false
 
     signal accepted()
     signal dismissed()
@@ -59,13 +64,17 @@ Rectangle {
         Keys.onPressed: event => {
             const ctrl = (event.modifiers & Qt.ControlModifier) !== 0;
             if (event.key === Qt.Key_Down || (ctrl && event.key === Qt.Key_J)) {
-                root.navigate(1);
+                root.navigate(root.rowStep);
             } else if (event.key === Qt.Key_Up || (ctrl && event.key === Qt.Key_K)) {
+                root.navigate(-root.rowStep);
+            } else if (root.gridNav && event.key === Qt.Key_Right) {
+                root.navigate(1);
+            } else if (root.gridNav && event.key === Qt.Key_Left) {
                 root.navigate(-1);
             } else if (event.key === Qt.Key_PageDown) {
-                root.navigate(8);
+                root.navigate(root.rowStep * (root.gridNav ? 3 : 8));
             } else if (event.key === Qt.Key_PageUp) {
-                root.navigate(-8);
+                root.navigate(-root.rowStep * (root.gridNav ? 3 : 8));
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 root.accepted();
             } else if (event.key === Qt.Key_Escape) {

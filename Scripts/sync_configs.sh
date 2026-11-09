@@ -82,7 +82,6 @@ SKIP_PATTERNS=(
     'hypr:hyprlock.conf'
     'kitty:current-theme.conf'
     'quickshell:*/colors.json'
-    'quickshell:wallpaper-picker/config.json'
     'spicetify:color.ini'
     'starship:starship.toml'
     'wlogout:layout'

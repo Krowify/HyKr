@@ -4,7 +4,10 @@
 #   hykr.sh launcher            (Super+Tab)
 #   hykr.sh clipboard           (Super+V)
 #   hykr.sh panel               (Super+M)
+#   hykr.sh wallpaper           (Super+Shift+W)
+#   hykr.sh themes              (Super+Shift+T)
 #   hykr.sh <target> open|close|toggle
+#   hykr.sh wallpaper forTheme <theme-id>   (extra arguments are passed on)
 #
 # Each is an IpcHandler target in quickshell/hykr/shell.qml. The shell is
 # meant to be running already (start_bar.sh starts it at login), which is
@@ -15,12 +18,13 @@ set -uo pipefail
 
 target="${1:-}"
 fn="${2:-toggle}"
-[[ -n "$target" ]] || { echo "usage: hykr.sh <target> [toggle|open|close]" >&2; exit 2; }
+[[ -n "$target" ]] || { echo "usage: hykr.sh <target> [toggle|open|close|<function> <args>...]" >&2; exit 2; }
+args=("${@:3}")
 
 command -v quickshell >/dev/null 2>&1 || { echo "hykr.sh: quickshell is not installed" >&2; exit 1; }
 
 call() {
-  quickshell -c hykr ipc call "$target" "$fn" >/dev/null 2>&1
+  quickshell -c hykr ipc call "$target" "$fn" "${args[@]}" >/dev/null 2>&1
 }
 
 call && exit 0

@@ -233,7 +233,7 @@ OverlayWindow {
                     anchors.fill: parent
                     anchors.margins: 10
                     visible: root.previewPath.length > 0
-                    source: root.previewPath.length > 0 ? "file://" + root.previewPath : ""
+                    source: Theme.fileUrl(root.previewPath)
                     fillMode: Image.PreserveAspectFit
                     asynchronous: true
                     cache: false

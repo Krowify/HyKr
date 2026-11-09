@@ -36,6 +36,17 @@ Not from elifouts:
   - `ClipboardPicker.qml` — clipboard history (`Super+V`) over `cliphist`
     (which still records it): Enter copies, Delete removes, image entries
     are decoded into a preview pane.
+  - `WallpaperPicker.qml` — wallpaper picker (`Super+Shift+W`): a thumbnail
+    grid of `~/wallpapers` that runs `hypr/apply_wallpaper.sh` on the pick.
+    Thumbnails are made once by `thumbs.sh` (ImageMagick) into
+    `~/.cache/hykr/thumbs/`, keyed by path. Replaces the separate
+    `quickshell/wallpaper-picker` config and `wallpaper.sh`'s rofi/wofi menu
+    (`wallpaper.sh` now just opens this).
+  - `ThemePicker.qml` — theme picker (`Super+Shift+T`, `themes.sh` lists the
+    themes): a card per theme previewed with its wallpaper. A theme whose
+    colours come from its wallpaper opens the wallpaper picker on its own
+    wallpapers -- and so does `apply-theme.sh <theme>` given no wallpaper.
+    Replaces `theme-picker.sh`'s rofi/wofi menu (it now just opens this).
   - `LegacyPanel.qml` — the original `Super+M` quick-settings panel, until
     the control centre replaces it.
   - `Theme.qml` / `colors.json` — palette, rewritten by `apply-theme.sh` and

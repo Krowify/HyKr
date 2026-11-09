@@ -1,65 +1,9 @@
 #!/bin/bash
-# No longer bound to Super+Shift+W -- that's the quickshell wallpaper
-# picker now (Configs/configs/quickshell/wallpaper-picker/). Left in
-# place as a manual/fallback picker: a plain rofi/wofi dmenu list,
-# useful if quickshell itself is ever unavailable.
+# Wallpaper picker. This used to be a rofi/wofi menu; the picker is now the
+# HyKr desktop shell's (quickshell/hykr/WallpaperPicker.qml, Super+Shift+W),
+# which runs apply_wallpaper.sh (awww + the pywal colour pipeline) on the
+# wallpaper you pick, exactly as this script did. Kept as a wrapper so
+# anything still calling this path opens the same picker.
 #
-# Wallpaper picker: rofi's icon grid if installed (reliable click-to-select),
-# else wofi's plain text list as a fallback -> awww + pywal. Adapted from
-# elifouts/Dotfiles (cava color sync removed — no cava config in this repo;
-# pywalfox call guarded since it's optional, not in
-# pkg_core.lst). wofi's own image-grid mode (allow_images + img: prefix) is
-# deliberately not used here: its GtkFlowBox click-to-activate is flaky
-# (same reason apply-theme.sh's dynamic-theme picker prefers rofi's grid
-# and only falls back to a plain wofi list).
-#
-# The actual "apply this wallpaper" step (awww + pywal + kitty/starship/
-# pywalfox propagation) lives in apply_wallpaper.sh, shared with
-# the quickshell wallpaper-picker (Super+Shift+W) so both pickers drive
-# the same color pipeline instead of duplicating it. That pipeline uses
-# pywal's actual per-wallpaper colors rather than whatever theme-switcher
-# theme is nominally active, same as fastfetch's ASCII art (colored
-# through the terminal's own pywal-set ANSI palette) -- so picking a
-# wallpaper always matches what you see in the terminal, even if it
-# diverges from the last theme-switcher theme you applied.
-WALLPAPER_DIR="$HOME/wallpapers"
-ROFI_GRID_THEME="$HOME/.config/rofi/wallpaper-grid.rasi"
-
-# pywallpaper.jpg is excluded: apply_wallpaper.sh writes a copy of
-# whatever you just picked to ~/wallpapers/pywallpaper.jpg (it is the
-# path wal/colorschemes/dark/ywal16.json points at), so listing it here
-# showed your last pick a second time, under a name that isn't a
-# wallpaper in its own right.
-wallpapers() {
-    find -L "${WALLPAPER_DIR}" -type f ! -name 'pywallpaper.jpg' \
-        \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | sort
-}
-
-pick_with_rofi() {
-    local input=""
-    while IFS= read -r f; do
-        input+="${f}\0icon\x1f${f}\n"
-    done < <(wallpapers)
-
-    local args=(-dmenu -p "Select Wallpaper")
-    [ -f "$ROFI_GRID_THEME" ] && args+=(-theme "$ROFI_GRID_THEME")
-
-    printf '%b' "$input" | rofi "${args[@]}"
-}
-
-pick_with_wofi() {
-    wallpapers | wofi -c ~/.config/wofi/wallpaper -s ~/.config/wofi/style-wallpaper.css --show dmenu --prompt "Select Wallpaper:" -n
-}
-
-main() {
-    if command -v rofi &>/dev/null; then
-        selected_wallpaper=$(pick_with_rofi)
-    else
-        selected_wallpaper=$(pick_with_wofi)
-    fi
-    [ -z "$selected_wallpaper" ] && exit 0
-
-    "$(dirname "$(realpath "$0")")/apply_wallpaper.sh" "$selected_wallpaper"
-}
-
-main
+# To set a wallpaper without any picker: ~/.config/hypr/apply_wallpaper.sh <image>
+exec "$HOME/.config/hypr/hykr.sh" wallpaper open

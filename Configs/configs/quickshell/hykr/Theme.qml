@@ -59,6 +59,15 @@ Singleton {
         return root.isHex(value) ? value : fallback;
     }
 
+    // A local path as a file:// URL. Each segment is percent-encoded, so a
+    // name containing '#', '?' or '%' still loads (a bare "file://" + path
+    // would read '#' as the start of a fragment).
+    function fileUrl(path) {
+        if (!path)
+            return "";
+        return "file://" + String(path).split("/").map(encodeURIComponent).join("/");
+    }
+
     function luminance(c) {
         return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
     }

@@ -14,7 +14,7 @@
 // now top-level siblings in shell.qml, coordinated through DockState.qml.
 //
 // Same multi-monitor-safe screen pattern as the other HyKr quickshell
-// configs (wallpaper-picker, hykr): PanelWindow needs an explicit
+// configs (hykr): PanelWindow needs an explicit
 // screen or it can silently fail to attach to any output at all.
 //
 // Every icon glyph below is written as a \u/\u{} JS escape rather than

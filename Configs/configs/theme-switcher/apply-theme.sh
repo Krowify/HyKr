@@ -191,44 +191,26 @@ if [[ "$dynamic_colors" == "true" ]]; then
   fi
 
   if [[ -z "$WP" ]]; then
-    # Detect launcher for wallpaper selection
-    if command -v rofi >/dev/null 2>&1; then
-      _PICKER="rofi"
-    elif command -v wofi >/dev/null 2>&1; then
-      _PICKER="wofi"
-    else
-      echo "Error: neither rofi nor wofi found" >&2
-      exit 1
+    # No wallpaper given: let the user pick one in the desktop shell's
+    # wallpaper picker, listing this theme's own wallpapers. Picking one runs
+    # this script again with it, so this run is done. (This used to be a
+    # rofi/wofi prompt that blocked here.)
+    if wayland_is_live && [[ -x "$HOME/.config/hypr/hykr.sh" ]] &&
+       "$HOME/.config/hypr/hykr.sh" wallpaper forTheme "$THEME"; then
+      echo "Pick a wallpaper for $THEME in the picker to finish applying it."
+      exit 0
     fi
 
+    # No session or no desktop shell (a TTY, an install run): use the
+    # theme's default wallpaper, else the first one in its folder.
     WP_DIR="$THEME_PATH/wallpapers"
-    [[ -d "$WP_DIR" ]] || { echo "No wallpaper directory found"; exit 1; }
-
-    mapfile -d '' -t _wfiles < <(
-      find "$WP_DIR" -maxdepth 1 -type f \
-        \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) \
-        -printf '%f\0' | sort -z
-    )
-
-    [[ ${#_wfiles[@]} -gt 0 ]] || { echo "No wallpapers found in $WP_DIR"; exit 1; }
-
-    if [[ "$_PICKER" == "rofi" ]]; then
-      ROFI_GRID_THEME="$HOME/.config/rofi/wallpaper-grid.rasi"
-      _input=""
-      for _f in "${_wfiles[@]}"; do
-        _input+="${_f}\0icon\x1f${WP_DIR}/${_f}\n"
-      done
-
-      _rofi_args=(-dmenu -p "Select wallpaper for dynamic theme")
-      [[ -f "$ROFI_GRID_THEME" ]] && _rofi_args+=(-theme "$ROFI_GRID_THEME")
-
-      WP_NAME="$(printf '%b' "$_input" | rofi "${_rofi_args[@]}")"
+    default_wp="$(jq -r '.default_wallpaper // empty' "$THEME_JSON" 2>/dev/null || true)"
+    if [[ -n "$default_wp" && -f "$THEME_PATH/$default_wp" ]]; then
+      WP="$THEME_PATH/$default_wp"
     else
-      WP_NAME="$(printf '%s\n' "${_wfiles[@]}" | wofi --dmenu --prompt "Select wallpaper" --cache-file=/dev/null)"
+      WP="$(find -L "$WP_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \) 2>/dev/null | LC_ALL=C sort | head -n1)"
     fi
-
-    [[ -z "${WP_NAME:-}" ]] && exit 0
-    WP="$WP_DIR/$WP_NAME"
+    [[ -n "$WP" ]] || { echo "No wallpaper given and none found in $WP_DIR"; exit 1; }
   fi
 
   [[ -f "$WP" ]] || { echo "Wallpaper not found: $WP"; exit 1; }
@@ -624,29 +606,6 @@ if [[ -d "$ROFI_TPL_DIR" ]]; then
   done
 fi
 
-# --------- Quickshell wallpaper picker ----------
-# Its shell.qml has no external Theme.qml dependency by design (see its
-# own comments) -- config.json is the single source of color it reads,
-# same idea as wofi/rofi's CSS templates above. Previously that file's
-# color fields were just static hardcoded defaults nobody regenerated,
-# so the picker never matched whatever theme kitty/the bar/etc were
-# actually showing. jq -c so the rewritten file stays one line smaller
-# than a full pretty-print diff would be, matching how this script
-# otherwise avoids reformatting files it only partially owns.
-WPICKER_CONFIG="$HOME/.config/quickshell/wallpaper-picker/config.json"
-
-if [[ -f "$WPICKER_CONFIG" ]]; then
-  wpicker_surface="#99${surface_hex#\#}"
-  tmp_wpicker="$(mktemp)"
-  jq --arg bg "$bg_hex" \
-     --arg surface "$wpicker_surface" \
-     --arg text "$fg_hex" \
-     --arg text_dim "$fg_dim_hex" \
-     --arg accent "$accent_hex" \
-     '.bg = $bg | .surface = $surface | .text = $text | .text_dim = $text_dim | .border_color = $accent' \
-     "$WPICKER_CONFIG" > "$tmp_wpicker" && mv "$tmp_wpicker" "$WPICKER_CONFIG"
-fi
-
 # --------- Quickshell dock colours ----------
 # The palette every Quickshell-based bar in this repo renders from, instead
 # of hardcoded colours in each delegate.
@@ -655,8 +614,8 @@ fi
 # each config directory that already has a colors.json is one, so this
 # needs no list of theme names to stay current, and switching back to
 # another dock theme can't show it a palette from two themes ago. It's a
-# handful of bytes. (The wallpaper-picker config is
-# untouched -- its file is config.json, owned by the block further up.)
+# handful of bytes. The desktop shell (quickshell/hykr) has one too, so its
+# launcher and pickers follow the theme the same way.
 #
 # Each dock's Colors.qml declares only the keys it actually reads, so the
 # rest are ignored: the Laptop dock takes `accent` alone out of this same

@@ -1,9 +1,9 @@
 #!/bin/bash
 # Applies a wallpaper (path given as $1) and propagates its pywal colors
 # everywhere: awww, kitty, starship, pywalfox, the pywallpaper.jpg
-# cache. Shared by every wallpaper picker in this repo (wallpaper.sh's own
-# rofi/wofi menu, and the quickshell wallpaper-picker) so they all drive
-# the exact same color pipeline instead of duplicating/diverging it.
+# cache. Run by the desktop shell's wallpaper picker (Super+Shift+W,
+# quickshell/hykr/WallpaperPicker.qml) and usable on its own:
+#   apply_wallpaper.sh <image>
 set -e
 
 selected_wallpaper="$1"
@@ -162,9 +162,8 @@ fi
 #
 # Every config directory that already carries a colors.json is a dock, so
 # this needs no list of theme names to stay current -- add a Quickshell
-# theme and its colours follow a wallpaper pick automatically. (The
-# wallpaper-picker config is untouched: its file is config.json, and
-# apply-theme.sh owns it.) Their FileViews watch these paths, so a running
+# theme and its colours follow a wallpaper pick automatically -- the
+# desktop shell (quickshell/hykr) included. Their FileViews watch these paths, so a running
 # dock repaints immediately -- the equivalent of the live kitty recolour a
 # few lines up.
 #

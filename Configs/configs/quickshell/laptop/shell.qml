@@ -26,8 +26,8 @@
 // the config root"). services/ stays a subdirectory because it is imported
 // qualified (`as Services`) and has never failed.
 //
-// Sourced from HyKr's own quickshell conventions (wallpaper-picker,
-// hykr) for the multi-monitor Variants pattern, and mystiafin/shell for
+// Sourced from HyKr's own quickshell conventions (hykr) for the
+// multi-monitor Variants pattern, and mystiafin/shell for
 // the native NotificationServer approach -- see
 // services/NotificationService.qml.
 import Quickshell

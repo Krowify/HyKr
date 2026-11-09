@@ -52,8 +52,8 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | --- | --- |
 | `Super+Ctrl+Right`/`Left` | Next/previous workspace (relative) |
 | `Super+Ctrl+Down` | Go to nearest empty workspace |
-| `Super+Shift+W` | Wallpaper picker (Wofi + awww + pywal) |
-| `Super+Shift+T` | Theme picker (Wofi) — switches Hyprland, the Quickshell bar, Wofi, Kitty, Fastfetch, Starship, Hyprlock, and Wlogout to one of the bundled themes |
+| `Super+Shift+W` | Wallpaper picker (desktop shell) — thumbnail grid of `~/wallpapers`, type to filter, arrows move, Enter applies (awww + pywal) |
+| `Super+Shift+T` | Theme picker (desktop shell) — switches Hyprland, the Quickshell bar, Kitty, Fastfetch, Starship, Hyprlock, and Wlogout to one of the bundled themes |
 
 ## Alt
 

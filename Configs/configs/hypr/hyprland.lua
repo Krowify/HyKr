@@ -340,8 +340,8 @@ hl.bind(var_mainMod .. " + V", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh clipboard
 hl.bind(var_mainMod .. " + CTRL + right", hl.dsp.focus({ workspace = "r+1" }))
 hl.bind(var_mainMod .. " + CTRL + left", hl.dsp.focus({ workspace = "r-1" }))
 hl.bind(var_mainMod .. " + CTRL + down", hl.dsp.focus({ workspace = "empty" }))
-hl.bind(var_mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("pkill -9 -x -f 'quickshell -c wallpaper-picker'; ~/.config/quickshell/wallpaper-picker/launch.sh"))
-hl.bind(var_mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("~/.config/theme-switcher/theme-picker.sh"))
+hl.bind(var_mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh wallpaper"))
+hl.bind(var_mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh themes"))
 
 -- --------------------------------------------------- // Alt
 hl.bind("ALT + P", hl.dsp.window.pseudo())
