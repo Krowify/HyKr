@@ -16,7 +16,7 @@ whatever the last apply generated.
 | --- | --- |
 | Window borders | The wallpaper's accent on the active border, via `~/.config/hypr/colors-hyprland.lua` (see `templates/hyprland.lua.tpl`) |
 | Bar / notifications | The shared Quickshell bar, `quickshell -c bar` in its `notch` style — see `Configs/configs/quickshell/bar/` |
-| Wofi / rofi | The shared `templates/wofi.css.tpl` and `templates/rofi/*.tpl`, re-rendered on both a theme switch and a plain wallpaper pick |
+| Launcher, pickers, control centre | The desktop shell (`quickshell/hykr`), recoloured from the same palette on both a theme switch and a plain wallpaper pick |
 | Lock screen | `templates/hyprlock.conf.tpl` — shows the theme's own wallpaper, blurred |
 | fastfetch | `assets/fastfetch-logo.png` instead of the random-Pokémon logo, plus the usual accent→fg key gradient |
 | kitty, starship, wlogout, GTK 3/4, Qt6, VS Code, Obsidian, spicetify | The shared templates in `../../templates/`, same as every other theme |

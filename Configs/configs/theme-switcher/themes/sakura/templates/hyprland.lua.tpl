@@ -47,9 +47,6 @@ hl.layer_rule({ match = { namespace = "laptop-dock" }, ignore_alpha = 0.2 })
 hl.layer_rule({ match = { namespace = "laptop-popup" }, blur = true })
 hl.layer_rule({ match = { namespace = "laptop-popup" }, ignore_alpha = 0.2 })
 
-hl.layer_rule({ match = { namespace = "wofi" }, blur = true })
-hl.layer_rule({ match = { namespace = "wofi" }, ignore_alpha = 0.2 })
-
 hl.layer_rule({ match = { class = "wlogout" }, blur = true })
 hl.layer_rule({ match = { class = "wlogout" }, ignore_alpha = 0.2 })
 

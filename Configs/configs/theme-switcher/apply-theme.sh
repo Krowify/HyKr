@@ -32,7 +32,7 @@ OUT="$HOME/.config/hypr/generated-theme.lua"
 [[ ! -f "$TPL" ]] && { echo "Missing: $TPL"; exit 1; }
 
 # HyKr: this script's writes below (hypr/generated-theme.conf,
-# hypr/hyprlock.conf, wofi/style.css, kitty/theme.conf,
+# hypr/hyprlock.conf, kitty/theme.conf,
 # wlogout's colors/layout,
 # fastfetch/config.jsonc, starship.toml) all target paths that HyKr's
 # link_dots.sh symlinks whole-directory-wise straight into
@@ -70,7 +70,7 @@ de_symlink() {
 # writes landed on tracked files in the git checkout -- a permanently dirty
 # tree, and a `git pull` that refuses with "local changes would be
 # overwritten". Exactly the failure the rest of this list exists to prevent.
-for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
+for p in "$HOME/.config/hypr" "$HOME/.config/kitty" \
          "$HOME/.config/wlogout" \
          "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
          "$HOME/.config/gtk-3.0" "$HOME/.config/theme-switcher" \
@@ -193,8 +193,7 @@ if [[ "$dynamic_colors" == "true" ]]; then
   if [[ -z "$WP" ]]; then
     # No wallpaper given: let the user pick one in the desktop shell's
     # wallpaper picker, listing this theme's own wallpapers. Picking one runs
-    # this script again with it, so this run is done. (This used to be a
-    # rofi/wofi prompt that blocked here.)
+    # this script again with it, so this run is done.
     if wayland_is_live && [[ -x "$HOME/.config/hypr/hykr.sh" ]] &&
        "$HOME/.config/hypr/hykr.sh" wallpaper forTheme "$THEME"; then
       echo "Pick a wallpaper for $THEME in the picker to finish applying it."
@@ -558,53 +557,8 @@ fi
 
 printf '{ "theme": "%s", "wallpaper": "%s" }\n' "$THEME" "${wp_rel:-}" > "$BASE/current-theme.json"
 
-# --- Derived colors for CSS (wofi etc.) ---
-bg_rgba="$(hex_to_rgba_css "$bg_hex" "0.85")"
-surface_rgba="$(hex_to_rgba_css "$surface_hex" "0.70")"
+# --- Derived colours for CSS (Obsidian's snippet) ---
 accent_soft="$(hex_to_rgba_css "$accent_hex" "0.15")"
-
-# --------- Wofi ----------
-WOFI_TPL="$BASE/templates/wofi.css.tpl"
-WOFI_OUT="$HOME/.config/wofi/style.css"
-
-if [[ -f "$WOFI_TPL" ]]; then
-  mkdir -p "$HOME/.config/wofi"
-
-  sed \
-    -e "s/{{bg_rgba}}/$bg_rgba/g" \
-    -e "s/{{surface_rgba}}/$surface_rgba/g" \
-    -e "s/{{fg}}/$fg_hex/g" \
-    -e "s/{{accent}}/$accent_hex/g" \
-    -e "s/{{accent_soft}}/$accent_soft/g" \
-    -e "s/{{bg}}/$bg_hex/g" \
-    -e "s/{{font_family}}/$font_family/g" \
-    -e "s/{{font_family_bold}}/$font_family_bold/g" \
-    "$WOFI_TPL" > "$WOFI_OUT"
-fi
-
-# --------- Rofi ----------
-ROFI_TPL_DIR="$BASE/templates/rofi"
-ROFI_OUT_DIR="$HOME/.config/rofi"
-
-if [[ -d "$ROFI_TPL_DIR" ]]; then
-  mkdir -p "$ROFI_OUT_DIR"
-
-  for tpl in "$ROFI_TPL_DIR"/*.tpl; do
-    [[ -f "$tpl" ]] || continue
-    out="$ROFI_OUT_DIR/$(basename "$tpl" .tpl)"
-
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{fg_dim}}/$fg_dim_hex/g" \
-      -e "s/{{surface}}/$surface_hex/g" \
-      -e "s/{{surface2}}/$surface2_hex/g" \
-      -e "s/{{overlay}}/$overlay_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      "$tpl" > "$out"
-  done
-fi
 
 # --------- Quickshell dock colours ----------
 # The palette every Quickshell-based bar in this repo renders from, instead

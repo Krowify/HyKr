@@ -24,7 +24,7 @@ turquoise (`#adf0e9` accent, `#8fecd5` mint) went with the old
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | fastfetch | `assets/hykr-logo.txt` — a "HyKr" wordmark instead of the random-Pokémon logo, centred against the info column (`padding_top: 4`) and shaded row by row with the same accent→text gradient as the info keys (`$1`–`$8`; `$9` is the dim `hyprland · arch` tag), filled from the palette on every apply |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |
-| Wofi / rofi, kitty, starship, wlogout, GTK 3/4, Qt6, VS Code, Obsidian, spicetify | The shared templates in `../../templates/`, same as every other theme |
+| The desktop shell (launcher, pickers, control centre), kitty, starship, wlogout, GTK 3/4, Qt6, VS Code, Obsidian, spicetify | The shared templates in `../../templates/`, same as every other theme |
 
 Because the palette lives in `colors.json`, every one of those shared
 templates renders in Default with no per-theme file — which is why this
@@ -55,9 +55,9 @@ recorded decision rather than an oversight.
 | Upstream | HyKr keeps | Why |
 | --- | --- | --- |
 | mako | the Quickshell dock's own notification daemon | Only one process can claim `org.freedesktop.Notifications`. The Quickshell dock serves notifications itself, so mako has nothing to replace. |
-| walker | wofi + rofi | `apply-theme.sh` resolves its launcher by name (`_PICKER`) and ships `.rasi` templates. Walker uses its own XML layout format (14 `item_*.xml` files), so supporting it is a feature, not a theme. |
+| walker | the desktop shell's launcher | HyKr's launcher, clipboard, theme and wallpaper pickers are its own Quickshell desktop shell (`quickshell/hykr`), themed from this palette. Walker is a separate launcher with its own XML layout format (14 `item_*.xml` files), so carrying it over would mean a second launcher, not a theme. |
 | waybar | the Quickshell dock | This theme originally shipped its own flat waybar layout. It now runs the Quickshell dock instead, alongside Sakura and Hyperspace; the waybar templates were removed rather than left inert. `git show 9e0b789` still has them if the flat waybar bar is ever wanted back. |
-| ghostty | kitty | Harmless to install both, but kitty is HyKr's hardcoded terminal (`hyprland.lua`, wofi). Upstream's two GLSL cursor shaders are ghostty-only and have no equivalent here. |
+| ghostty | kitty | Harmless to install both, but kitty is HyKr's hardcoded terminal (`hyprland.lua`, and the launcher runs terminal apps in it). Upstream's two GLSL cursor shaders are ghostty-only and have no equivalent here. |
 | `kdeglobals` + `color-schemes/*.colors` | qt6ct | Two competing mechanisms for the same Qt apps. HyKr sets `QT_QPA_PLATFORMTHEME=qt6ct` and generates `qt6ct-colors.conf`, so a dropped-in `kdeglobals` would be inert at best. |
 
 Three smaller divergences:

@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Keeps avahi's bvnc/bssh/avahi-discover launchers out of wofi/rofi.
+# Keeps avahi's bvnc/bssh/avahi-discover launchers out of the app launcher
+# (Super+Tab) and every other menu that lists .desktop files.
 #
 # avahi isn't in pkg_*.lst -- it comes in as a dependency, so it can't be
 # uninstalled on its own. Shadowing the .desktop files from
-# ~/.local/share/applications didn't reliably hide them from wofi, so tell
+# ~/.local/share/applications didn't reliably hide them from the launcher of
+# the day (wofi, back then), so tell
 # pacman never to extract them instead (NoExtract in /etc/pacman.conf). That
 # holds for every launcher and survives avahi upgrades. Idempotent.
 #
@@ -40,5 +42,3 @@ for f in "${launchers[@]}"; do
     fi
 done
 
-# wofi keeps launched entries in its own cache and can list them from there.
-rm -f "$HOME/.cache/wofi-drun"

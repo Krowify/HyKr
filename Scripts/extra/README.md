@@ -8,7 +8,7 @@ install (package lists, post-install helpers, maintenance utilities).
   Separate from `link_dots.sh` because it targets `/usr/share/sddm`,
   not `$HOME`, and needs `sudo`.
 - [`hide_avahi_launchers.sh`](hide_avahi_launchers.sh) — keeps avahi's
-  `bvnc`/`bssh`/`avahi-discover` launchers out of wofi. avahi is pulled in
+  `bvnc`/`bssh`/`avahi-discover` launchers out of the app launcher. avahi is pulled in
   as a dependency, so instead of uninstalling it this adds a `NoExtract`
   line to `/etc/pacman.conf` and deletes any copies already on disk.
   Idempotent; run by `install.sh` before packages. Needs `sudo`.

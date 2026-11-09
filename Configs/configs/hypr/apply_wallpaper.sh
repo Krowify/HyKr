@@ -12,7 +12,7 @@ selected_wallpaper="$1"
 # Every step from here on is best-effort: this script runs under `set -e`, and
 # an optional tool that is missing, or a daemon that happens not to be running,
 # must not abort the pipeline halfway -- everything downstream (kitty, starship,
-# rofi, wofi, the Quickshell dock palettes, VS Code, the live Hyprland border,
+# the Quickshell palettes (bars and desktop shell), VS Code, the live Hyprland border,
 # spicetify, pywalfox, the pywallpaper.jpg cache) would then silently never run
 # and the wallpaper would change with nothing else following it.
 
@@ -40,7 +40,7 @@ fi
 wal -i "$selected_wallpaper" -n --cols16
 
 # Sourced early (moved up from the end of this script) so every step
-# below -- rofi included -- has $background/$foreground/$colorN as
+# below has $background/$foreground/$colorN as
 # plain bash variables to render with, not just files under ~/.cache.
 source ~/.cache/wal/colors.sh
 
@@ -60,7 +60,7 @@ if command -v kitty &>/dev/null; then
 fi
 
 # Starship. Rendered from the SAME template apply-theme.sh uses, filled with
-# this wallpaper's pywal colours -- the way wofi and VS Code below already
+# this wallpaper's pywal colours -- the way VS Code below already
 # work -- rather than copying ~/.cache/wal/starship.toml. That file came
 # from a separate pywal template with a different layout (one line, led by
 # the time), so a wallpaper pick reshaped the whole prompt; and when pywal
@@ -68,7 +68,7 @@ fi
 # prompt on the old theme's colours while kitty moved to the new ones.
 #
 # Role mapping matches the rest of this script: $color4 is the accent (as for
-# the Hyprland border, rofi, wofi), $color8 the raised surface.
+# the Hyprland border and the Quickshell palettes), $color8 the raised surface.
 #
 # Like any starship config, this reaches the NEXT prompt drawn: a prompt
 # already on screen keeps the colours it was printed with (starship writes
@@ -94,65 +94,8 @@ elif [ -f ~/.cache/wal/starship.toml ]; then
     cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
 fi
 
-# Rofi (wallpaper-grid.rasi / theme-picker.rasi): apply-theme.sh already
-# renders these two from theme.json's static colors on a theme switch,
-# but nothing re-rendered them on a plain wallpaper pick within the same
-# theme -- same "last write wins" pattern as kitty/starship above, just
-# re-run with wal's colors instead of theme.json's. accent/surface/
-# surface2/fg_dim map onto the same color4/color8/color0/color7 slots
-# starship's own pywal template already uses for the same roles.
-ROFI_TPL_DIR="$HOME/.config/theme-switcher/templates/rofi"
-ROFI_OUT_DIR="$HOME/.config/rofi"
-
-if [ -d "$ROFI_TPL_DIR" ]; then
-    mkdir -p "$ROFI_OUT_DIR"
-
-    for tpl in "$ROFI_TPL_DIR"/*.tpl; do
-        [ -f "$tpl" ] || continue
-        out="$ROFI_OUT_DIR/$(basename "$tpl" .tpl)"
-
-        sed \
-            -e "s/{{bg}}/$background/g" \
-            -e "s/{{fg}}/$foreground/g" \
-            -e "s/{{fg_dim}}/$color7/g" \
-            -e "s/{{surface}}/$color8/g" \
-            -e "s/{{surface2}}/$color0/g" \
-            -e "s/{{accent}}/$color4/g" \
-            -e "s/{{font_family}}/JetBrainsMono Nerd Font/g" \
-            "$tpl" > "$out"
-    done
-fi
-
-# Wofi (Super+Tab launcher): same gap as rofi above -- apply-theme.sh
-# only ever renders wofi's style.css on a theme switch. hex_to_rgba_css
-# mirrors apply-theme.sh's own helper of the same name (bg 0.85, surface
-# 0.70, accent-soft 0.15 alphas, matching what it uses for the same
-# roles there).
-hex_to_rgba_css() {
-    local hex="${1#\#}" alpha="${2:-1}"
-    printf "rgba(%d,%d,%d,%s)" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}" "$alpha"
-}
-
-WOFI_TPL="$HOME/.config/theme-switcher/templates/wofi.css.tpl"
-WOFI_OUT="$HOME/.config/wofi/style.css"
-
-if [ -f "$WOFI_TPL" ]; then
-    mkdir -p "$HOME/.config/wofi"
-
-    sed \
-        -e "s/{{bg_rgba}}/$(hex_to_rgba_css "$background" "0.85")/g" \
-        -e "s/{{surface_rgba}}/$(hex_to_rgba_css "$color8" "0.70")/g" \
-        -e "s/{{fg}}/$foreground/g" \
-        -e "s/{{accent}}/$color4/g" \
-        -e "s/{{accent_soft}}/$(hex_to_rgba_css "$color4" "0.15")/g" \
-        -e "s/{{bg}}/$background/g" \
-        -e "s/{{font_family}}/JetBrainsMono Nerd Font/g" \
-        -e "s/{{font_family_bold}}/JetBrainsMono Nerd Font Bold/g" \
-        "$WOFI_TPL" > "$WOFI_OUT"
-fi
-
 # Quickshell dock palettes. $color4 is the same pywal slot the Hyprland
-# border, rofi and wofi accents above already use, so the docks match them
+# border's accent uses, so the docks match it
 # rather than drifting on their own; the rest of the roles map onto the
 # slots starship's own pywal template already uses for the same jobs. Each
 # dock's Colors.qml declares only the keys it actually reads (the Laptop
@@ -198,8 +141,8 @@ fi
 # VS Code. apply-theme.sh renders the same templates on a theme switch, but
 # nothing re-rendered them on a plain wallpaper pick -- so every other surface
 # moved to the new wallpaper's colours and the editor sat on the palette from
-# whenever a theme was last applied. Same "last write wins" gap rofi and wofi
-# above had.
+# whenever a theme was last applied -- the same "last write wins" gap the
+# other surfaces here close.
 #
 # The colours go into a real colour-theme EXTENSION, not into
 # workbench.colorCustomizations: customizations paint over whatever theme is
@@ -207,7 +150,7 @@ fi
 # only gets fonts, and workbench.colorTheme is seeded once if nothing has
 # chosen a theme yet -- after that the picker owns it.
 #
-# The role mapping matches the rofi/wofi blocks above ($color4 the accent,
+# The role mapping matches the rest of this script ($color4 the accent,
 # $color8/$color0 the raised surfaces, $color7 dim foreground), with pywal's
 # remaining slots filling the named colours. pywal has no separate orange, so
 # yellow covers both.
@@ -216,8 +159,7 @@ VSCODE_OUT="$HOME/.config/Code/User/settings.json"
 VSCODE_EXT_DIR="$HOME/.vscode/extensions/hykr-theme"
 
 # A copy of apply-theme.sh's function of the same name -- these two scripts
-# share no library, which is why hex_to_rgba_css above is duplicated too.
-# Fixes belong in both.
+# share no library. Fixes belong in both.
 write_vscode_settings() {
     rendered="$1"; out="$2"
 
@@ -295,8 +237,8 @@ fi
 # parse time, so the border keeps whatever colour it had at the last reload.
 # apply-theme.sh gets away without this because it ends in `hyprctl reload`;
 # a wallpaper pick never reloaded anything, which is why the active-window
-# border stayed on the previous wallpaper's accent while kitty, starship,
-# rofi and wofi all moved.
+# border stayed on the previous wallpaper's accent while kitty, starship
+# and the bars all moved.
 #
 # `hyprctl keyword` rather than `hyprctl reload`: it takes effect instantly
 # and avoids re-parsing the whole config, which would also re-pin every

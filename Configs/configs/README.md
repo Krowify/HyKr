@@ -6,7 +6,8 @@ of the application it configures, so it can be symlinked directly into
 
 Currently sourced from [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles):
 
-- `wofi/`, `nvim/`, `starship.toml`, `wal/`, `wlogout/`
+- `nvim/`, `starship.toml`, `wal/`, `wlogout/` (the `wofi/` config that came
+  from here too is gone: the desktop shell's launcher and pickers replace it)
 - `hypr/` — `hyprlock.conf` as-is; `hyprland.lua` is ours (keybinds); `hypridle.conf`
   and `wallpaper.sh` are adapted (dropped references to things not in this repo:
   a `cava` config, an unrecognized `hyprdvd` tool, a hardcoded Spotify path)
@@ -95,7 +96,7 @@ Not from elifouts:
   not-runtime-tested caveat.
 - `hypr/apply_wallpaper.sh` — the shared colour pipeline behind every
   wallpaper picker in the repo: awww, pywal, then kitty (live, over its
-  socket), starship, rofi, wofi, the Quickshell dock palettes, the Hyprland
+  socket), starship, the Quickshell palettes (bars and desktop shell), the Hyprland
   border, VS Code and spicetify. VS Code gets a generated colour-theme
   *extension* (`~/.vscode/extensions/hykr-theme/`), not
   `workbench.colorCustomizations` — customizations paint over whatever theme
@@ -183,7 +184,7 @@ Not from elifouts:
   `scripts/theme-picker.sh` were pulled in.
 
   **Important, HyKr-specific fix**: `apply-theme.sh` writes directly
-  into `hypr/`, `wofi/`, `kitty/`, `wlogout/`,
+  into `hypr/`, `kitty/`, `wlogout/`,
   `fastfetch/`, and `starship.toml` — all paths `link_dots.sh` symlinks
   *whole-directory* from this repo. Applying a theme unmodified would
   write straight through those symlinks and silently overwrite this

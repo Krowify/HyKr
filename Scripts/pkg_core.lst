@@ -27,11 +27,11 @@ qt5-wayland                                            # wayland support for qt5
 qt6-wayland                                            # wayland support for qt6 apps
 
 # --------------------------------------------------- // Theming
-python-pywal16                                         # generates the colors wofi/wlogout style.css @import — 16-color fork of pywal, needed for the --cols16 flag used in wallpaper.sh/link_dots.sh (plain python-pywal doesn't support it, provides/replaces it, same `wal` command)
-awww                                                    # wallpaper daemon, paired with pywal by wofi's wallpaper picker (newer fork of swww, same usage)
+python-pywal16                                         # generates the colors wlogout's style.css @imports, and the palette a wallpaper pick spreads everywhere — 16-color fork of pywal, needed for the --cols16 flag used in wallpaper.sh/link_dots.sh (plain python-pywal doesn't support it, provides/replaces it, same `wal` command)
+awww                                                    # wallpaper daemon, paired with pywal by the desktop shell's wallpaper picker (newer fork of swww, same usage)
 kitty                                                  # terminal, Super+Return and the dropdown terminal
-nerd-fonts                                             # glyphs used by the Quickshell bars, wofi, and starship
-fd                                                      # used by wofi's wallpaper picker and nvim's telescope
+nerd-fonts                                             # glyphs used by the Quickshell bars, the desktop shell, and starship
+fd                                                      # used by nvim's telescope
 materia-gtk-theme                                      # GTK widget theme (Materia-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
 qogir-icon-theme                                       # icon theme (Qogir-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
 illogical-impulse-bibata-modern-classic-bin            # cursor theme — from elifouts/Dotfiles' fullinstall.sh package list
@@ -40,12 +40,6 @@ qt6ct-kde                                              # Qt6 theming, patched fo
 
 # --------------------------------------------------- // Quickshell bars
 nvtop                                                  # GPU-load fallback for the Minimal theme's stats bar (quickshell/bar/services/SystemStatsService.qml) when neither amdgpu sysfs nor nvidia-smi answers -- GPU-agnostic despite the name
-
-# --------------------------------------------------- // Wofi
-wofi
-
-# --------------------------------------------------- // Rofi
-rofi                                                    # icon-grid picker used by wallpaper.sh and apply-theme.sh's dynamic theme picker — wofi's own image grid is flaky to click-select, so this is preferred when present
 
 # --------------------------------------------------- // Notifications
 libnotify                                              # provides notify-send, used across the stack

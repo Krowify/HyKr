@@ -11,7 +11,7 @@
 //                                  regenerated that from the wallpaper)
 //   hypr/apply_wallpaper.sh        writes it from pywal's own palette on every
 //                                  wallpaper pick, the same slots the Hyprland
-//                                  border, rofi and wofi accents already use
+//                                  border accent already uses
 //
 // whichever ran most recently wins. FileView's watchChanges means the bar
 // repaints the moment either script writes -- no restart, no theme re-apply.

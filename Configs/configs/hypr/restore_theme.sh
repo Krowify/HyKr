@@ -61,7 +61,7 @@ if [[ ! -f "$HOME/.config/hypr/generated-theme.lua" ]]; then
     log "generated-theme.lua is missing -- re-applying '${theme}' to rebuild it"
     if [[ -x "$BASE/apply-theme.sh" ]]; then
         # The wallpaper argument matters: a dynamic_colors theme invoked with no
-        # second argument opens a rofi/wofi wallpaper PICKER, which at login
+        # second argument opens the desktop shell's wallpaper PICKER, which at login
         # would sit there waiting for a choice nobody is there to make.
         if [[ -n "$wp" && -f "$wp" ]]; then
             if "$BASE/apply-theme.sh" "$theme" "$wp" >/dev/null 2>&1; then
@@ -71,7 +71,7 @@ if [[ ! -f "$HOME/.config/hypr/generated-theme.lua" ]]; then
             fi
         elif [[ "$(jq -r '.dynamic_colors // false' "$THEME_PATH/theme.json" 2>/dev/null)" == "true" ]]; then
             # Bailing out is the right call: invoked without a wallpaper, a
-            # dynamic_colors theme opens a rofi/wofi picker, which at login
+            # dynamic_colors theme opens the wallpaper picker, which at login
             # means a menu sitting on screen waiting for nobody.
             log "'${theme}' is a dynamic theme and no wallpaper resolved -- NOT re-applying"
             log "  (it would open a wallpaper picker). Fix by hand: ~/.config/theme-switcher/apply-theme.sh ${theme}"
