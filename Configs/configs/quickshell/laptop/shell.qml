@@ -18,6 +18,14 @@
 // panel is active reads it here to decide its own visibility and which
 // screen to anchor to.
 //
+// The panel files sit in this config's root, not in a panels/
+// subdirectory: an unqualified `import "./panels"` made exactly one panel
+// per launch fail with "<Panel> is not a type" -- a different one each
+// time -- and took the whole shell down with it. Same failure, same fix
+// as ../bar/ (see its README, "Why every .qml except the services sits in
+// the config root"). services/ stays a subdirectory because it is imported
+// qualified (`as Services`) and has never failed.
+//
 // Sourced from HyKr's own quickshell conventions (wallpaper-picker,
 // hykr) for the multi-monitor Variants pattern, and mystiafin/shell for
 // the native NotificationServer approach -- see
@@ -26,7 +34,6 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
 import QtQuick
-import "./panels"
 import "./services" as Services
 
 ShellRoot {

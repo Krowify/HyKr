@@ -4,7 +4,7 @@
 import Quickshell
 import Quickshell.Wayland
 import QtQuick
-import "../services" as Services
+import "./services" as Services
 
 PanelWindow {
     id: root

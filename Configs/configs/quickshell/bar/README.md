@@ -170,7 +170,7 @@ machine it is whatever the last theme apply or wallpaper pick generated, so
 ## Why every .qml except the services sits in the config root
 
 The four popup panels were in a `panels/` subdirectory, reached by
-`import "./panels"` in `shell.qml`, the way the Laptop shell still does it.
+`import "./panels"` in `shell.qml`, the way the Laptop shell also did.
 That failed to load the whole shell, at random:
 
 ```
@@ -192,8 +192,8 @@ so the panels are now too, and the unqualified directory import is gone.
 `services/` stays in a subdirectory because it is imported *qualified*
 (`import "./services" as Services`) and has never once failed.
 
-The same wandering error is documented in `../laptop/shell.qml`, which still
-has a `panels/` directory. If it shows up there, this is the fix.
+The Laptop shell (`../laptop/`) hit the same wandering error later and got
+the same fix: its panels sit in its config root too.
 
 ## Why `services/` is duplicated from `../laptop/services/`
 
