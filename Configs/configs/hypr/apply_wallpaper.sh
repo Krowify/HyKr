@@ -53,8 +53,12 @@ fi
 # "bar": "quickshell-dock" themes (every shipped theme now) deliberately
 # pkill swaync, so on those themes swaync is *always* down when a wallpaper is
 # picked and an unguarded swaync-client took the rest of this script with it.
-if command -v swaync-client >/dev/null 2>&1; then
-    swaync-client --reload-css >/dev/null 2>&1 || true
+# Only when swaync is RUNNING, and time-limited: with swaync stopped (every
+# Quickshell theme) a swaync-client call can try to D-Bus-activate it and
+# wait out the ~25s D-Bus timeout instead of failing -- see the same guard
+# in apply-theme.sh.
+if pgrep -x swaync >/dev/null 2>&1 && command -v swaync-client >/dev/null 2>&1; then
+    timeout 3 swaync-client --reload-css >/dev/null 2>&1 || true
 fi
 
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf

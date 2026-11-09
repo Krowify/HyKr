@@ -65,6 +65,23 @@ for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
   de_symlink "$p"
 done
 
+# Run an external command with a time limit, discarding its output. Every
+# program this script pokes at a running desktop (awww, kitty's socket,
+# swaync-client, spicetify, hyprctl) can block instead of failing -- on a
+# daemon that's wedged, a socket nobody answers, or a D-Bus name that
+# auto-starts a service -- and `|| true` only rescues a bad exit status, not
+# a hang. One stuck call used to leave a theme apply sitting silently in the
+# terminal with nothing on screen to say why. Falls back to running the
+# command plainly where coreutils' `timeout` is missing.
+tmo() {
+  local secs="$1"; shift
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$secs" "$@" >/dev/null 2>&1
+  else
+    "$@" >/dev/null 2>&1
+  fi
+}
+
 # Ensure awww is running (renamed from swww in Oct 2025 -- see
 # Scripts/pkg_core.lst's own note on this)
 ensure_swww() {
@@ -74,7 +91,7 @@ ensure_swww() {
 
   # daemon ready wait (max ~1s)
   for _ in {1..20}; do
-    awww query >/dev/null 2>&1 && return 0
+    tmo 1 awww query && return 0
     sleep 0.05
   done
 
@@ -150,7 +167,7 @@ if [[ "$dynamic_colors" == "true" ]]; then
   # Apply wallpaper immediately so the user sees it while colors generate
   if command -v awww >/dev/null 2>&1; then
     ensure_swww || true
-    awww img "$WP" \
+    tmo 5 awww img "$WP" \
       --transition-type wipe \
       --transition-duration 0.8 \
       >/dev/null 2>&1 || true
@@ -464,7 +481,7 @@ if [[ -n "$wp_rel" ]]; then
 
   if [[ -f "$wp_abs" ]]; then
     ensure_swww || true
-    awww img "$wp_abs" \
+    tmo 5 awww img "$wp_abs" \
       --transition-type wipe \
       --transition-angle 29 \
       --transition-duration 0.75 \
@@ -765,7 +782,7 @@ if [[ -f "$KITTY_TPL" ]]; then
       # through, before waybar/swaync had been restarted.
       sock="$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^KITTY_LISTEN_ON=//p' || true)"
       [[ -n "$sock" ]] || continue
-      kitty @ --to "$sock" set-colors --all -- "$KITTY_OUT" >/dev/null 2>&1 || true
+      tmo 3 kitty @ --to "$sock" set-colors --all -- "$KITTY_OUT" || true
     done
   fi
 fi
@@ -922,10 +939,18 @@ if [[ -d "$SWAYNC_TPL_DIR" ]]; then
       "$SWAYNC_STYLE_TPL" > "$SWAYNC_STYLE_OUT"
   fi
 
-  # reload swaync safely
-  if wayland_is_live && command -v swaync-client >/dev/null 2>&1; then
-    swaync-client -R >/dev/null 2>&1 || true
-    swaync-client -rs >/dev/null 2>&1 || true
+  # Reload swaync -- but only when it is actually RUNNING. Under a
+  # Quickshell theme (every shipped theme now) swaync is stopped, and
+  # calling swaync-client then doesn't fail fast: where swaync is D-Bus
+  # activatable, the call tries to auto-start it, which can wait out the
+  # D-Bus timeout (~25s) while Quickshell holds the notification name --
+  # twice, one per call. A theme apply looked like it did nothing for the
+  # best part of a minute. A swaync that isn't running has nothing to
+  # reload anyway: when a waybar theme starts it below, it reads the files
+  # just written.
+  if wayland_is_live && pgrep -x swaync >/dev/null 2>&1 && command -v swaync-client >/dev/null 2>&1; then
+    tmo 3 swaync-client -R || true
+    tmo 3 swaync-client -rs || true
   fi
 fi
 
@@ -1348,7 +1373,7 @@ if [[ -f "$SPICETIFY_TPL" ]]; then
     # only do that if it's already running, so switching your desktop
     # theme doesn't unexpectedly pop Spotify open.
     if pgrep -x spotify >/dev/null 2>&1 && command -v spicetify >/dev/null 2>&1; then
-      spicetify apply >/dev/null 2>&1 || true
+      tmo 30 spicetify apply || true
     fi
   fi
 fi
@@ -1401,4 +1426,8 @@ else
   pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
 fi
 
-hyprctl reload >/dev/null 2>&1 || true
+tmo 5 hyprctl reload || true
+
+# The script is otherwise silent, so from a terminal a finished apply and a
+# stuck one looked identical.
+echo "Applied theme: $THEME"
