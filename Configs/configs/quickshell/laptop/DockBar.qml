@@ -72,7 +72,7 @@ PanelWindow {
     // full opacity, on top of this.
     //
     // Inset by BarStyle.gap and rounded by BarStyle.radius when the theme asks for
-    // a floating bar (Blackturq); both are 0 for the flat one (Laptop). The
+    // a floating bar (Default); both are 0 for the flat one (Sakura). The
     // strip around a floating bar is fully transparent, which the theme's
     // ignore_alpha = 0.2 layer rule keeps out of the blur -- only the
     // rounded shape itself gets blurred.

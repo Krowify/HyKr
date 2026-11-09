@@ -32,6 +32,9 @@ command -v jq >/dev/null 2>&1 || { log "jq not installed -- nothing to do"; exit
 [[ -r "$CURRENT" ]] || { log "no ${CURRENT} -- no theme recorded, nothing to restore"; exit 0; }
 
 theme="$(jq -r '.theme // empty' "$CURRENT" 2>/dev/null || true)"
+# Renamed themes (see apply-theme.sh): an install whose current-theme.json
+# predates the rename still names the old id until the next apply.
+case "$theme" in blackturq) theme=default ;; catppuccin) theme=arch ;; laptop) theme=sakura ;; esac
 [[ -n "$theme" ]] || { log "${CURRENT} names no theme"; exit 0; }
 
 THEME_PATH="$BASE/themes/$theme"

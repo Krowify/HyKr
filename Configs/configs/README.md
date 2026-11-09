@@ -31,7 +31,7 @@ Not from elifouts:
   runtime-tested — no `quickshell` binary in the dev environment this was
   built in; the `Process`/polling blocks are the most likely thing to need
   fixing if something doesn't work.
-- `quickshell/laptop/` — the Laptop theme's whole bar stack, replacing
+- `quickshell/laptop/` — the Sakura theme's whole bar stack, replacing
   waybar + swaync with one process (`quickshell -c laptop`): a horizontal
   top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
   date/notifications — hover the battery for the exact percentage), four
@@ -49,7 +49,7 @@ Not from elifouts:
   hanging off the top edge that widens around a fixed clock when something
   changes and collapses again (Hyperspace, and the default); `islands`,
   three floating pills across the top; `pill`, one centred pill holding
-  everything (Catppuccin, Dynamic, Everforest, Graphite — their old waybar
+  everything (Arch, Dynamic, Everforest, Graphite — their old waybar
   layout); and `stats`, three thin pills with CPU/GPU/RAM/temperature
   readings (Minimal's old waybar layout).
   Panels drop under whichever icon was clicked, measured from the live
@@ -136,7 +136,7 @@ Not from elifouts:
   that's actually active (`current-theme.json` → that theme's `theme.json`
   `bar` and `quickshell.config` fields) instead of hardcoding one: `waybar`
   + `swaync` for most themes, `quickshell -c <config>` for a theme with
-  `"bar": "quickshell-dock"` (Laptop, Hyperspace). It also stops any other
+  `"bar": "quickshell-dock"` (every shipped theme now). It also stops any other
   theme's Quickshell shell, so switching between two of them can't stack
   two bars. Run from `hyprland.lua`'s autostart, and with
   `--toggle` from `Super+Ctrl+B`, both of which used to start waybar

@@ -1,6 +1,6 @@
 background {
     monitor =
-    # Flat background, not the wallpaper: Blackturq's whole premise is a
+    # Flat background, not the wallpaper: Default's whole premise is a
     # true-black field, and {{bg}} is #0a0a0a at full alpha. Uncomment the
     # path below (and drop the colour) to show the wallpaper instead --
     # apply-theme.sh renders {{wallpaper_path}} as an absolute path, or as

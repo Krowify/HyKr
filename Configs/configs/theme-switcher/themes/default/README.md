@@ -1,7 +1,10 @@
-# Blackturq
+# Default
 
 A true-black, turquoise-accented theme ported from
-[HarmlessValve/HV-dotfiles](https://github.com/HarmlessValve/HV-dotfiles).
+[HarmlessValve/HV-dotfiles](https://github.com/HarmlessValve/HV-dotfiles),
+where the palette is called Blackturq -- which is also what this theme was
+called here until it was renamed to Default (`apply-theme.sh blackturq`
+still works and means this theme).
 
 The palette is upstream's: `#0a0a0a` background, `#adf0e9` accent,
 `#8fecd5` mint, `#d35f5f` red. `colors.json` is a straight transcription of
@@ -13,30 +16,31 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Surface | How |
 | --- | --- |
 | Window borders | Flat `#adf0e9` active border, via `templates/hyprland.lua.tpl` |
-| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — floating 8px in from the top and sides, 15px rounded corners (near-pill on the 34px bar), a light grey `#9aa3a8` outline, and a 14px clock and date, all set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/BarStyle.qml`). The Laptop theme runs the same shell flat and edge-to-edge |
+| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — floating 8px in from the top and sides, 15px rounded corners (near-pill on the 34px bar), a light grey `#9aa3a8` outline, and a 14px clock and date, all set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/BarStyle.qml`). The Sakura theme runs the same shell flat and edge-to-edge |
 | Notifications | That same Quickshell process, via its own native notification daemon — not swaync |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |
 | Wofi / rofi, kitty, starship, wlogout, fastfetch, GTK 3/4, Qt6, VS Code, Obsidian, spicetify, peaclock | The shared templates in `../../templates/`, same as every other theme |
 
 Because the palette lives in `colors.json`, every one of those shared
-templates renders in Blackturq with no per-theme file — which is why this
+templates renders in Default with no per-theme file — which is why this
 theme covers more surfaces than upstream HV-dotfiles does.
 
-## Why it shares the Laptop dock
+## Why it shares Sakura's dock
 
-`quickshell -c laptop` is named after the theme that introduced it, but the
-shell itself is generic: a top-anchored full-width bar per screen, whose
+`quickshell -c laptop` is named after the theme that introduced it (Sakura,
+which was called Laptop then), but the shell itself is generic: a top-anchored full-width bar per screen, whose
 battery module hides itself when there is no battery
 (`visible: Services.BatteryService.available`), so it is correct on a
 desktop too. Its palette is not baked in — `apply-theme.sh` writes
 `~/.config/quickshell/laptop/colors.json` from whichever theme is active,
 and the shell's `FileView` repaints on write.
 
-So Blackturq points at it rather than duplicating ~690 lines of QML for a
-bar of the same shape. Switching between Blackturq and Laptop does not even
-restart the process: `stop_other_qs_shells` keeps the one whose config
-matches, and only the colours change.
+So Default points at it rather than duplicating ~690 lines of QML for a
+bar of the same shape, and draws it differently through its `theme.json`'s
+`"quickshell"` block (floating, rounded, lighter outline, larger clock and
+date -- see `quickshell/laptop/BarStyle.qml`), where Sakura keeps the flat
+edge-to-edge strip.
 
 ## What was NOT ported, and why
 
@@ -48,7 +52,7 @@ recorded decision rather than an oversight.
 | --- | --- | --- |
 | mako | the Quickshell dock's own notification daemon | Only one process can claim `org.freedesktop.Notifications`. Under `"bar": "quickshell-dock"`, `apply-theme.sh` stops both waybar and swaync and lets the dock serve notifications itself, so mako has nothing to replace. |
 | walker | wofi + rofi | `apply-theme.sh` resolves its launcher by name (`_PICKER`) and ships `.rasi` templates. Walker uses its own XML layout format (14 `item_*.xml` files), so supporting it is a feature, not a theme. |
-| waybar | the Quickshell dock | This theme originally shipped its own flat waybar layout. It now runs the Quickshell dock instead, alongside Laptop and Hyperspace; the waybar templates were removed rather than left inert. `git show 9e0b789` still has them if the flat waybar bar is ever wanted back. |
+| waybar | the Quickshell dock | This theme originally shipped its own flat waybar layout. It now runs the Quickshell dock instead, alongside Sakura and Hyperspace; the waybar templates were removed rather than left inert. `git show 9e0b789` still has them if the flat waybar bar is ever wanted back. |
 | ghostty | kitty | Harmless to install both, but kitty is hardcoded in swaync's quick actions and wofi. Upstream's two GLSL cursor shaders are ghostty-only and have no equivalent here. |
 | `kdeglobals` + `color-schemes/*.colors` | qt6ct | Two competing mechanisms for the same Qt apps. HyKr sets `QT_QPA_PLATFORMTHEME=qt6ct` and generates `qt6ct-colors.conf`, so a dropped-in `kdeglobals` would be inert at best. |
 

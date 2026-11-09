@@ -1,6 +1,6 @@
 {
-  "name": "Catppuccin Mocha",
-  "id": "catppuccin",
+  "name": "Arch",
+  "id": "arch",
   "default_wallpaper": "wallpapers/arch_logo.png",
   "bar": "quickshell-dock",
 

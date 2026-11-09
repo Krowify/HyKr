@@ -93,7 +93,7 @@ from the screen edge: with it first, nothing to its right ever shifts.
 
 ### `pill` — PillBar.qml
 
-Catppuccin, Dynamic, Everforest and Graphite. The waybar bar those four
+Arch, Dynamic, Everforest and Graphite. The waybar bar those four
 themes used to run, rebuilt here: one centred pill 10px below the top edge,
 34px tall, modules split by hairlines.
 
@@ -107,7 +107,7 @@ themes used to run, rebuilt here: one centred pill 10px below the top edge,
 | Tray | StatusNotifier icons, only when there are any | activate | the app's menu | middle: secondary action |
 | Bell | dot when unread, bell-off under DND | notification centre | toggle DND | — |
 
-`"colorful": true` (Catppuccin) gives each module its own role colour —
+`"colorful": true` (Arch) gives each module its own role colour —
 volume orange, network green, bluetooth blue, clock accent, bell red — the
 way its waybar bar looked; otherwise everything is the foreground colour and
 only an open panel's module lights up in the accent. `"alpha"` sets how see-

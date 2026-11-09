@@ -92,6 +92,12 @@ hl.config({
 -- re-renders them properly; this just has to keep the config loading until it
 -- gets the chance.
 local function load_generated(mod, what)
+    -- Forget any earlier load first. require() caches a module in
+    -- package.loaded and hands back the cached copy on every later call, so
+    -- if a `hyprctl reload` re-runs this file in the same Lua state, the
+    -- files apply-theme.sh just rewrote would never be read again -- the
+    -- border (and gaps, rounding, blur) would stay on the previous theme.
+    package.loaded[mod] = nil
     local ok, err = pcall(require, mod)
     if not ok then
         print("HyKr: ~/.config/hypr/" .. mod .. ".lua did not load -- " .. what)
@@ -251,7 +257,7 @@ hl.on("hyprland.start", function()
     -- theme.json, which apply-theme.sh honours); waybar+swaync are only the
     -- fallback for a theme that names no bar.
     -- Starting waybar unconditionally here meant it came back on every
-    -- login even under the Laptop theme -- stacked on top of the
+    -- login even under the Sakura theme -- stacked on top of the
     -- Quickshell dock -- and swaync doubled its notifications.
     -- The `[ -x ... ] ||` guard covers an install whose ~/.config/hypr
     -- apply-theme.sh already de-symlinked into a real copy (it does that
@@ -319,10 +325,10 @@ hl.bind(var_mainMod .. " + G", hl.dsp.group.toggle())
 hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
 hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr' || quickshell -c hykr"))
 -- Toggles whichever bar the active theme actually runs (waybar, or the
--- Laptop theme's Quickshell dock) -- the old "pkill waybar || waybar"
--- could only ever start waybar, resurrecting it under the Laptop theme.
+-- Sakura theme's Quickshell dock) -- the old "pkill waybar || waybar"
+-- could only ever start waybar, resurrecting it under the Sakura theme.
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.sh --toggle"))
--- Notification center. The Laptop theme runs no swaync (its Quickshell
+-- Notification center. The Sakura theme runs no swaync (its Quickshell
 -- dock carries its own notification daemon and center), so this bind was
 -- simply dead under that theme. Ask the dock over IPC first; under every
 -- waybar theme no laptop shell is running, that call fails, and

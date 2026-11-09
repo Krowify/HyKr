@@ -223,6 +223,10 @@ if [[ ${SKIP_REPO} -eq 0 && ${repo_usable} -eq 1 ]]; then
     if grep -q '^Configs/configs/theme-switcher/' <<<"${repo_changed_files}"; then
         CURRENT="$HOME/.config/theme-switcher/current-theme.json"
         theme="$(jq -r '.theme // empty' "${CURRENT}" 2>/dev/null)"
+        # Renamed themes (see apply-theme.sh's THEME_RENAMES): resolve the
+        # old id here too, so the wallpaper lookup below reads the NEW
+        # theme's folder -- apply-theme.sh moves the old one aside.
+        case "${theme}" in blackturq) theme=default ;; catppuccin) theme=arch ;; laptop) theme=sakura ;; esac
         if [[ -n "${theme}" ]]; then
             section "Theme switcher changed -- re-applying '${theme}'"
             THEME_PATH="$HOME/.config/theme-switcher/themes/${theme}"

@@ -1,6 +1,6 @@
 {
-  "name": "Blackturq",
-  "id": "blackturq",
+  "name": "Default",
+  "id": "default",
   "default_wallpaper": "wallpapers/blackturq.jpg",
   "bar": "quickshell-dock",
 

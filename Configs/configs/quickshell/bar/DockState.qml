@@ -34,7 +34,7 @@ Singleton {
     //                widens when something changes (Hyperspace)
     //   "islands" -> DockBar.qml, three floating islands across the top
     //   "pill"    -> PillBar.qml, one centred pill holding everything
-    //                (Catppuccin, Dynamic, Everforest, Graphite)
+    //                (Arch, Dynamic, Everforest, Graphite)
     //   "stats"   -> StatsBar.qml, three pills: system stats / clock /
     //                media + controls (Minimal)
     //
@@ -45,7 +45,7 @@ Singleton {
 
     // Per-module colours in the pill/stats bars: each module gets its own
     // role colour (volume orange, network green, ...) instead of all of them
-    // sharing the foreground. Catppuccin's waybar bar looked like that, so
+    // sharing the foreground. Arch's waybar bar looked like that, so
     // its theme.json turns it on.
     readonly property bool colorful: styleFile.colorful === true
 

@@ -5,7 +5,7 @@
 // use, just pointed at a JSON file instead of a conf/toml:
 //
 //   theme-switcher/apply-theme.sh  writes it from the ACTIVE theme's
-//                                  colors.json (which, for the Laptop theme,
+//                                  colors.json (which, for the Sakura theme,
 //                                  matugen has just regenerated from the
 //                                  wallpaper -- dynamic_colors: true)
 //   hypr/apply_wallpaper.sh        writes it from pywal's $color4 on every

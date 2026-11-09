@@ -1,8 +1,8 @@
 // Per-theme bar shape for `quickshell -c laptop`.
 //
-// Two themes run this shell -- Laptop and Blackturq -- and they want
+// Two themes run this shell -- Sakura and Default -- and they want
 // different bars from it: Laptop a flat strip flush with the top edge,
-// Blackturq a floating, rounded bar with a grey outline. Rather than fork
+// Default a floating, rounded bar with a grey outline. Rather than fork
 // ~700 lines of QML for that, the shape is read from style.json in this
 // directory, which apply-theme.sh writes on every theme apply from the
 // active theme's theme.json "quickshell" block (everything except

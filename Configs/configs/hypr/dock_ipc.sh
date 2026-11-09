@@ -34,6 +34,9 @@ esac
 qs_config="laptop"
 if command -v jq >/dev/null 2>&1 && [[ -r "$CURRENT" ]]; then
     theme="$(jq -r '.theme // empty' "$CURRENT" 2>/dev/null || true)"
+    # Renamed themes (see apply-theme.sh): an install whose current-theme.json
+    # predates the rename still names the old id until the next apply.
+    case "$theme" in blackturq) theme=default ;; catppuccin) theme=arch ;; laptop) theme=sakura ;; esac
     theme_json="$BASE/themes/$theme/theme.json"
     if [[ -n "$theme" && -r "$theme_json" ]]; then
         qs_config="$(jq -r '.quickshell.config // "laptop"' "$theme_json" 2>/dev/null || echo laptop)"

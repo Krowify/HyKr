@@ -1,4 +1,4 @@
-`blackturq.jpg` is the Blackturq theme's wallpaper, referenced by
+`blackturq.jpg` is the Default theme's wallpaper, referenced by
 `../theme.json`'s `default_wallpaper`.
 
 Upstream HV-dotfiles ships no wallpaper of its own -- its setup.sh just
@@ -14,7 +14,7 @@ repo, and `Source/wallpapers` is what `link_dots.sh` symlinks to
 
 The six `..` hops resolve against the symlink's real location, so this
 lands on the right file when apply-theme.sh reads it as
-`~/.config/theme-switcher/themes/blackturq/wallpapers/blackturq.jpg`.
+`~/.config/theme-switcher/themes/default/wallpapers/blackturq.jpg`.
 de_symlink()'s `cp -rL` dereferences it into a real file if the
 theme-switcher tree is ever detached from the repo, so the copy stays
 self-contained either way.

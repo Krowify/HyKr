@@ -2,7 +2,7 @@
 // holding everything -- workspaces, volume, network, bluetooth, clock, tray,
 // notifications -- with hairline dividers between the modules.
 //
-// This is the waybar bar that Catppuccin, Dynamic, Everforest and Graphite
+// This is the waybar bar that Arch, Dynamic, Everforest and Graphite
 // used to run (theme-switcher/themes/*/templates/waybar/, removed when they
 // moved here), redone in Quickshell. Same geometry (10px down from the edge,
 // 34px tall, centred), same module order, same labels, but:
@@ -14,7 +14,7 @@
 //     it, and an occupied workspace reads brighter than an empty one;
 //   - every colour comes from Colors.qml, i.e. from the theme (or the
 //     wallpaper, for Dynamic) -- with DockState.colorful each module gets
-//     its own role colour, the way Catppuccin's waybar bar looked.
+//     its own role colour, the way Arch's waybar bar looked.
 //
 // Like the other bars, it is ONE full-width transparent layer surface with
 // the pill drawn inside it; every theme's hyprland.lua.tpl blurs this

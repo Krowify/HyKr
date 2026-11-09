@@ -3,16 +3,16 @@
 # for, instead of hardcoding waybar+swaync into hyprland.lua's autostart.
 #
 # Every shipped theme now replaces the waybar+swaync pair with a single
-# Quickshell process (`quickshell -c laptop` for Laptop/Blackturq, `-c bar`
+# Quickshell process (`quickshell -c laptop` for Sakura/Default, `-c bar`
 # for the rest) by setting "bar": "quickshell-dock" plus
 # "quickshell": { "config": ... } in their theme.json; waybar+swaync remain
 # the fallback for a theme that says nothing -- apply-theme.sh
 # reads those and tears down whichever bar isn't wanted. hyprland.lua's autostart
 # didn't know about any of this and ran `waybar` unconditionally, so
 # waybar came back on every login (and on every fresh Hyprland start)
-# even under the Laptop theme, mapped on top of the Quickshell dock. Same
+# even under the Sakura theme, mapped on top of the Quickshell dock. Same
 # for the Super+Ctrl+B "toggle bar" keybind, which only ever toggled
-# waybar and so could resurrect it under the Laptop theme too.
+# waybar and so could resurrect it under the Sakura theme too.
 #
 # Modes:
 #   start_bar.sh            start whatever the active theme wants, if not
@@ -29,13 +29,13 @@ CURRENT="$BASE/current-theme.json"
 bar_mode="waybar"
 # Which `quickshell -c <name>` config the active theme's bar lives in, when
 # it has one. Same default as apply-theme.sh's own `.quickshell.config //
-# "laptop"`, so the Laptop theme keeps working without naming it and a
+# "laptop"`, so the Sakura theme keeps working without naming it and a
 # newly added Quickshell theme needs no edit here -- just the two keys in
 # its theme.json.
 qs_config="laptop"
 # Say so when the fallback is taken, rather than defaulting in silence. Every
 # way of not resolving the active theme ends at bar_mode=waybar, so on a
-# Quickshell theme (Hyperspace, Laptop, Blackturq) a missing or unreadable
+# Quickshell theme (Hyperspace, Sakura, Default) a missing or unreadable
 # current-theme.json means you log in to waybar instead of your dock, with
 # nothing anywhere saying why -- which reads as "my theme switched by itself".
 if ! command -v jq >/dev/null 2>&1; then
@@ -45,6 +45,9 @@ elif [[ ! -r "$CURRENT" ]]; then
   echo "start_bar.sh:   Apply a theme to recreate it: ~/.config/theme-switcher/theme-picker.sh" >&2
 else
   theme="$(jq -r '.theme // empty' "$CURRENT" 2>/dev/null || true)"
+  # Renamed themes (see apply-theme.sh): an install whose current-theme.json
+  # predates the rename still names the old id until the next apply.
+  case "$theme" in blackturq) theme=default ;; catppuccin) theme=arch ;; laptop) theme=sakura ;; esac
   theme_json="$BASE/themes/$theme/theme.json"
   if [[ -z "$theme" ]]; then
     echo "start_bar.sh: ${CURRENT} names no theme -- defaulting to waybar" >&2

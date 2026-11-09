@@ -3,6 +3,19 @@ set -euo pipefail
 
 BASE="$HOME/.config/theme-switcher"
 THEME="${1:-}"
+
+# Renamed themes: the old id still works, and means the new one. Matters
+# beyond someone typing an old name -- current-theme.json on a live install
+# still says "blackturq" (or "catppuccin", "laptop") until the next apply,
+# and update.sh / restore_theme.sh re-apply whatever it says.
+#   blackturq  -> default
+#   catppuccin -> arch
+#   laptop     -> sakura   (the theme; its Quickshell config is still `laptop`)
+declare -A THEME_RENAMES=( [blackturq]=default [catppuccin]=arch [laptop]=sakura )
+if [[ -n "$THEME" && -n "${THEME_RENAMES[$THEME]:-}" ]]; then
+  THEME="${THEME_RENAMES[$THEME]}"
+fi
+
 THEME_PATH="$BASE/themes/$THEME"
 
 COLORS="$THEME_PATH/colors.json"
@@ -65,6 +78,50 @@ for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
   de_symlink "$p"
 done
 
+# Retire the live copies of renamed themes. sync_configs.sh copies repo files
+# in but never deletes, so after the rename ~/.config/theme-switcher/themes/
+# would hold both "blackturq" and "default" -- two entries for one theme in
+# the picker, the old one frozen at whatever it was before the rename.
+#
+# Anything the user put in an old theme's folder (wallpapers added to it, the
+# remembered current-wallpaper.txt) is copied into the new one first, never
+# overwriting, and the old folder is MOVED aside to retired-themes/, not
+# deleted. Only once the new theme exists, and only once ~/.config/
+# theme-switcher is a real directory (the de_symlink loop above) -- moving
+# folders around inside a symlink into the repo would edit the checkout.
+if [[ ! -L "$BASE" ]]; then
+  for old in "${!THEME_RENAMES[@]}"; do
+    new="${THEME_RENAMES[$old]}"
+    [[ -d "$BASE/themes/$old" && -d "$BASE/themes/$new" ]] || continue
+    if [[ -d "$BASE/themes/$old/wallpapers" ]]; then
+      mkdir -p "$BASE/themes/$new/wallpapers"
+      cp -rn "$BASE/themes/$old/wallpapers/." "$BASE/themes/$new/wallpapers/" 2>/dev/null || true
+    fi
+    if [[ -f "$BASE/themes/$old/current-wallpaper.txt" && ! -f "$BASE/themes/$new/current-wallpaper.txt" ]]; then
+      cp "$BASE/themes/$old/current-wallpaper.txt" "$BASE/themes/$new/current-wallpaper.txt"
+    fi
+    mkdir -p "$BASE/retired-themes"
+    rm -rf "$BASE/retired-themes/$old"
+    mv "$BASE/themes/$old" "$BASE/retired-themes/$old"
+  done
+  # A remembered absolute wallpaper path into a folder that just moved would
+  # now point at nothing. Point it at the renamed theme's own copy (the step
+  # above put one there), or failing that at retired-themes/.
+  for f in "$BASE"/themes/*/current-wallpaper.txt; do
+    [[ -f "$f" ]] || continue
+    wp_saved="$(cat "$f")"
+    for old in "${!THEME_RENAMES[@]}"; do
+      [[ "$wp_saved" == "$BASE/themes/$old/"* ]] || continue
+      rel="${wp_saved#"$BASE/themes/$old/"}"
+      if [[ -f "$BASE/themes/${THEME_RENAMES[$old]}/$rel" ]]; then
+        printf '%s\n' "$BASE/themes/${THEME_RENAMES[$old]}/$rel" > "$f"
+      else
+        printf '%s\n' "$BASE/retired-themes/$old/$rel" > "$f"
+      fi
+    done
+  done
+fi
+
 # Run an external command with a time limit, discarding its output. Every
 # program this script pokes at a running desktop (awww, kitty's socket,
 # swaync-client, spicetify, hyprctl) can block instead of failing -- on a
@@ -120,6 +177,20 @@ bar_mode="$(jq -r '.bar // "waybar"' "$THEME_JSON")"
 # theme.json carries the flag too.
 if [[ "$dynamic_colors" == "true" ]]; then
   WP="${2:-}"
+  # A wallpaper path handed in from before a theme rename (update.sh,
+  # restore_theme.sh) can point into a folder the retire step above just
+  # moved -- follow it there.
+  if [[ -n "$WP" && ! -f "$WP" ]]; then
+    for old in "${!THEME_RENAMES[@]}"; do
+      [[ "$WP" == "$BASE/themes/$old/"* ]] || continue
+      rel="${WP#"$BASE/themes/$old/"}"
+      if [[ -f "$BASE/themes/${THEME_RENAMES[$old]}/$rel" ]]; then
+        WP="$BASE/themes/${THEME_RENAMES[$old]}/$rel"
+      elif [[ -f "$BASE/retired-themes/$old/$rel" ]]; then
+        WP="$BASE/retired-themes/$old/$rel"
+      fi
+    done
+  fi
 
   if [[ -z "$WP" ]]; then
     # Detect launcher for wallpaper selection
@@ -323,7 +394,7 @@ IFS=$'\001' read -r \
 
       # Which `quickshell -c <name>` config holds the bar for this theme,
       # read whenever .bar is "quickshell-dock". Defaults to "laptop" so
-      # the Laptop theme keeps working without naming it.
+      # the Sakura theme keeps working without naming it.
       (.quickshell.config // "laptop"),
 
       # fastfetch logo. Default is the random-Pokemon script every other
@@ -630,7 +701,7 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
   #
   #   quickshell/laptop/BarStyle.qml  rounded, radius, gap, border, clockSize,
   #                                   dateSize
-  #                                   (Laptop's flat strip vs Blackturq's
+  #                                   (Sakura's flat strip vs Default's
   #                                   floating rounded bar)
   #   quickshell/bar/DockState.qml    style (notch/islands/pill/stats),
   #                                   colorful, alpha (Hyperspace's notch,
@@ -1427,6 +1498,16 @@ else
 fi
 
 tmo 5 hyprctl reload || true
+
+# ...and set the border live as well. The reload re-runs hyprland.lua, which
+# reads colors-hyprland.lua (written above) -- but a stale read there, for
+# whatever reason, used to leave the previous theme's border on screen (Sakura's
+# crimson after switching to Default) while everything else had changed. A
+# direct keyword can't be stale, and the file write above is what makes it
+# survive the next reload or relog. Same pair apply_wallpaper.sh sets on a
+# wallpaper pick, same 0xff-prefixed form.
+tmo 3 hyprctl keyword general:col.active_border "0xff${border_active_hex#\#}" || true
+tmo 3 hyprctl keyword general:col.inactive_border "0xff${border_inactive_hex#\#}" || true
 
 # The script is otherwise silent, so from a terminal a finished apply and a
 # stuck one looked identical.

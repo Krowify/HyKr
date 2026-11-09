@@ -38,7 +38,7 @@ hl.window_rule({
     opacity = "{{active_opacity}} {{inactive_opacity}}",
 })
 
--- Layer rules -- laptop theme runs the Quickshell dock + native
+-- Layer rules -- the Sakura theme runs the Quickshell dock + native
 -- notification daemon (quickshell -c laptop) instead of waybar/swaync,
 -- so these target that shell's layer-shell namespaces instead.
 hl.layer_rule({ match = { namespace = "laptop-dock" }, blur = true })

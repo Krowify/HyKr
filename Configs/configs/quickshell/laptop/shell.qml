@@ -1,5 +1,5 @@
 // Entry point for `quickshell -c laptop`. Replaces waybar+swaync for
-// the "Laptop" theme (theme.json sets "bar": "quickshell-dock", which
+// the "Sakura" theme (theme.json sets "bar": "quickshell-dock", which
 // apply-theme.sh reads to decide which pair of processes to run) with
 // one Quickshell shell: a horizontal dock bar per screen, plus a native
 // notification daemon and toast stack shared across all of them.
@@ -53,7 +53,7 @@ ShellRoot {
     // Lets Hyprland keybinds and quick_settings.sh reach this shell the
     // same way they reach swaync under every other theme. Both call sites
     // try `quickshell -c laptop ipc call dock ...` first and fall back to
-    // swaync-client, which keeps this scoped to the Laptop theme by
+    // swaync-client, which keeps this scoped to the Sakura theme by
     // construction: no laptop shell is running under the waybar themes, so
     // the ipc call just fails there and the old swaync path runs unchanged.
     IpcHandler {
@@ -85,10 +85,10 @@ ShellRoot {
         NotificationToasts {}
     }
 
-    // barHeight / rightOffset follow BarStyle.qml: a floating bar (Blackturq)
+    // barHeight / rightOffset follow BarStyle.qml: a floating bar (Default)
     // sits BarStyle.gap lower and BarStyle.sideGap further in from the right edge
     // than the flat one, so the panels move with it. Both are 0 for the flat
-    // Laptop bar, which leaves these at the values they always had.
+    // Sakura bar, which leaves these at the values they always had.
     VolumePanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "volume"
