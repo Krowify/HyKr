@@ -76,7 +76,40 @@ if command -v kitty &>/dev/null; then
     done
 fi
 
-[ -f ~/.cache/wal/starship.toml ] && cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
+# Starship. Rendered from the SAME template apply-theme.sh uses, filled with
+# this wallpaper's pywal colours -- the way wofi and VS Code below already
+# work -- rather than copying ~/.cache/wal/starship.toml. That file came
+# from a separate pywal template with a different layout (one line, led by
+# the time), so a wallpaper pick reshaped the whole prompt; and when pywal
+# hadn't rendered it, the copy was skipped without a word, leaving the
+# prompt on the old theme's colours while kitty moved to the new ones.
+#
+# Role mapping matches the rest of this script: $color4 is the accent (as for
+# the Hyprland border, rofi, wofi), $color8 the raised surface.
+#
+# Like any starship config, this reaches the NEXT prompt drawn: a prompt
+# already on screen keeps the colours it was printed with (starship writes
+# exact hex values, which kitty's live palette swap doesn't touch).
+STARSHIP_TPL="$HOME/.config/theme-switcher/templates/starship.toml.tpl"
+if [ -f "$STARSHIP_TPL" ]; then
+    tmp_star=$(mktemp)
+    if sed \
+        -e "s/{{accent}}/$color4/g" \
+        -e "s/{{bg}}/$background/g" \
+        -e "s/{{fg}}/$foreground/g" \
+        -e "s/{{surface}}/$color8/g" \
+        -e "s/{{green}}/$color2/g" \
+        -e "s/{{yellow}}/$color3/g" \
+        -e "s/{{red}}/$color1/g" \
+        "$STARSHIP_TPL" > "$tmp_star"; then
+        cat "$tmp_star" > ~/.config/starship.toml
+    fi
+    rm -f "$tmp_star"
+elif [ -f ~/.cache/wal/starship.toml ]; then
+    # An install without the theme switcher's templates: the pywal one is
+    # better than nothing.
+    cat ~/.cache/wal/starship.toml > ~/.config/starship.toml
+fi
 
 # Rofi (wallpaper-grid.rasi / theme-picker.rasi): apply-theme.sh already
 # renders these two from theme.json's static colors on a theme switch,
