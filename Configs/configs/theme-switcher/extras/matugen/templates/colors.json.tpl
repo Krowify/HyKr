@@ -21,7 +21,7 @@
   "pink":        "{{colors.error_container.default.hex}}",
   "lavender":    "{{colors.secondary_fixed.default.hex}}",
 
-  "border_active":   "{{colors.primary.default.hex}}",
+  "border_active":   "{{colors.source_color.default.hex}}",
   "border_inactive": "{{colors.surface_variant.default.hex}}",
 
   "overlay":     "{{colors.surface_container_highest.default.hex}}",

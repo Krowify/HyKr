@@ -240,15 +240,28 @@ fi
 # border stayed on the previous wallpaper's accent while kitty, starship
 # and the bars all moved.
 #
-# `hyprctl keyword` rather than `hyprctl reload`: it takes effect instantly
-# and avoids re-parsing the whole config, which would also re-pin every
-# monitor (see hyprland.lua's note on why the monitor block is explicit).
-# The file write above is what makes it survive the next reload or relog.
+# Set live rather than `hyprctl reload`: it takes effect instantly and avoids
+# re-parsing the whole config, which would also re-pin every monitor (see
+# hyprland.lua's note on why the monitor block is explicit). The file write
+# above is what makes it survive the next reload or relog.
+#
+# Through `hyprctl eval` running hl.config(), because Hyprland's Lua config
+# has no `hyprctl keyword` -- that call only ever got "unknown request" back,
+# so the border never moved. `keyword` stays as the fallback for a Hyprland
+# still on the hyprlang config, which has no eval. Same as apply-theme.sh.
 #
 # 0xff-prefixed, matching wal/templates/colors-hyprland.lua's own format.
 if command -v hyprctl >/dev/null 2>&1 && [ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
-    hyprctl keyword general:col.active_border "0xff${color4#\#}" >/dev/null 2>&1 || true
-    hyprctl keyword general:col.inactive_border "0xff${background#\#}" >/dev/null 2>&1 || true
+    active="0xff${color4#\#}"
+    inactive="0xff${background#\#}"
+    reply="$(hyprctl eval "hl.config({ general = { col = { active_border = \"$active\", inactive_border = \"$inactive\" } } })" 2>/dev/null)" || reply=""
+    case "$reply" in
+        ok*) ;;
+        *)
+            hyprctl keyword general:col.active_border "$active" >/dev/null 2>&1 || true
+            hyprctl keyword general:col.inactive_border "$inactive" >/dev/null 2>&1 || true
+            ;;
+    esac
 fi
 
 if [ -f ~/.cache/wal/spicetify-color.ini ]; then

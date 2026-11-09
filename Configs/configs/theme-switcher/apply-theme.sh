@@ -1328,11 +1328,27 @@ tmo 5 hyprctl reload || true
 # reads colors-hyprland.lua (written above) -- but a stale read there, for
 # whatever reason, used to leave the previous theme's border on screen (Sakura's
 # crimson after switching to Default) while everything else had changed. A
-# direct keyword can't be stale, and the file write above is what makes it
+# direct set can't be stale, and the file write above is what makes it
 # survive the next reload or relog. Same pair apply_wallpaper.sh sets on a
 # wallpaper pick, same 0xff-prefixed form.
-tmo 3 hyprctl keyword general:col.active_border "0xff${border_active_hex#\#}" || true
-tmo 3 hyprctl keyword general:col.inactive_border "0xff${border_inactive_hex#\#}" || true
+#
+# Through `hyprctl eval`, not `hyprctl keyword`: Hyprland's Lua config has no
+# `keyword` request at all, so that call only ever got "unknown request"
+# back and the live border never moved. eval runs Lua in the running config,
+# and hl.config() there applies at once. `keyword` stays as the fallback for
+# a Hyprland still on the hyprlang config, which has no eval.
+set_live_border() {
+  local active="0xff${1#\#}" inactive="0xff${2#\#}" reply=""
+  if command -v timeout >/dev/null 2>&1; then
+    reply="$(timeout 3 hyprctl eval "hl.config({ general = { col = { active_border = \"$active\", inactive_border = \"$inactive\" } } })" 2>/dev/null)" || true
+  else
+    reply="$(hyprctl eval "hl.config({ general = { col = { active_border = \"$active\", inactive_border = \"$inactive\" } } })" 2>/dev/null)" || true
+  fi
+  [[ "$reply" == ok* ]] && return 0
+  tmo 3 hyprctl keyword general:col.active_border "$active" || true
+  tmo 3 hyprctl keyword general:col.inactive_border "$inactive" || true
+}
+set_live_border "$border_active_hex" "$border_inactive_hex"
 
 # The script is otherwise silent, so from a terminal a finished apply and a
 # stuck one looked identical.

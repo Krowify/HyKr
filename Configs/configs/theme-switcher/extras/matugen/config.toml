@@ -2,6 +2,12 @@
 set_wallpaper = false
 reload_apps   = false
 
+# templates/colors.json.tpl takes border_active from source_color -- the
+# colour matugen picked out of the wallpaper itself -- not from primary like
+# the accent. In a dark scheme primary is a light pastel of that colour (tone
+# 80): Sakura's red wallpaper gave a pale pink border, near enough to
+# Default's gold that switching between the two looked like no change at all.
+# (JSON has no comments, so this note lives here.)
 [templates.colors_json]
 input_path  = "~/.config/theme-switcher/extras/matugen/templates/colors.json.tpl"
 output_path = "~/.config/theme-switcher/themes/dynamic/colors.json"
