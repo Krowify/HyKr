@@ -164,20 +164,31 @@ PanelWindow {
     }
 
     // ---- media island (islands layout) ----
-    // The playing MPRIS track -- or the last player there is, so pausing
-    // doesn't make the island vanish -- in its own island just right of the
-    // left one: art, title, previous / play-pause / next, and a progress line
-    // along its bottom edge. Clicking the art or title opens the desktop
-    // shell's control centre, which has the full media card. Shown only when
-    // there is a player and room for it before the centre island; on a narrow
-    // screen it simply isn't there.
+    // The playing (or paused) MPRIS track in its own island just right of
+    // the left one: art, title, previous / play-pause / next, and a progress
+    // line along its bottom edge. Clicking the art or title opens the
+    // desktop shell's control centre, which has the full media card. Shown
+    // only when there is such a track and room for it before the centre
+    // island -- close the player (or the tab playing) and it's gone.
+    // The player to show: one that's playing; failing that, one paused
+    // mid-track (so pausing doesn't make it vanish). A player that has
+    // stopped or has nothing loaded doesn't count: browsers keep their MPRIS
+    // player registered after the video's tab is closed, and falling back to
+    // "whatever player exists" left that dead track on screen. Nothing
+    // left -> null, and the widget goes away / resets.
     readonly property var player: {
         const ps = Mpris.players.values;
+        let paused = null;
         for (let i = 0; i < ps.length; i++) {
-            if (ps[i] && ps[i].isPlaying)
-                return ps[i];
+            const p = ps[i];
+            if (!p)
+                continue;
+            if (p.isPlaying)
+                return p;
+            if (paused === null && p.playbackState === MprisPlaybackState.Paused && (p.trackTitle || "").length > 0)
+                paused = p;
         }
-        return ps.length > 0 ? ps[0] : null;
+        return paused;
     }
     readonly property real mediaRoom: (root.width - root.centreWidth) / 2 - Colors.barGap - root.sideWidth - root.islandSpacing * 2
     readonly property bool showMedia: root.islands && root.player !== null && root.mediaRoom >= 170

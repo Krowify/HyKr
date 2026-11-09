@@ -66,15 +66,27 @@ PanelWindow {
 
     // ---- media ----
 
-    // The player worth showing: whichever is playing, else the first one
-    // that exists. Mpris.players is a live model; .values is its array.
+    // Mpris.players is a live model; .values is its array.
     readonly property var players: Mpris.players ? Mpris.players.values : []
+    // The player to show: one that's playing; failing that, one paused
+    // mid-track (so pausing doesn't make it vanish). A player that has
+    // stopped or has nothing loaded doesn't count: browsers keep their MPRIS
+    // player registered after the video's tab is closed, and falling back to
+    // "whatever player exists" left that dead track on screen. Nothing
+    // left -> null, and the widget goes away / resets.
     readonly property var player: {
-        for (const p of root.players) {
-            if (p && p.isPlaying)
+        const ps = root.players;
+        let paused = null;
+        for (let i = 0; i < ps.length; i++) {
+            const p = ps[i];
+            if (!p)
+                continue;
+            if (p.isPlaying)
                 return p;
+            if (paused === null && p.playbackState === MprisPlaybackState.Paused && (p.trackTitle || "").length > 0)
+                paused = p;
         }
-        return root.players.length > 0 ? root.players[0] : null;
+        return paused;
     }
     readonly property string mediaText: {
         const p = root.player;

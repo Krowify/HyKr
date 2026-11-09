@@ -117,15 +117,25 @@ PanelWindow {
     }
 
     // ---------------- media ----------------
-    // The playing player if there is one, else the first one there is (a
-    // paused track still gets its card -- it doesn't vanish on pause).
+    // The player to show: one that's playing; failing that, one paused
+    // mid-track (so pausing doesn't make it vanish). A player that has
+    // stopped or has nothing loaded doesn't count: browsers keep their MPRIS
+    // player registered after the video's tab is closed, and falling back to
+    // "whatever player exists" left that dead track on screen. Nothing
+    // left -> null, and the widget goes away / resets.
     readonly property var player: {
         const ps = Mpris.players.values;
+        let paused = null;
         for (let i = 0; i < ps.length; i++) {
-            if (ps[i] && ps[i].isPlaying)
-                return ps[i];
+            const p = ps[i];
+            if (!p)
+                continue;
+            if (p.isPlaying)
+                return p;
+            if (paused === null && p.playbackState === MprisPlaybackState.Paused && (p.trackTitle || "").length > 0)
+                paused = p;
         }
-        return ps.length > 0 ? ps[0] : null;
+        return paused;
     }
 
     // MprisPlayer.position only updates when asked to.
