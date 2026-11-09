@@ -92,11 +92,20 @@ PanelWindow {
 
     // ---- building blocks ----
 
-    // One text module. Clicks/scrolls come back out as signals so each use
-    // site says what it does in one place.
+    // One module: an optional Nerd Font icon, then a text label. Clicks and
+    // scrolls come back out as signals so each use site says what it does in
+    // one place.
+    //
+    // The icon is its OWN Text, never glued onto the label string. With the
+    // two in one 11px string, every Nerd Font (private-use) glyph rendered
+    // as nothing on a live machine -- the thermometer, battery, wifi, mute
+    // and bell all vanished, leaving their labels -- while the Laptop dock
+    // and the pill bar, which both draw each icon as a separate, larger
+    // Text, showed the very same glyphs. This follows their pattern.
     component Chip: Item {
         id: chip
 
+        property string icon: ""
         property string text: ""
         property color tint: Colors.text
         property bool bold: false
@@ -108,20 +117,34 @@ PanelWindow {
         signal scrolled(int direction)
 
         // 10px padding each side, as the original's `padding: 0 10px`.
-        implicitWidth: label.implicitWidth + 20
+        implicitWidth: content.implicitWidth + 20
         width: implicitWidth
         height: parent ? parent.height : 0
 
-        Text {
-            id: label
+        Row {
+            id: content
             anchors.centerIn: parent
-            text: chip.text
-            color: chip.tint
-            font.family: "JetBrainsMono Nerd Font"
-            font.pixelSize: 11
-            font.bold: chip.bold
+            spacing: chip.icon.length > 0 && chip.text.length > 0 ? 6 : 0
             scale: mouse.containsMouse ? 1.2 : 1
             Behavior on scale { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+
+            Text {
+                visible: chip.icon.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                text: chip.icon
+                color: chip.tint
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 13
+            }
+            Text {
+                visible: chip.text.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                text: chip.text
+                color: chip.tint
+                font.family: "JetBrainsMono Nerd Font"
+                font.pixelSize: 11
+                font.bold: chip.bold
+            }
         }
 
         MouseArea {
@@ -184,7 +207,8 @@ PanelWindow {
         Chip {
             visible: Services.SystemStatsService.temperatureAvailable
             // nf-fa-thermometer_half
-            text: " " + Services.SystemStatsService.temperature + "°C"
+            icon: "\uF2C9"
+            text: Services.SystemStatsService.temperature + "\u00B0C"
             // waybar's .critical class: red at 80°C and up.
             tint: Services.SystemStatsService.temperatureHigh ? Colors.bad : DockState.colorful ? Colors.orange : Colors.text
             // Same toggle the waybar module had on click.
@@ -195,9 +219,9 @@ PanelWindow {
             readonly property int p: Services.BatteryService.percent
             // nf-fa-bolt while charging, else nf-fa-battery_* by level --
             // the five icons waybar's format-icons used.
-            text: (Services.BatteryService.charging ? ""
-                : p >= 90 ? "" : p >= 65 ? "" : p >= 40 ? "" : p >= 15 ? "" : "")
-                + " " + p + "%"
+            icon: Services.BatteryService.charging ? "\uF0E7"
+                : p >= 90 ? "\uF240" : p >= 65 ? "\uF241" : p >= 40 ? "\uF242" : p >= 15 ? "\uF243" : "\uF244"
+            text: p + "%"
             // waybar's states: warning at 20, critical at 10.
             tint: !Services.BatteryService.plugged && p <= 10 ? Colors.bad
                 : !Services.BatteryService.plugged && p <= 20 ? Colors.warn
@@ -250,8 +274,9 @@ PanelWindow {
             readonly property string type: Services.NetworkService.connectionType
             readonly property string name: Services.NetworkService.connectionName
             // nf-fa-wifi / nf-md-ethernet / nf-md-wifi_off
-            text: type === "wifi" ? " " + (name.length > 18 ? name.slice(0, 17) + "…" : name)
-                : type === "ethernet" ? "\u{F0200} Wired" : "\u{F05AA} Offline"
+            icon: type === "wifi" ? "\uF1EB" : type === "ethernet" ? "\u{F0200}" : "\u{F05AA}"
+            text: type === "wifi" ? (name.length > 18 ? name.slice(0, 17) + "\u2026" : name)
+                : type === "ethernet" ? "Wired" : "Offline"
             tint: type === "disconnected" ? Colors.bad : root.tint(Colors.good, "network")
             onLeftClicked: DockState.toggle(root.targetScreen, "network", root.anchorFor(networkChip))
             onRightClicked: Services.NetworkService.openNetworkManager()
@@ -259,9 +284,9 @@ PanelWindow {
 
         Chip {
             id: volumeChip
-            text: Services.AudioService.muted ? "\u{F075F} Muted"
-                : (Services.AudioService.volume < 34 ? "" : Services.AudioService.volume < 67 ? "" : "")
-                  + "  " + Services.AudioService.volume + "%"
+            icon: Services.AudioService.muted ? "\u{F075F}"
+                : Services.AudioService.volume < 34 ? "\uF026" : Services.AudioService.volume < 67 ? "\uF027" : "\uF028"
+            text: Services.AudioService.muted ? "Muted" : Services.AudioService.volume + "%"
             tint: root.tint(Colors.orange, "volume")
             onLeftClicked: DockState.toggle(root.targetScreen, "volume", root.anchorFor(volumeChip))
             onRightClicked: Services.AudioService.toggleMute()
@@ -273,8 +298,8 @@ PanelWindow {
             id: bellChip
             // nf-md-bell / nf-md-bell_off (Do Not Disturb), plus the unread
             // count when there is one -- no room for a dot at this size.
-            text: (Services.NotificationService.doNotDisturb ? "\u{F009B}" : "\u{F009A}")
-                + (Services.NotificationService.unreadCount > 0 ? " " + Services.NotificationService.unreadCount : "")
+            icon: Services.NotificationService.doNotDisturb ? "\u{F009B}" : "\u{F009A}"
+            text: Services.NotificationService.unreadCount > 0 ? String(Services.NotificationService.unreadCount) : ""
             tint: Services.NotificationService.unreadCount > 0 && !DockState.isActive(root.targetScreen, "notifications")
                 ? Colors.accent
                 : root.tint(Colors.bad, "notifications")
@@ -284,7 +309,7 @@ PanelWindow {
 
         Chip {
             // ⏻ -- the power-symbol codepoint itself, as the original used.
-            text: "⏻"
+            icon: "\u23FB"
             onLeftClicked: Quickshell.execDetached(["wlogout"])
         }
     }
