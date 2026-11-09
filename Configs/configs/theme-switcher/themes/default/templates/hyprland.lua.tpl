@@ -6,7 +6,7 @@
 -- because Hyprland's Lua config validates col.active_border as one colour,
 -- not as hyprlang's "<colour> <colour> <angle>deg" string (see the note
 -- above the border_active assignment in apply-theme.sh). So the flat
--- turquoise below is deliberate, not a dropped feature -- a gradient here
+-- accent colour below is deliberate, not a dropped feature -- a gradient here
 -- would make both consumers reject the value and fall back to unthemed
 -- borders.
 hl.config({

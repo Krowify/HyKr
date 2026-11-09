@@ -1,22 +1,25 @@
 # Default
 
-A true-black, turquoise-accented theme ported from
+A near-black, mustard-accented theme. It started as a port of
 [HarmlessValve/HV-dotfiles](https://github.com/HarmlessValve/HV-dotfiles),
-where the palette is called Blackturq -- which is also what this theme was
-called here until it was renamed to Default (`apply-theme.sh blackturq`
+whose turquoise palette is called Blackturq -- which is also what this theme
+was called here until it was renamed to Default (`apply-theme.sh blackturq`
 still works and means this theme).
 
-The palette is upstream's: `#0a0a0a` background, `#adf0e9` accent,
-`#8fecd5` mint, `#d35f5f` red. `colors.json` is a straight transcription of
-upstream's `hypr/colors.toml` plus the `@define-color` block in its
-`waybar/style.css`, remapped onto HyKr's named colour roles.
+The palette is now matched to the theme's default wallpaper
+(`wallpapers/guitar_case.jpg`) rather than upstream's: `#0d0b0b`
+background, the smiley's mustard `#dcae6e` as the accent and active
+border, the plant pot's terracotta `#d16b64` as the second accent, and warm
+greys and the shutter's maroon `#6f4c50` for the neutrals. Upstream's
+turquoise (`#adf0e9` accent, `#8fecd5` mint) went with the old
+`blackturq.jpg`, which is still in `wallpapers/` to pick.
 
 ## What it themes
 
 | Surface | How |
 | --- | --- |
-| Window borders | Flat `#adf0e9` active border, via `templates/hyprland.lua.tpl` |
-| Bar | The shared Quickshell dock, `quickshell -c laptop`, in its `"layout": "islands"` form: three islands floating 8px in from the top and sides — workspaces on the left, the clock in the centre, battery/volume/network/bluetooth/date/notifications on the right. The two side islands are always the same width, and the left one adds CPU and RAM utilisation whenever both side islands still clear the centre one at that width (per screen — a narrow monitor just leaves them out). 15px corners, a light grey `#9aa3a8` outline, a 14px clock and date in your kitty font (`"font": "kitty"` — read from kitty.conf's `font_family` on each theme apply; icons stay on JetBrainsMono Nerd Font), colours from this theme's palette. All set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`); Sakura runs the same shell as one flat edge-to-edge bar |
+| Window borders | Flat mustard `#dcae6e` active border, via `templates/hyprland.lua.tpl` |
+| Bar | The shared Quickshell dock, `quickshell -c laptop`, in its `"layout": "islands"` form: three islands floating 8px in from the top and sides — workspaces on the left, the clock in the centre, battery/volume/network/bluetooth/date/notifications on the right. The two side islands are always the same width, and the left one adds CPU and RAM utilisation whenever both side islands still clear the centre one at that width (per screen — a narrow monitor just leaves them out). 15px corners, a warm grey `#a89383` outline, a 14px clock and date in your kitty font (`"font": "kitty"` — read from kitty.conf's `font_family` on each theme apply; icons stay on JetBrainsMono Nerd Font), colours from this theme's palette. All set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`); Sakura runs the same shell as one flat edge-to-edge bar |
 | Notifications | That same Quickshell process, via its own native notification daemon |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | fastfetch | `assets/hykr-logo.txt` — a "HyKr" wordmark instead of the random-Pokémon logo, centred against the info column (`padding_top: 4`) and shaded row by row with the same accent→text gradient as the info keys (`$1`–`$8`; `$9` is the dim `hyprland · arch` tag), filled from the palette on every apply |
@@ -62,7 +65,7 @@ Three smaller divergences:
 - **Border gradient.** Upstream's `col.active_border` is an 8-stop
   gradient. `apply-theme.sh` renders `{{border_active}}` as a single
   `rgba()` because Hyprland's Lua config validates that field as one
-  colour, not as hyprlang's gradient string. The flat turquoise is
+  colour, not as hyprlang's gradient string. The flat accent colour is
   deliberate — see the comment at the top of `templates/hyprland.lua.tpl`.
 - **Warm colours.** Upstream's palette has no yellow or orange; it folds
   those ANSI slots into cool tones. HyKr's shared templates need them

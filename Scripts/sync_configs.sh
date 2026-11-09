@@ -72,8 +72,7 @@ done < <(git -C "$repoDir" ls-files --others --ignored --exclude-standard 2>/dev
 # Only applies to a file that already exists locally -- a missing one is still
 # seeded from the repo, so a fresh install gets its defaults.
 #
-# 'quickshell:*/colors.json' is a glob for the same reason
-# 'theme-switcher:themes/*/colors.json' is: every Quickshell dock config
+# 'quickshell:*/colors.json' is a glob because every Quickshell dock config
 # (laptop/, hyperspace/, whatever comes next) has one, all of them written by
 # apply-theme.sh and apply_wallpaper.sh, and none of them should be reverted
 # to the repo's seed by --apply.
@@ -86,14 +85,24 @@ SKIP_PATTERNS=(
     'quickshell:wallpaper-picker/config.json'
     'spicetify:color.ini'
     'starship:starship.toml'
-    'theme-switcher:themes/*/colors.json'
     'wlogout:layout'
     'wlogout:style.css'
     'wofi:style.css'
 )
 
 should_skip() {
-    local rel="$1" pattern
+    local rel="$1" pattern theme_dir
+    # A theme's colors.json is only rewritten at runtime for a
+    # dynamic_colors theme (matugen derives it from the wallpaper). A fixed
+    # palette theme's colors.json never changes after install, so it is
+    # synced like any other file -- otherwise a palette change in the repo
+    # (Default's, say) never reached a live install.
+    if [[ "$rel" == theme-switcher:themes/*/colors.json ]]; then
+        theme_dir="${repoDir}/Configs/configs/theme-switcher/${rel#theme-switcher:}"
+        theme_dir="$(dirname "$theme_dir")"
+        [[ "$(jq -r '.dynamic_colors // false' "${theme_dir}/theme.json" 2>/dev/null)" == "true" ]]
+        return
+    fi
     for pattern in "${SKIP_PATTERNS[@]}"; do
         # shellcheck disable=SC2053 -- glob match is the point
         [[ "$rel" == $pattern ]] && return 0

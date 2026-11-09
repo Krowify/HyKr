@@ -1,29 +1,29 @@
 {
-  "bg": "#0a0a0a",
-  "bg_alt": "#121417",
-  "surface": "#272b30",
-  "surface2": "#322f3b",
+  "bg": "#0d0b0b",
+  "bg_alt": "#161213",
+  "surface": "#2a2224",
+  "surface2": "#352a2c",
 
-  "fg": "#c8dcdc",
-  "fg_dim": "#5a676b",
+  "fg": "#eadfcf",
+  "fg_dim": "#8a7d72",
 
-  "accent": "#adf0e9",
-  "accent_alt": "#75dddd",
+  "accent": "#dcae6e",
+  "accent_alt": "#d16b64",
 
-  "red": "#d35f5f",
-  "orange": "#d3895f",
-  "yellow": "#d3b75f",
-  "green": "#8fecd5",
-  "teal": "#75dddd",
-  "blue": "#adf0e9",
-  "sky": "#a9d1d7",
-  "mauve": "#485362",
-  "pink": "#d35f5f",
-  "lavender": "#c4d8e2",
+  "red": "#d16b64",
+  "orange": "#d98c5f",
+  "yellow": "#dcae6e",
+  "green": "#8fb08a",
+  "teal": "#7fa89a",
+  "blue": "#8fa3b0",
+  "sky": "#b8c4c8",
+  "mauve": "#6f4c50",
+  "pink": "#d48a8a",
+  "lavender": "#c7b8c0",
 
-  "border_active": "#adf0e9",
-  "border_inactive": "#272b30",
+  "border_active": "#dcae6e",
+  "border_inactive": "#2a2224",
 
   "shadow": "#000000",
-  "overlay": "#485362"
+  "overlay": "#6f4c50"
 }
