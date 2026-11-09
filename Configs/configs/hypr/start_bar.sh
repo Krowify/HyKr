@@ -2,10 +2,11 @@
 # Start (or toggle) the bar + notification daemon the ACTIVE theme asks
 # for, instead of hardcoding waybar+swaync into hyprland.lua's autostart.
 #
-# Most themes run the waybar+swaync pair. The Laptop and Hyperspace themes
-# each replace both with a single Quickshell process (`quickshell -c
-# laptop` / `-c hyperspace`) by setting "bar": "quickshell-dock" plus
-# "quickshell": { "config": ... } in their theme.json -- apply-theme.sh
+# Every shipped theme now replaces the waybar+swaync pair with a single
+# Quickshell process (`quickshell -c laptop` for Laptop/Blackturq, `-c bar`
+# for the rest) by setting "bar": "quickshell-dock" plus
+# "quickshell": { "config": ... } in their theme.json; waybar+swaync remain
+# the fallback for a theme that says nothing -- apply-theme.sh
 # reads those and tears down whichever bar isn't wanted. hyprland.lua's autostart
 # didn't know about any of this and ran `waybar` unconditionally, so
 # waybar came back on every login (and on every fresh Hyprland start)
@@ -60,14 +61,26 @@ QS_PATTERN="quickshell -c $qs_config"
 # Every OTHER theme's Quickshell shell, so starting this one can tear down
 # one left running by a theme switch that didn't go through apply-theme.sh
 # (or a login where the previous session's shell was still up). Read from
-# the themes themselves rather than hardcoded, same as apply-theme.sh does.
+# the themes themselves rather than hardcoded, same as apply-theme.sh does --
+# plus any config directory carrying a colors.json, which is how a shell no
+# theme names any more gets stopped too (quickshell/bar/ was
+# quickshell/hyperspace/; a `-c hyperspace` left from before that rename
+# would otherwise stack a second bar). Same rule as apply-theme.sh's
+# qs_configs_all.
 stop_other_qs_shells() {
-  command -v jq >/dev/null 2>&1 || return 0
   local dir id
-  for dir in "$BASE"/themes/*/; do
-    [[ -r "$dir/theme.json" ]] || continue
-    [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
-    id="$(jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null)"
+  {
+    if command -v jq >/dev/null 2>&1; then
+      for dir in "$BASE"/themes/*/; do
+        [[ -r "$dir/theme.json" ]] || continue
+        [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
+        jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null
+      done
+    fi
+    for dir in "$HOME"/.config/quickshell/*/; do
+      if [[ -f "$dir/colors.json" ]]; then basename "$dir"; fi
+    done
+  } | sort -u | while IFS= read -r id; do
     if [[ -n "$id" && "$id" != "null" && "$id" != "$qs_config" ]]; then
       pkill -9 -f "quickshell -c $id" >/dev/null 2>&1 || true
     fi

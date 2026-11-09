@@ -6,7 +6,8 @@
   "bar": "quickshell-dock",
 
   "quickshell": {
-    "config": "hyperspace"
+    "config": "bar",
+    "style": "notch"
   },
 
   "fastfetch": {

@@ -49,7 +49,7 @@ PanelWindow {
     implicitHeight: Math.min(330, 104 + Math.max(1, root.deviceCount) * 26)
     exclusionMode: "Ignore"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyperspace-popup"
+    WlrLayershell.namespace: "hykr-popup"
 
     anchors { top: true; right: true }
     margins {

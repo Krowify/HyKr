@@ -2,6 +2,14 @@
   "name": "Minimal",
   "id": "minimal",
   "default_wallpaper": "wallpapers/minimal.png",
+  "bar": "quickshell-dock",
+
+  "quickshell": {
+    "config": "bar",
+    "style": "stats",
+    "alpha": 0.5
+  },
+
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"

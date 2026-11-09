@@ -49,7 +49,7 @@ PanelWindow {
     anchors { top: true; left: true; right: true }
 
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "hyperspace-dock"
+    WlrLayershell.namespace: "hykr-bar"
 
     readonly property var workspaceIds: [1, 2, 3, 4, 5]
     readonly property var monitorWorkspaces: Hyprland.workspaces ? Hyprland.workspaces.values.filter(w => w.monitor && w.monitor.name === root.targetScreen.name) : []

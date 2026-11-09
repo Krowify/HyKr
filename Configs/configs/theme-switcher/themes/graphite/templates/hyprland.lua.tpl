@@ -43,9 +43,16 @@ hl.window_rule({
     opacity = "{{active_opacity}} {{inactive_opacity}}",
 })
 
--- Layer rules
-hl.layer_rule({ match = { namespace = "waybar" }, blur = true })
-hl.layer_rule({ match = { namespace = "waybar" }, ignore_alpha = 0.2 })
+-- Layer rules. This theme runs the shared Quickshell bar (`quickshell -c
+-- bar`) instead of waybar/swaync: "hykr-bar" is the bar's surface, one
+-- full-width transparent strip with the pill(s) drawn inside it, and
+-- ignore_alpha = 0.2 is what keeps the blur on the pills and off the empty
+-- strip around them. "hykr-popup" is its panels and notification toasts.
+hl.layer_rule({ match = { namespace = "hykr-bar" }, blur = true })
+hl.layer_rule({ match = { namespace = "hykr-bar" }, ignore_alpha = 0.2 })
+
+hl.layer_rule({ match = { namespace = "hykr-popup" }, blur = true })
+hl.layer_rule({ match = { namespace = "hykr-popup" }, ignore_alpha = 0.2 })
 
 hl.layer_rule({ match = { namespace = "wofi" }, blur = true })
 hl.layer_rule({ match = { namespace = "wofi" }, ignore_alpha = 0.2 })

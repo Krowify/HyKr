@@ -586,7 +586,10 @@ write_qs_colors() {
     "accent": "$accent_hex",
     "accent_alt": "${accent_alt_hex:-$accent_hex}",
     "green": "$green_hex",
-    "red": "$red_hex"
+    "red": "$red_hex",
+    "orange": "${orange_hex:-$red_hex}",
+    "yellow": "$yellow_hex",
+    "blue": "$blue_hex"
 }
 EOF
 }
@@ -605,17 +608,24 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
   write_qs_colors "$QS_BASE/$qs_config"
 
   # The bar's SHAPE, as opposed to its colours: everything in theme.json's
-  # "quickshell" block except "config" (rounded, radius, gap, border,
-  # clockSize -- see quickshell/laptop/BarStyle.qml). Lets two themes share
-  # one shell and still draw different bars: Laptop's flat strip and
-  # Blackturq's floating rounded one both run `quickshell -c laptop`.
+  # "quickshell" block except "config". Lets several themes share one shell
+  # and still draw different bars:
+  #
+  #   quickshell/laptop/BarStyle.qml  rounded, radius, gap, border, clockSize
+  #                                   (Laptop's flat strip vs Blackturq's
+  #                                   floating rounded bar)
+  #   quickshell/bar/DockState.qml    style (notch/islands/pill/stats),
+  #                                   colorful, alpha (Hyperspace's notch,
+  #                                   the pill themes, Minimal's stats bar)
   #
   # Every key is written every time, defaults first and the theme's own
   # values over them, so switching from a theme that set a key to one that
   # doesn't resets it -- rather than relying on the running shell's
-  # JsonAdapter to forget a key that disappeared from the file.
+  # JsonAdapter to forget a key that disappeared from the file. Each shell
+  # reads only its own keys; the rest are ignored.
   if [[ -d "$QS_BASE/$qs_config" ]]; then
-    jq '{rounded: false, radius: 10, gap: 8, border: "", clockSize: 12}
+    jq '{rounded: false, radius: 10, gap: 8, border: "", clockSize: 12,
+         style: "notch", colorful: false, alpha: 0.55}
         + ((.quickshell // {}) | del(.config))' \
       "$THEME_JSON" > "$QS_BASE/$qs_config/style.json.tmp" \
       && mv "$QS_BASE/$qs_config/style.json.tmp" "$QS_BASE/$qs_config/style.json" \
@@ -1368,20 +1378,33 @@ if ! wayland_is_live; then
 fi
 
 # Which Quickshell shells might be up right now: the one this theme wants
-# (if any) plus every other theme's, since switching Hyperspace -> Laptop
-# has to stop `-c hyperspace` just as surely as switching to a waybar theme
+# (if any) plus every other theme's, since switching Blackturq -> Minimal
+# has to stop `-c laptop` just as surely as switching to a waybar theme
 # does. Read from the themes themselves rather than hardcoded, so a new
 # Quickshell theme needs no edit here.
+#
+# Plus every config directory that carries a colors.json -- the marker
+# write_qs_colors above already treats as "this is a bar". That catches a
+# shell no theme names any more: quickshell/bar/ was quickshell/hyperspace/,
+# and a `quickshell -c hyperspace` still running from before an update would
+# otherwise never be stopped, leaving two bars stacked on screen. (The
+# wallpaper picker and the Super+M panel carry no colors.json, so they're
+# never touched.)
 qs_configs_all() {
   local dir id
-  for dir in "$BASE"/themes/*/; do
-    [[ -f "$dir/theme.json" ]] || continue
-    [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
-    id="$(jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null)"
-    if [[ -n "$id" && "$id" != "null" ]]; then
-      printf '%s\n' "$id"
-    fi
-  done | sort -u
+  {
+    for dir in "$BASE"/themes/*/; do
+      [[ -f "$dir/theme.json" ]] || continue
+      [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
+      id="$(jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null)"
+      if [[ -n "$id" && "$id" != "null" ]]; then
+        printf '%s\n' "$id"
+      fi
+    done
+    for dir in "$QS_BASE"/*/; do
+      if [[ -f "$dir/colors.json" ]]; then basename "$dir"; fi
+    done
+  } | sort -u
 }
 
 stop_other_qs_shells() {

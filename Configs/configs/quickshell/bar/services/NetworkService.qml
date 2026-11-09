@@ -1,5 +1,5 @@
 // Copied verbatim from ../../laptop/services/NetworkService.qml (bar one added
-// header): this shell is a separate `quickshell -c hyperspace` config, and
+// header): this shell is a separate `quickshell -c bar` config, and
 // a Quickshell config resolves its singletons and relative imports inside
 // its own root -- so the two docks cannot share one copy without reaching
 // outside it. See ../README.md for the full note on that trade-off; fixes

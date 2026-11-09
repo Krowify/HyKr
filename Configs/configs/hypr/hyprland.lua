@@ -246,9 +246,10 @@ hl.on("hyprland.start", function()
     -- NetworkManager/Bluetooth actions) silently fail or hang without one.
     hl.exec_cmd("hyprpolkitagent")
     -- Bar + notification daemon, picked from the ACTIVE theme rather
-    -- than hardcoded. Most themes use the waybar+swaync pair; the Laptop
-    -- theme replaces both with one Quickshell process ("bar":
-    -- "quickshell-dock" in its theme.json, which apply-theme.sh honours).
+    -- than hardcoded. Every shipped theme replaces the waybar+swaync pair
+    -- with one Quickshell process ("bar": "quickshell-dock" in its
+    -- theme.json, which apply-theme.sh honours); waybar+swaync are only the
+    -- fallback for a theme that names no bar.
     -- Starting waybar unconditionally here meant it came back on every
     -- login even under the Laptop theme -- stacked on top of the
     -- Quickshell dock -- and swaync doubled its notifications.

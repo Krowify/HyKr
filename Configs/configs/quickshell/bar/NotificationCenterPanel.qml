@@ -28,7 +28,7 @@ PanelWindow {
     implicitWidth: 320
     exclusionMode: "Ignore"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyperspace-popup"
+    WlrLayershell.namespace: "hykr-popup"
 
     // The one panel that doesn't hang under its icon: it's a full-height
     // column, so it stays pinned to the right edge (where the bell is

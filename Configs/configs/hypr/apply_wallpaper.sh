@@ -49,8 +49,8 @@ if command -v swayosd-server &>/dev/null; then
     swayosd-server &
 fi
 
-# Guarded, unlike every other optional tool in this script: the three
-# "bar": "quickshell-dock" themes (hyperspace, laptop, blackturq) deliberately
+# Guarded, unlike every other optional tool in this script: the
+# "bar": "quickshell-dock" themes (every shipped theme now) deliberately
 # pkill swaync, so on those themes swaync is *always* down when a wallpaper is
 # picked and an unguarded swaync-client took the rest of this script with it.
 if command -v swaync-client >/dev/null 2>&1; then
@@ -167,7 +167,10 @@ if [ ! -L "$QS_BASE" ] && [ -d "$QS_BASE" ]; then
     "accent": "$color4",
     "accent_alt": "$color6",
     "green": "$color2",
-    "red": "$color1"
+    "red": "$color1",
+    "orange": "$color3",
+    "yellow": "$color3",
+    "blue": "$color4"
 }
 EOF
     done

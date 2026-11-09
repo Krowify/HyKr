@@ -18,7 +18,7 @@ PanelWindow {
     color: "transparent"
     exclusionMode: "Ignore"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyperspace-popup"
+    WlrLayershell.namespace: "hykr-popup"
 
     // Hangs from just under the right island, lined up with it.
     anchors { top: true; right: true }
@@ -44,13 +44,14 @@ PanelWindow {
                 width: column.width
                 height: contentCol.implicitHeight + 20
                 radius: 14
-                // Same translucency as the dock's islands -- alpha lives in
-                // the colour, NOT in an Item's `opacity` property, which
-                // cascades to children in Qt Quick and would fade the text
-                // along with the background. The theme's hyprland.lua.tpl
-                // blurs this namespace with ignore_alpha = 0.2, which 0.55
-                // clears, so a toast picks up the same blur as the bar.
-                color: Colors.island
+                // The bar's translucency, but never thinner than 0.55 (see
+                // Colors.card) -- alpha lives in the colour, NOT in an Item's
+                // `opacity` property, which cascades to children in Qt Quick
+                // and would fade the text along with the background. The
+                // theme's hyprland.lua.tpl blurs this namespace with
+                // ignore_alpha = 0.2, which that clears, so a toast picks up
+                // the same blur as the bar.
+                color: Colors.card
                 border.width: 1
                 border.color: Colors.hairline
 

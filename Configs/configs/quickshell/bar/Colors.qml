@@ -1,28 +1,30 @@
-// The whole Hyperspace palette, read from a generated colors.json rather
-// than hardcoded per delegate.
+// The whole bar palette, read from a generated colors.json rather than
+// hardcoded per delegate.
 //
 // This is the same "last write wins" arrangement kitty, starship and the
 // Laptop dock already use, just carrying a full palette instead of a single
 // accent:
 //
 //   theme-switcher/apply-theme.sh  writes it from the ACTIVE theme's
-//                                  colors.json (which, for Hyperspace, matugen
-//                                  has just regenerated from the wallpaper --
-//                                  dynamic_colors: true)
+//                                  colors.json (for a dynamic_colors theme --
+//                                  Hyperspace, Dynamic -- matugen has just
+//                                  regenerated that from the wallpaper)
 //   hypr/apply_wallpaper.sh        writes it from pywal's own palette on every
 //                                  wallpaper pick, the same slots the Hyprland
 //                                  border, rofi and wofi accents already use
 //
-// whichever ran most recently wins. FileView's watchChanges means the dock
+// whichever ran most recently wins. FileView's watchChanges means the bar
 // repaints the moment either script writes -- no restart, no theme re-apply.
 //
 // Why a full palette and not just the accent the Laptop dock reads: every
 // surface in this shell (island backgrounds, body text, dim labels, the
-// "connected"/"low battery" states) is supposed to track the wallpaper here,
-// not just the active-workspace pill. Anything still hardcoded would drift
-// visibly against a wallpaper-derived accent.
+// "connected"/"low battery" states, the pill bar's per-module colours) is
+// supposed to track the theme, not just the active-workspace pill. Anything
+// still hardcoded would drift visibly against the rest of the desktop.
 //
-// A sibling `pragma Singleton` with no qmldir, resolved unqualified from
+// A sibling `pragma Singleton` with no qmldir, resolved unqualified from the
+// bars and the panels -- exactly how DockState.qml works too.
+pragma Singleton` with no qmldir, resolved unqualified from
 // DockBar.qml and the panels -- exactly how DockState.qml works too.
 pragma Singleton
 
@@ -39,15 +41,16 @@ Singleton {
     readonly property color fallbackBg: "#0b1016"
     readonly property color fallbackFg: "#e6eef5"
 
-    // Island translucency. 0.55 deliberately matches the Laptop dock's own
-    // alpha, and the theme's hyprland.lua.tpl blurs this namespace with
-    // ignore_alpha = 0.2 -- so an island clears the threshold and gets
-    // blurred, while the fully transparent gaps BETWEEN the islands stay
-    // below it and are left alone. Alpha always lives in a colour here,
+    // Island translucency -- the theme's choice, via style.json (see
+    // DockState.islandAlpha; 0.55 unless the theme says otherwise, the same
+    // as the Laptop dock). Every theme's hyprland.lua.tpl blurs the bar's
+    // namespace with ignore_alpha = 0.2 -- so an island clears the threshold
+    // and gets blurred, while the fully transparent gaps BETWEEN the islands
+    // stay below it and are left alone. Alpha always lives in a colour here,
     // never in an Item's `opacity` property: opacity cascades to children
     // in Qt Quick, which would fade every icon and label along with the
     // background (the exact bug the Laptop DockBar's header documents).
-    readonly property real islandAlpha: 0.55
+    readonly property real islandAlpha: DockState.islandAlpha
 
     // The dock's islands are dark translucent pills, so an accent pulled from
     // a dark wallpaper can come out nearly invisible against one. Anything
@@ -64,11 +67,21 @@ Singleton {
     readonly property color rawAccentAlt: root.isHex(adapter.accent_alt) ? adapter.accent_alt : root.rawAccent
     readonly property color rawGreen: root.isHex(adapter.green) ? adapter.green : "#8fd6a6"
     readonly property color rawRed: root.isHex(adapter.red) ? adapter.red : "#e0707d"
+    // The pill/stats bars' per-module colours (DockState.colorful). A palette
+    // written by something that predates these keys falls back to the
+    // nearest role it does carry rather than to a fixed colour, so the bar
+    // still matches whatever wrote it.
+    readonly property color rawOrange: root.isHex(adapter.orange) ? adapter.orange : root.rawRed
+    readonly property color rawYellow: root.isHex(adapter.yellow) ? adapter.yellow : root.rawOrange
+    readonly property color rawBlue: root.isHex(adapter.blue) ? adapter.blue : root.rawAccentAlt
 
     readonly property color accent: root.ensureContrast(root.rawAccent)
     readonly property color accentAlt: root.ensureContrast(root.rawAccentAlt)
     readonly property color good: root.ensureContrast(root.rawGreen)
     readonly property color bad: root.ensureContrast(root.rawRed)
+    readonly property color orange: root.ensureContrast(root.rawOrange)
+    readonly property color warn: root.ensureContrast(root.rawYellow)
+    readonly property color blue: root.ensureContrast(root.rawBlue)
 
     readonly property color bg: root.isHex(adapter.bg) ? adapter.bg : root.fallbackBg
     readonly property color surface: root.isHex(adapter.surface) ? adapter.surface : root.bg
@@ -88,6 +101,10 @@ Singleton {
     // more body behind a list of text.
     readonly property color island: Qt.rgba(root.panelBase.r, root.panelBase.g, root.panelBase.b, root.islandAlpha)
     readonly property color panel: Qt.rgba(root.panelBase.r, root.panelBase.g, root.panelBase.b, 0.72)
+    // Notification toasts: never thinner than the default island, so a theme
+    // that picks a very see-through bar (the pill themes) doesn't also get
+    // toasts too faint to read over a busy wallpaper.
+    readonly property color card: Qt.rgba(root.panelBase.r, root.panelBase.g, root.panelBase.b, Math.max(root.islandAlpha, 0.55))
 
     // Hairlines and fills derived from the accent, so even the borders track
     // the wallpaper instead of being a fixed white alpha.
@@ -147,9 +164,9 @@ Singleton {
         watchChanges: true
         onFileChanged: reload()
 
-        // Every field carries the shipped default, so a colors.json written
-        // by an older apply-theme.sh (accent only) still yields a complete,
-        // coherent palette rather than a half-black dock.
+        // Every core field carries the shipped default, so a colors.json
+        // written by an older apply-theme.sh (accent only) still yields a
+        // complete, coherent palette rather than a half-black bar.
         JsonAdapter {
             id: adapter
             property string bg: "#0b1016"
@@ -161,6 +178,12 @@ Singleton {
             property string accent_alt: "#8fb4d9"
             property string green: "#8fd6a6"
             property string red: "#e0707d"
+            // Empty rather than a colour: an absent key should fall back to
+            // a role from the SAME palette (see rawOrange & co. above), not
+            // to a hardcoded Hyperspace tone.
+            property string orange: ""
+            property string yellow: ""
+            property string blue: ""
         }
     }
 }

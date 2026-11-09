@@ -32,7 +32,7 @@ PanelWindow {
     implicitHeight: 104
     exclusionMode: "Ignore"
     WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "hyperspace-popup"
+    WlrLayershell.namespace: "hykr-popup"
 
     anchors { top: true; right: true }
     margins {

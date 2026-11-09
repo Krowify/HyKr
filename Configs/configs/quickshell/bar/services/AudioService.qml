@@ -1,5 +1,5 @@
 // Copied verbatim from ../../laptop/services/AudioService.qml (bar one added
-// header): this shell is a separate `quickshell -c hyperspace` config, and
+// header): this shell is a separate `quickshell -c bar` config, and
 // a Quickshell config resolves its singletons and relative imports inside
 // its own root -- so the two docks cannot share one copy without reaching
 // outside it. See ../README.md for the full note on that trade-off; fixes
@@ -27,10 +27,18 @@ Singleton {
     // without needing the poll to confirm it.
     property bool detailsWanted: false
 
+    // Set by a bar that prints the level all the time (the pill and stats
+    // bars show "65%" beside the icon, the way waybar's pulseaudio module
+    // did). Separate from detailsWanted for the same reason refreshVolume()
+    // below is: VolumePanel owns that flag and switches it off when it
+    // closes, which would silently freeze a bar's readout.
+    property bool levelAlwaysShown: false
+
     onDetailsWantedChanged: if (detailsWanted) volumeProc.running = true
+    onLevelAlwaysShownChanged: if (levelAlwaysShown) volumeProc.running = true
 
     function refresh() {
-        if (root.detailsWanted)
+        if (root.detailsWanted || root.levelAlwaysShown)
             volumeProc.running = true
         muteProc.running = true
     }

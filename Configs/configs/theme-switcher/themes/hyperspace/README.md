@@ -15,7 +15,7 @@ whatever the last apply generated.
 | Surface | How |
 | --- | --- |
 | Window borders | The wallpaper's accent on the active border, via `~/.config/hypr/colors-hyprland.lua` (see `templates/hyprland.lua.tpl`) |
-| Bar / notifications | Its own Quickshell shell, `quickshell -c hyperspace` (`"bar": "quickshell-dock"`) — see `Configs/configs/quickshell/hyperspace/` |
+| Bar / notifications | The shared Quickshell bar, `quickshell -c bar` in its `notch` style (`"bar": "quickshell-dock"`) — see `Configs/configs/quickshell/bar/` |
 | Wofi / rofi | The shared `templates/wofi.css.tpl` and `templates/rofi/*.tpl`, re-rendered on both a theme switch and a plain wallpaper pick |
 | Lock screen | `templates/hyprlock.conf.tpl` — shows the theme's own wallpaper, blurred |
 | fastfetch | `assets/fastfetch-logo.png` instead of the random-Pokémon logo, plus the usual accent→fg key gradient |
@@ -24,13 +24,14 @@ whatever the last apply generated.
 ## The dock
 
 Hyperspace does not run waybar. `theme.json`'s `"bar": "quickshell-dock"`
-plus `"quickshell": { "config": "hyperspace" }` tells `apply-theme.sh` (and
+plus `"quickshell": { "config": "bar", "style": "notch" }` tells `apply-theme.sh` (and
 `hypr/start_bar.sh`, and `hypr/dock_ipc.sh`) to run
-`quickshell -c hyperspace` instead of the waybar+swaync pair. That shell
+`quickshell -c bar` instead of the waybar+swaync pair. That shell
 carries the bar, the notification daemon and the popup panels — full
-details in `Configs/configs/quickshell/hyperspace/README.md`, including the
-`DockState.barStyle` switch between the two bar layouts it ships (the
-dynamic notch, and the three floating islands).
+details in `Configs/configs/quickshell/bar/README.md`, including the
+bar styles it ships. Hyperspace picks the dynamic notch via `"style":
+"notch"`; `"islands"` (three floating pills) is the other one it was built
+with.
 
 ## Switching to it
 

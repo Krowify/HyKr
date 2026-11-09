@@ -1,14 +1,18 @@
-# `quickshell -c hyperspace`
+# `quickshell -c bar`
 
-The Hyperspace theme's whole shell: a top bar on every screen — in one of
-two styles, a dynamic notch or three floating islands — a native
-notification daemon with toasts, and four popup panels. It runs
-*instead of* waybar + swaync — the theme's `theme.json` says so:
+A shared, palette-driven shell any theme can run: a top bar on every screen
+— in one of several styles, a dynamic notch or three floating islands so
+far — a native notification daemon with toasts, and four popup panels. It
+runs *instead of* waybar + swaync — the theme's `theme.json` says so:
 
 ```json
 "bar": "quickshell-dock",
-"quickshell": { "config": "hyperspace" }
+"quickshell": { "config": "bar", "style": "notch" }
 ```
+
+(This directory was `quickshell/hyperspace/` while only the Hyperspace theme
+used it. `apply-theme.sh` and `hypr/start_bar.sh` still stop a leftover
+`quickshell -c hyperspace` process from before the rename.)
 
 `theme-switcher/apply-theme.sh` reads those two on a theme switch,
 `hypr/start_bar.sh` on login and on `Super+Ctrl+B`, and `hypr/dock_ipc.sh`
@@ -16,20 +20,20 @@ when a keybind needs to talk to the running shell. None of them hardcode a
 config name, so adding another Quickshell-based theme needs no changes to
 any of them.
 
-## Two bars, one switch
+## One shell, the theme picks the bar
 
-`DockState.barStyle` picks which bar this shell runs. `shell.qml` gives the
-unselected one an empty `Variants` model, so it builds no window at all.
+`DockState.barStyle` picks which bar this shell runs, and it is read from
+`style.json` in this directory — which `apply-theme.sh` writes on every theme
+apply from the theme's `"quickshell"` block (`style`, plus `colorful` and
+`alpha`). `shell.qml` gives every unselected bar an empty `Variants` model,
+so it builds no window at all. The file is watched, so a hand edit switches
+the bar live:
 
-```qml
-property string barStyle: "notch"   // or "islands"
+```json
+{ "style": "islands" }
 ```
 
-Changing it needs a restart of the shell, not a theme re-apply:
-
-```shell
-pkill -f 'quickshell -c hyperspace'; quickshell -c hyperspace
-```
+Unknown or missing styles fall back to `notch`.
 
 Both draw on one full-width, fully transparent layer surface per screen, and
 both are blurred through `ignore_alpha = 0.2` in the theme's
@@ -87,16 +91,53 @@ Battery leads the right island rather than sitting mid-row because it's the
 only item whose width changes at runtime, and the island grows leftwards
 from the screen edge: with it first, nothing to its right ever shifts.
 
+### `pill` — PillBar.qml
+
+Catppuccin, Dynamic, Everforest and Graphite. The waybar bar those four
+themes used to run, rebuilt here: one centred pill 10px below the top edge,
+34px tall, modules split by hairlines.
+
+| Module | Shows | Left | Right | Other |
+| --- | --- | --- | --- | --- |
+| Workspaces | 1–5 always, plus any higher one with windows on it; the active one is a filled accent pill | switch | — | — |
+| Volume | icon + `65%` / `Muted` | volume panel | mute | scroll ±5%, middle-click pavucontrol |
+| Network | icon + SSID (trimmed) / `Wired` / `Offline` | network panel | NetworkManager | — |
+| Bluetooth | icon + `BT`, or the device name when one is connected | bluetooth panel | adapter on/off | — |
+| Clock | `09 Nov 2026 \| 14:05` | — | — | — |
+| Tray | StatusNotifier icons, only when there are any | activate | the app's menu | middle: secondary action |
+| Bell | dot when unread, bell-off under DND | notification centre | toggle DND | — |
+
+`"colorful": true` (Catppuccin) gives each module its own role colour —
+volume orange, network green, bluetooth blue, clock accent, bell red — the
+way its waybar bar looked; otherwise everything is the foreground colour and
+only an open panel's module lights up in the accent. `"alpha"` sets how see-
+through the pill is (floored at 0.25 so the blur rule still catches it).
+
+### `stats` — StatsBar.qml
+
+Minimal. Its waybar bar, rebuilt: three short pills under the top edge,
+plain text, colour only where something needs attention.
+
+| Pill | Contents |
+| --- | --- |
+| Left | `CPU 12%`, `GPU 3%` (hidden if no GPU load is readable), `RAM 41%`, temperature (red at 80°C; click toggles hyprsunset), battery (yellow ≤20%, red ≤10% on battery; hidden without one) |
+| Centre | `hh:mm`, bold — hover for the full date |
+| Right | Now playing `title - artist` (click play/pause, right-click next, scroll to skip), network, volume, notifications, ⏻ (wlogout) |
+
+The readings come from `services/SystemStatsService.qml`, which only polls
+while this style is the one running (`shell.qml` binds its `wanted` flag),
+so the other styles pay nothing for it.
+
 ## The panels
 
-Click an icon in either bar and its panel drops directly underneath it.
+Click an icon in any bar and its panel drops directly underneath it.
 Each bar's `anchorFor()` measures the tapped icon's distance from the
-screen's right edge — from the island's live layout, or, in the notch, from
-the icon's mapped window position, since a capsule's icons move as it opens
-— and hands it to `DockState`, which each panel turns into its own right
-margin (clamped so a panel near a screen edge stays on screen). Nothing
-carries a hardcoded per-icon offset the way the Laptop dock does, which is
-what lets the same four panels serve both layouts.
+screen's right edge — from the island's live layout, or, in the notch, pill
+and stats bars, from the icon's mapped window position — and hands it to
+`DockState`, which each panel turns into its own right margin (clamped so a
+panel near a screen edge stays on screen). Nothing carries a hardcoded
+per-icon offset the way the Laptop dock does, which is what lets the same
+four panels serve every layout.
 
 | Icon | Left click | Right click |
 | --- | --- | --- |
@@ -111,7 +152,8 @@ Everything is read from `colors.json` in this directory, which is
 **generated**, not hand-maintained:
 
 - `theme-switcher/apply-theme.sh` writes it from the active theme's palette
-  (which matugen has just derived from the wallpaper)
+  (which, for a `dynamic_colors` theme like Hyperspace or Dynamic, matugen
+  has just derived from the wallpaper)
 - `hypr/apply_wallpaper.sh` writes it from pywal's palette on a plain
   wallpaper pick
 

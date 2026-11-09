@@ -40,13 +40,18 @@ Not from elifouts:
   DND entry hit it under this theme instead of the swaync-client they still
   use everywhere else. Same not-runtime-tested caveat as
   `quickshell/hykr/` above.
-- `quickshell/hyperspace/` — the Hyperspace theme's bar stack
-  (`quickshell -c hyperspace`), same idea as `laptop/` but coloured entirely
-  from the wallpaper: it reads a full generated palette from its own
-  `colors.json`, not just an accent. Ships two bar layouts, switched by the
-  one `DockState.barStyle` line: `notch`, a capsule hanging off the top edge
-  that widens around a fixed clock when something changes and collapses
-  again (the default), and `islands`, three floating pills across the top.
+- `quickshell/bar/` — the shared, palette-driven bar stack
+  (`quickshell -c bar`; was `quickshell/hyperspace/`), same idea as
+  `laptop/` but coloured entirely from the theme: it reads a full generated
+  palette from its own `colors.json`, not just an accent. The bar style is
+  the theme's choice — `"quickshell": { "style": ... }` in theme.json, which
+  apply-theme.sh writes to the shell's `style.json`: `notch`, a capsule
+  hanging off the top edge that widens around a fixed clock when something
+  changes and collapses again (Hyperspace, and the default); `islands`,
+  three floating pills across the top; `pill`, one centred pill holding
+  everything (Catppuccin, Dynamic, Everforest, Graphite — their old waybar
+  layout); and `stats`, three thin pills with CPU/GPU/RAM/temperature
+  readings (Minimal's old waybar layout).
   Panels drop under whichever icon was clicked, measured from the live
   layout rather than hardcoded offsets, which is what lets one set of panels
   serve both. Every .qml but the services sits in the config root: reached
@@ -54,7 +59,7 @@ Not from elifouts:
   failed to register as a type, a different one each time — see that
   directory's README. Its `services/` are copies of `laptop/services/` — a
   Quickshell config can't import across config roots — so a fix in one
-  belongs in both; see `quickshell/hyperspace/README.md`. Same
+  belongs in both; see `quickshell/bar/README.md`. Same
   not-runtime-tested caveat.
 - `hypr/apply_wallpaper.sh` — the shared colour pipeline behind every
   wallpaper picker in the repo: awww, pywal, then kitty (live, over its

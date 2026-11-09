@@ -1,9 +1,11 @@
-// Entry point for `quickshell -c hyperspace`. Replaces waybar+swaync for
-// the "Hyperspace" theme (its theme.json sets "bar": "quickshell-dock" and
-// "quickshell": { "config": "hyperspace" }, which apply-theme.sh,
-// hypr/start_bar.sh and hypr/dock_ipc.sh all read) with one Quickshell
-// shell: the three-island top bar per screen, plus a native notification
-// daemon and toast stack shared across all of them.
+// Entry point for `quickshell -c bar` (this directory was quickshell/
+// hyperspace/ until it became a shared shell). Replaces waybar+swaync for
+// any theme whose theme.json sets "bar": "quickshell-dock" and
+// "quickshell": { "config": "bar", "style": ... } -- apply-theme.sh,
+// hypr/start_bar.sh and hypr/dock_ipc.sh all read those -- with one
+// Quickshell shell: a top bar per screen in the theme's style (see
+// DockState.barStyle), plus a native notification daemon and toast stack
+// shared across all of them.
 //
 // The four popup panels (Volume/Network/Bluetooth/NotificationCenter) live
 // here as top-level siblings, NOT nested inside DockBar.qml. They used to
@@ -46,8 +48,8 @@ ShellRoot {
     // Lets Hyprland keybinds and quick_settings.sh reach this shell the same
     // way they reach swaync under the waybar themes. Both call sites go
     // through hypr/dock_ipc.sh, which resolves the ACTIVE theme's quickshell
-    // config name (so the same keybind reaches `-c laptop` or `-c
-    // hyperspace` as appropriate) and falls back to swaync-client when no
+    // config name (so the same keybind reaches `-c laptop` or `-c bar` as
+    // appropriate) and falls back to swaync-client when no
     // such shell is running. The target name stays "dock", identical to the
     // Laptop shell's, so that script needs no per-theme special-casing.
     IpcHandler {
@@ -75,8 +77,35 @@ ShellRoot {
     }
 
     Variants {
-        model: DockState.barStyle === "notch" ? [] : Quickshell.screens
+        model: DockState.barStyle === "islands" ? Quickshell.screens : []
         DockBar {}
+    }
+
+    Variants {
+        model: DockState.barStyle === "pill" ? Quickshell.screens : []
+        PillBar {}
+    }
+
+    Variants {
+        model: DockState.barStyle === "stats" ? Quickshell.screens : []
+        StatsBar {}
+    }
+
+    // The pill and stats bars print the volume level all the time, so the
+    // audio service has to keep reading it rather than only while the volume
+    // panel is open (which is all the notch and islands need).
+    Binding {
+        target: Services.AudioService
+        property: "levelAlwaysShown"
+        value: DockState.barStyle === "pill" || DockState.barStyle === "stats"
+    }
+
+    // CPU/RAM/temperature/GPU polling exists for the stats bar alone; every
+    // other style leaves it switched off.
+    Binding {
+        target: Services.SystemStatsService
+        property: "wanted"
+        value: DockState.barStyle === "stats"
     }
 
     Variants {

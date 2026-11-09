@@ -46,9 +46,10 @@ hl.window_rule({
     opacity = "{{active_opacity}} {{inactive_opacity}}",
 })
 
--- Layer rules. Hyperspace runs its own Quickshell shell
--- (`quickshell -c hyperspace`) instead of waybar/swaync, so these target
--- that shell's layer-shell namespaces.
+-- Layer rules. Hyperspace runs the shared Quickshell bar
+-- (`quickshell -c bar`, notch style) instead of waybar/swaync, so these
+-- target that shell's layer-shell namespaces: "hykr-bar" for whichever bar
+-- style is running, "hykr-popup" for its panels and toasts.
 --
 -- ignore_alpha = 0.2 matters more here than it does for a full-width bar:
 -- the Hyperspace dock is ONE transparent layer surface with three opaque
@@ -56,20 +57,14 @@ hl.window_rule({
 -- the empty gaps between the islands too -- a smeared band across the top
 -- of the wallpaper where there is supposed to be nothing at all. At 0.2,
 -- only the islands (0.55 alpha) are blurred and the gaps are left alone.
-hl.layer_rule({ match = { namespace = "hyperspace-dock" }, blur = true })
-hl.layer_rule({ match = { namespace = "hyperspace-dock" }, ignore_alpha = 0.2 })
+-- Every bar style (the notch capsule here, the islands) draws on one
+-- full-width transparent surface, so the same threshold blurs the bar and
+-- leaves the empty strip either side of it alone.
+hl.layer_rule({ match = { namespace = "hykr-bar" }, blur = true })
+hl.layer_rule({ match = { namespace = "hykr-bar" }, ignore_alpha = 0.2 })
 
--- The other bar style (DockState.barStyle = "notch"): one capsule hanging
--- from the top edge on an otherwise transparent full-width surface, so the
--- same threshold does the same job -- blur the capsule, leave the empty
--- strip either side of it alone. Both namespaces are ruled unconditionally
--- because the style is switched inside the shell, not by re-rendering this
--- file, and a rule for a layer that isn't mapped costs nothing.
-hl.layer_rule({ match = { namespace = "hyperspace-notch" }, blur = true })
-hl.layer_rule({ match = { namespace = "hyperspace-notch" }, ignore_alpha = 0.2 })
-
-hl.layer_rule({ match = { namespace = "hyperspace-popup" }, blur = true })
-hl.layer_rule({ match = { namespace = "hyperspace-popup" }, ignore_alpha = 0.2 })
+hl.layer_rule({ match = { namespace = "hykr-popup" }, blur = true })
+hl.layer_rule({ match = { namespace = "hykr-popup" }, ignore_alpha = 0.2 })
 
 hl.layer_rule({ match = { namespace = "wofi" }, blur = true })
 hl.layer_rule({ match = { namespace = "wofi" }, ignore_alpha = 0.2 })

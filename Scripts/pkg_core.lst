@@ -12,12 +12,12 @@ pipewire-audio                                         # pipewire audio meta-pac
 sof-firmware                                            # DSP firmware many modern laptops (Intel/AMD SOF audio) need for speakers/mic to work at all -- silent no-op on hardware that doesn't use it, but silent-audio-on-first-boot is a very common gap without it
 wireplumber                                            # pipewire session manager
 alsa-utils                                             # alsamixer/amixer -- low-level ALSA control, useful when PipeWire's own mixer isn't picking up hardware
-pavucontrol                                            # every theme's waybar pulseaudio module left-click already opens this (see theme-switcher/themes/*/templates/waybar/config), was just never listed as a dependency
+pavucontrol                                            # full mixer, a middle-click on the volume module of the Quickshell pill/stats bars (quickshell/bar/), and the waybar fallback's left-click
 networkmanager                                         # network manager
-nm-connection-editor                                   # network manager gui, launched from the minimal theme's waybar network module (left-click)
+nm-connection-editor                                   # network manager gui, a right-click on any Quickshell bar's network icon
 bluez                                                  # bluetooth protocol stack
 bluez-utils                                            # bluetooth utility cli
-blueman                                                # bluetooth manager gui, launched from waybar's bluetooth module
+blueman                                                # bluetooth manager gui, the "Open manager" button in the Quickshell bars' bluetooth panel
 pacman-contrib                                         # provides checkupdates, used by waybar's custom/pacman module
 gnome-keyring                                          # libsecret keyring daemon -- Hyprland has no keyring of its own like GNOME/KDE, so apps needing one (VS Code, browsers) fail without this; autostarted in hyprland.lua
 hyprpolkitagent                                        # polkit authentication agent -- Hyprland has no polkit agent of its own either, so a privilege-escalation prompt (mounting a drive from Dolphin, some NetworkManager/Bluetooth actions) silently fails or hangs without this; autostarted in hyprland.lua
@@ -43,7 +43,7 @@ qt6ct-kde                                              # Qt6 theming, patched fo
 # --------------------------------------------------- // Waybar
 waybar
 hyprpicker                                             # backs waybar's custom/colorpicker widget
-nvtop                                                  # backs the Minimal theme's waybar custom/gpu module (scripts/gpu_usage.sh) -- GPU-agnostic despite the name, works with the RTX 3060 same as Intel/AMD
+nvtop                                                  # GPU-load fallback for the Minimal theme's stats bar (quickshell/bar/services/SystemStatsService.qml) when neither amdgpu sysfs nor nvidia-smi answers -- GPU-agnostic despite the name
 
 # --------------------------------------------------- // Wofi
 wofi

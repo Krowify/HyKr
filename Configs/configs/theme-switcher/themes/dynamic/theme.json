@@ -2,6 +2,14 @@
   "name": "Dynamic - Matugen",
   "id": "dynamic",
   "default_wallpaper": "wallpapers/peakpx.jpg",
+  "bar": "quickshell-dock",
+
+  "quickshell": {
+    "config": "bar",
+    "style": "pill",
+    "alpha": 0.4
+  },
+
   "dynamic_colors": true,
   "fonts": {
     "family": "JetBrainsMono Nerd Font",

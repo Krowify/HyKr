@@ -58,7 +58,7 @@ PanelWindow {
     anchors { top: true; left: true; right: true }
 
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "hyperspace-notch"
+    WlrLayershell.namespace: "hykr-bar"
 
     // ---- what's on screen ----
 

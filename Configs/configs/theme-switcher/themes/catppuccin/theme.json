@@ -2,6 +2,15 @@
   "name": "Catppuccin Mocha",
   "id": "catppuccin",
   "default_wallpaper": "wallpapers/arch_logo.png",
+  "bar": "quickshell-dock",
+
+  "quickshell": {
+    "config": "bar",
+    "style": "pill",
+    "colorful": true,
+    "alpha": 0.4
+  },
+
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"
