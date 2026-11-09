@@ -24,8 +24,9 @@
 # theme.json, plus any config directory carrying a colors.json (the marker
 # apply-theme.sh's write_qs_colors treats as "a bar" -- it also catches a
 # shell no theme names any more, like `-c hyperspace` from before
-# quickshell/hyperspace/ became quickshell/bar/). The wallpaper picker and the
-# Super+M panel are neither, so a theme switch never closes them.
+# quickshell/hyperspace/ became quickshell/bar/) -- except the desktop shell
+# (NOT_BARS below), which has a colors.json but is not a bar. A theme switch
+# never closes it, nor the wallpaper picker.
 set -uo pipefail
 
 BASE="$HOME/.config/theme-switcher"
@@ -74,6 +75,12 @@ list_instances() {
   done
 }
 
+# Configs that carry a colors.json (so the theme recolours them) but are not
+# bars, and must never be stopped as one: `hykr` is the always-running
+# desktop shell (launcher, clipboard, pickers, control centre). Without this,
+# every theme switch's `--keep <bar>` would kill it.
+NOT_BARS=(hykr)
+
 # Every config name that is a bar (see header).
 bar_configs() {
   local dir
@@ -87,7 +94,7 @@ bar_configs() {
     for dir in "$QS_BASE"/*/; do
       if [[ -f "$dir/colors.json" ]]; then basename "$dir"; fi
     done
-  } | grep -v '^null$' | grep -v '^$' | sort -u
+  } | grep -v '^null$' | grep -v '^$' | grep -vxF -f <(printf '%s\n' "${NOT_BARS[@]}") | sort -u
 }
 
 # SIGKILL, then wait (up to ~2s) until the processes are really gone. A plain

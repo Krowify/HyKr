@@ -9,6 +9,8 @@
 #   start_bar.sh            start the active theme's bar, if not already
 #                           running (safe to run more than once)
 #   start_bar.sh --toggle   stop it if it's running, start it if it isn't
+#   start_bar.sh --desktop  only make sure the desktop shell (quickshell/hykr)
+#                           is running
 #
 # A bar that dies during startup (a QML error in its config) is reported on
 # stderr and on screen via `hyprctl notify`, and makes this exit 1; the
@@ -91,6 +93,30 @@ stop_bar() {
   fi
 }
 
+# Start `quickshell -c <config>` with its output in <log>, and watch it
+# briefly. The output goes to a file, not /dev/null: a config that fails to
+# load (a QML error) makes quickshell exit within a second, and with its
+# output discarded that looked exactly like a successful start -- no bar, and
+# nothing anywhere saying why. A shell still alive at the end of the window
+# has loaded its config.
+launch_watched() {
+  local config="$1" log="$2" what="$3"
+  nohup quickshell -c "$config" >"$log" 2>&1 &
+  local pid=$!
+  disown
+
+  local _
+  for _ in {1..12}; do
+    sleep 0.25
+    kill -0 "$pid" 2>/dev/null || {
+      echo "start_bar.sh: 'quickshell -c $config' exited during startup. Its output:" >&2
+      tail -n 15 "$log" | sed 's/^/  /' >&2
+      report_failure "$what failed to start -- see $log"
+      return 1
+    }
+  done
+}
+
 start_bar() {
   # waybar and swaync are no longer part of HyKr, but an install upgraded
   # from an older version may still have them: a leftover waybar stacks a
@@ -105,26 +131,25 @@ start_bar() {
   fi
   running && return
 
-  # The shell's output goes to a file, not /dev/null: a config that fails
-  # to load (a QML error) makes quickshell exit within a second, and with
-  # its output discarded that looked exactly like a successful start --
-  # no bar, and nothing anywhere saying why.
-  nohup quickshell -c "$qs_config" >"$BAR_LOG" 2>&1 &
-  local pid=$!
-  disown
+  launch_watched "$qs_config" "$BAR_LOG" "the $qs_config bar"
+}
 
-  # Watch it briefly. A load failure exits well inside this window; a
-  # shell still alive at the end of it has loaded its config.
-  local _
-  for _ in {1..12}; do
-    sleep 0.25
-    kill -0 "$pid" 2>/dev/null || {
-      echo "start_bar.sh: 'quickshell -c $qs_config' exited during startup. Its output:" >&2
-      tail -n 15 "$BAR_LOG" | sed 's/^/  /' >&2
-      report_failure "the $qs_config bar failed to start -- see $BAR_LOG"
-      return
-    }
-  done
+# The desktop shell (quickshell/hykr: launcher, clipboard, pickers, control
+# centre) runs alongside whichever bar the theme uses, in a process of its
+# own, so a QML error in one can't take the other down. Started here so that
+# every path that brings the bar up -- login, unlock, theme apply -- also
+# brings it up. Never stopped by --toggle: Super+Ctrl+B hides the bar, not
+# the launcher.
+DESKTOP_LOG="${XDG_RUNTIME_DIR:-$HOME/.cache}/hykr-desktop.log"
+ensure_desktop_shell() {
+  command -v quickshell >/dev/null 2>&1 || return 0
+  [[ -r "$HOME/.config/quickshell/hykr/shell.qml" ]] || return 0
+  if [[ -r "$QS_STOP" ]]; then
+    bash "$QS_STOP" --running hykr && return 0
+  else
+    pgrep -f "quickshell -c hykr" >/dev/null 2>&1 && return 0
+  fi
+  launch_watched hykr "$DESKTOP_LOG" "the HyKr desktop shell (launcher, clipboard)"
 }
 
 # Say so on screen as well as on stderr: at login (hyprland.lua's autostart)
@@ -145,11 +170,15 @@ case "${1:-}" in
   --toggle)
     if running; then stop_bar; else start_bar; fi
     ;;
+  --desktop)
+    ensure_desktop_shell
+    ;;
   *)
     start_bar
+    ensure_desktop_shell
     ;;
 esac
 
-# Non-zero only when the bar was supposed to start and didn't (apply-theme.sh
+# Non-zero only when a shell was supposed to start and didn't (apply-theme.sh
 # reports it). "The bar I wanted is already running" is not a failure.
 exit "$failed"

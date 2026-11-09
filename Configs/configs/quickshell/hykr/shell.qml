@@ -1,157 +1,67 @@
-// HyKr quick-settings panel (Super+M), Quickshell version — replaces the
-// earlier Eww panel, mirroring end-4/dots-hyprland's own move off Eww.
+// HyKr's desktop shell (`quickshell -c hykr`): everything that isn't the bar.
+// Always running -- start_bar.sh starts it next to the theme's bar -- so its
+// surfaces open instantly over IPC instead of paying a Quickshell start-up
+// each time:
 //
-// UNVERIFIED: no `quickshell` binary was available to actually run this
-// against, so treat the Process/polling wiring below as best-effort against
-// Quickshell's documented API, not confirmed-working. The layout (PanelWindow +
-// QtQuick.Controls/Layouts) is standard Qt and should be solid; the Process
-// blocks are the most likely place something needs fixing.
-
+//   quickshell -c hykr ipc call launcher toggle     (Super+Tab)
+//   quickshell -c hykr ipc call clipboard toggle    (Super+V)
+//   quickshell -c hykr ipc call panel toggle        (Super+M)
+//
+// hypr/hykr.sh wraps those calls and starts the shell first if it isn't up.
+//
+// It is a separate process from the bar on purpose: a QML error anywhere in a
+// Quickshell config stops that whole config from loading, so keeping the
+// launcher and pickers out of the bar means a bug here can never take the
+// bar or notifications down with it (and vice versa).
+//
+// Colours come from colors.json, which apply-theme.sh and apply_wallpaper.sh
+// rewrite for every quickshell/*/colors.json -- see Theme.qml. qs-stop.sh
+// excludes this config by name, so a theme switch never mistakes it for a bar.
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
 
 ShellRoot {
-    PanelWindow {
+    id: root
+
+    // Opening one surface closes the others: two keyboard-grabbing overlays
+    // at once would fight over focus.
+    function show(which) {
+        launcher.open = which === "launcher";
+        clipboard.open = which === "clipboard";
+        panel.open = which === "panel";
+    }
+
+    Launcher {
+        id: launcher
+    }
+
+    ClipboardPicker {
+        id: clipboard
+    }
+
+    LegacyPanel {
         id: panel
-        anchors {
-            top: true
-            right: true
-        }
-        margins {
-            top: 40
-        }
-        implicitWidth: 320
-        implicitHeight: 260
-        color: "#1e1e2e"
+    }
 
-        property int volume: 50
-        property int brightness: 50
-        property bool wifiOn: false
-        property bool btOn: false
-        property bool nightLightOn: false
+    IpcHandler {
+        target: "launcher"
+        function toggle(): void { root.show(launcher.open ? "" : "launcher"); }
+        function open(): void { root.show("launcher"); }
+        function close(): void { launcher.open = false; }
+    }
 
-        // --- Polling (every 2-3s) ---------------------------------------
-        Timer {
-            interval: 2000
-            running: true
-            repeat: true
-            onTriggered: {
-                volumeProc.running = true
-                nightLightProc.running = true
-            }
-        }
-        Timer {
-            interval: 3000
-            running: true
-            repeat: true
-            onTriggered: {
-                brightnessProc.running = true
-                wifiProc.running = true
-                btProc.running = true
-            }
-        }
+    IpcHandler {
+        target: "clipboard"
+        function toggle(): void { root.show(clipboard.open ? "" : "clipboard"); }
+        function open(): void { root.show("clipboard"); }
+        function close(): void { clipboard.open = false; }
+    }
 
-        Process {
-            id: volumeProc
-            command: ["pamixer", "--get-volume"]
-            stdout: SplitParser { onRead: (data) => panel.volume = parseInt(data.trim()) || 0 }
-        }
-        Process {
-            id: brightnessProc
-            command: ["bash", "-c", "brightnessctl -m | awk -F, '{print $4}' | tr -d '%'"]
-            stdout: SplitParser { onRead: (data) => panel.brightness = parseInt(data.trim()) || 0 }
-        }
-        Process {
-            id: wifiProc
-            command: ["bash", "-c", "nmcli radio wifi | grep -q enabled && echo 1 || echo 0"]
-            stdout: SplitParser { onRead: (data) => panel.wifiOn = data.trim() === "1" }
-        }
-        Process {
-            id: btProc
-            command: ["bash", "-c", "bluetoothctl show | grep -q 'Powered: yes' && echo 1 || echo 0"]
-            stdout: SplitParser { onRead: (data) => panel.btOn = data.trim() === "1" }
-        }
-        Process {
-            id: nightLightProc
-            command: ["bash", "-c", "pgrep -x hyprsunset >/dev/null && echo 1 || echo 0"]
-            stdout: SplitParser { onRead: (data) => panel.nightLightOn = data.trim() === "1" }
-        }
-
-        // --- Actions (one-shot on click/change) --------------------------
-        Process { id: wifiToggle; command: ["bash", "-c", "nmcli radio wifi $(nmcli radio wifi | grep -q enabled && echo off || echo on)"] }
-        Process { id: btToggle; command: ["bash", "-c", "bluetoothctl power $(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)"] }
-        Process { id: nightLightToggle; command: ["bash", "-c", "pkill hyprsunset || hyprsunset"] }
-        Process { id: setVolume; command: ["pamixer", "--set-volume", "0"] }
-        Process { id: setBrightness; command: ["brightnessctl", "set", "50%"] }
-        Process { id: lockCmd; command: ["hyprlock"] }
-        Process { id: logoutCmd; command: ["wlogout"] }
-        Process { id: themeCmd; command: ["nwg-look"] }
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 12
-            spacing: 10
-
-            RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 8
-
-                Button {
-                    text: "󰖩 Wi-Fi"
-                    highlighted: panel.wifiOn
-                    onClicked: wifiToggle.running = true
-                }
-                Button {
-                    text: "󰂯 Bluetooth"
-                    highlighted: panel.btOn
-                    onClicked: btToggle.running = true
-                }
-                Button {
-                    text: "󰛨 Night Light"
-                    highlighted: panel.nightLightOn
-                    onClicked: nightLightToggle.running = true
-                }
-            }
-
-            RowLayout {
-                spacing: 8
-                Text { text: "󰕾"; color: "#df7a8c" }
-                Slider {
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 100
-                    value: panel.volume
-                    onMoved: {
-                        setVolume.command = ["pamixer", "--set-volume", Math.round(value).toString()]
-                        setVolume.running = true
-                    }
-                }
-            }
-            RowLayout {
-                spacing: 8
-                Text { text: "󰃟"; color: "#df7a8c" }
-                Slider {
-                    Layout.fillWidth: true
-                    from: 0
-                    to: 100
-                    value: panel.brightness
-                    onMoved: {
-                        setBrightness.command = ["brightnessctl", "set", Math.round(value) + "%"]
-                        setBrightness.running = true
-                    }
-                }
-            }
-
-            RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 8
-                Button { text: "󰌾"; onClicked: lockCmd.running = true }
-                Button { text: "⏻"; onClicked: logoutCmd.running = true }
-                Button { text: "󰒓"; onClicked: themeCmd.running = true }
-            }
-        }
+    IpcHandler {
+        target: "panel"
+        function toggle(): void { root.show(panel.open ? "" : "panel"); }
+        function open(): void { root.show("panel"); }
+        function close(): void { panel.open = false; }
     }
 }

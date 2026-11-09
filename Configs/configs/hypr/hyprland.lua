@@ -271,7 +271,6 @@ end)
 
 local var_terminal = "kitty"
 local var_mainMod = "SUPER"
-local var_menu = "wofi --show drun -n"
 local var_fileManager = "dolphin"
 local var_editor = "kate"
 local var_browser = "brave"
@@ -312,7 +311,10 @@ hl.bind(var_mainMod .. " + G", hl.dsp.group.toggle())
 -- exist"); "swapsplit" on the same call path works fine, so that's what's
 -- bound here until upstream restores togglesplit or ships a replacement.
 hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
-hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr' || quickshell -c hykr"))
+-- The launcher, clipboard picker and this panel are the desktop shell
+-- (quickshell/hykr), always running beside the bar; hykr.sh toggles one of
+-- its surfaces over IPC and starts the shell first if it isn't up.
+hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh panel"))
 -- Toggles the active theme's Quickshell bar.
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.sh --toggle"))
 -- Notification center. dock_ipc.sh resolves the ACTIVE theme's Quickshell
@@ -326,11 +328,13 @@ hl.bind(var_mainMod .. " + O", function()
 end)
 
 -- --------------------------------------------------- // Launchers and apps
-hl.bind(var_mainMod .. " + TAB", hl.dsp.exec_cmd(var_menu))
+hl.bind(var_mainMod .. " + TAB", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh launcher"))
 hl.bind(var_mainMod .. " + E", hl.dsp.exec_cmd(var_fileManager))
 hl.bind(var_mainMod .. " + C", hl.dsp.exec_cmd(var_editor))
 hl.bind(var_mainMod .. " + B", hl.dsp.exec_cmd(var_browser))
-hl.bind(var_mainMod .. " + V", hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))
+-- cliphist still records the history (the wl-paste watchers in the autostart);
+-- the picker is the desktop shell's.
+hl.bind(var_mainMod .. " + V", hl.dsp.exec_cmd("~/.config/hypr/hykr.sh clipboard"))
 
 -- --------------------------------------------------- // Workspace and theming
 hl.bind(var_mainMod .. " + CTRL + right", hl.dsp.focus({ workspace = "r+1" }))

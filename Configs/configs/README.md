@@ -23,14 +23,24 @@ Not from elifouts:
 - `gtk-3.0/`, `gtk-4.0/` — `settings.ini` activating Materia-dark/Qogir-dark
   (the packages existed in `pkg_core.lst` before, nothing applied them)
 - `fastfetch/config.jsonc` — ours, minimal, auto-detects the distro logo
-- `quickshell/hykr/shell.qml` — quick-settings widget panel (Wi-Fi/Bluetooth/
-  Night Light toggles, volume/brightness sliders, lock/logout/theme buttons),
-  bound to `Super+M`. Originally built in Eww, rebuilt in Quickshell to
-  mirror end-4/dots-hyprland's own move off Eww. Static dark palette, not
-  pywal-linked. Written against Quickshell's documented QML API but not
-  runtime-tested — no `quickshell` binary in the dev environment this was
-  built in; the `Process`/polling blocks are the most likely thing to need
-  fixing if something doesn't work.
+- `quickshell/hykr/` — the desktop shell (`quickshell -c hykr`): everything
+  that isn't the bar, always running beside it in a process of its own, so a
+  QML error in either can't take the other down. `start_bar.sh` starts it
+  (with the same start-up check as the bar, logging to
+  `$XDG_RUNTIME_DIR/hykr-desktop.log`) and keybinds reach it over IPC
+  through `hypr/hykr.sh <target>`, starting it first if it isn't up:
+  - `Launcher.qml` — app launcher (`Super+Tab`), from Quickshell's own
+    `DesktopEntries`; ranks by match quality, then how often you launch each
+    app (counts in `~/.local/state/hykr/launcher.json`). Terminal apps open
+    in kitty.
+  - `ClipboardPicker.qml` — clipboard history (`Super+V`) over `cliphist`
+    (which still records it): Enter copies, Delete removes, image entries
+    are decoded into a preview pane.
+  - `LegacyPanel.qml` — the original `Super+M` quick-settings panel, until
+    the control centre replaces it.
+  - `Theme.qml` / `colors.json` — palette, rewritten by `apply-theme.sh` and
+    `apply_wallpaper.sh` like every bar's; `qs-stop.sh` excludes this config
+    so a theme switch never mistakes it for a bar.
 - `quickshell/laptop/` — the Sakura and Default themes' whole bar stack,
   bar and notifications in one process (`quickshell -c laptop`): a horizontal
   top dock per screen (workspaces, clock, battery/volume/network/bluetooth/

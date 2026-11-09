@@ -1387,6 +1387,12 @@ qs_stop --keep "$qs_config"
 # is what just changed shape (a different theme may have been applied
 # over it), and Quickshell only re-reads a config at startup.
 qs_stop --only "$qs_config"
+# The desktop shell (launcher, clipboard, pickers) recolours live from its
+# colors.json, but restart it too: this is the step update.sh runs after a
+# pull, and new QML only loads at startup. start_bar.sh below brings it
+# back up. Anything that called this script from inside it (the theme
+# picker) did so detached, so it survives the restart.
+qs_stop --only hykr
 
 # The launch itself is start_bar.sh's: it reads the current-theme.json
 # written above (so it starts this same config) and watches the shell for a
