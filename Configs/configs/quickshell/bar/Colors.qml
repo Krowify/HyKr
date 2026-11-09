@@ -24,8 +24,6 @@
 //
 // A sibling `pragma Singleton` with no qmldir, resolved unqualified from the
 // bars and the panels -- exactly how DockState.qml works too.
-pragma Singleton` with no qmldir, resolved unqualified from
-// DockBar.qml and the panels -- exactly how DockState.qml works too.
 pragma Singleton
 
 import Quickshell
