@@ -1358,76 +1358,35 @@ fi
 # setting "bar": "quickshell-dock" in theme.json. Nothing else supervises
 # these processes, so switching themes has to explicitly tear down
 # whichever pair was running and bring up the other.
-# A plain `pkill` (SIGTERM) followed immediately by launching the
-# replacement raced in practice: the old process hadn't actually
-# released its Wayland layer-shell surface yet by the time the new one
-# started, so both ended up mapped at once (two stacked bars). Force-
-# kill and wait for the process to actually be gone (up to ~2s) before
-# starting the replacement.
-wait_for_exit() {
-  local pattern="$1"
-  for _ in {1..20}; do
-    pgrep -f "$pattern" >/dev/null 2>&1 || return 0
-    sleep 0.1
-  done
-}
-
 if ! wayland_is_live; then
   echo "No Wayland session — skipping bar/notification restart and hyprctl reload" >&2
   exit 0
 fi
 
-# Which Quickshell shells might be up right now: the one this theme wants
-# (if any) plus every other theme's, since switching Blackturq -> Minimal
-# has to stop `-c laptop` just as surely as switching to a waybar theme
-# does. Read from the themes themselves rather than hardcoded, so a new
-# Quickshell theme needs no edit here.
-#
-# Plus every config directory that carries a colors.json -- the marker
-# write_qs_colors above already treats as "this is a bar". That catches a
-# shell no theme names any more: quickshell/bar/ was quickshell/hyperspace/,
-# and a `quickshell -c hyperspace` still running from before an update would
-# otherwise never be stopped, leaving two bars stacked on screen. (The
-# wallpaper picker and the Super+M panel carry no colors.json, so they're
-# never touched.)
-qs_configs_all() {
-  local dir id
-  {
-    for dir in "$BASE"/themes/*/; do
-      [[ -f "$dir/theme.json" ]] || continue
-      [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
-      id="$(jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null)"
-      if [[ -n "$id" && "$id" != "null" ]]; then
-        printf '%s\n' "$id"
-      fi
-    done
-    for dir in "$QS_BASE"/*/; do
-      if [[ -f "$dir/colors.json" ]]; then basename "$dir"; fi
-    done
-  } | sort -u
-}
-
-stop_other_qs_shells() {
-  local keep="${1:-}" id
-  while IFS= read -r id; do
-    if [[ -z "$id" || "$id" == "$keep" ]]; then
-      continue
-    fi
-    pkill -9 -f "quickshell -c $id" >/dev/null 2>&1 || true
-    wait_for_exit "quickshell -c $id"
-  done < <(qs_configs_all)
+# Stopping Quickshell bars is qs-stop.sh's job (next to this script): it reads
+# each `quickshell`/`qs` process's real argv and works out its config name,
+# rather than the `pkill -f "quickshell -c <name>"` this used to do -- that
+# missed any shell launched as `qs -c laptop`, with --config / -p, or with
+# another flag in between, and such a shell survived every theme switch with
+# the new theme's bar mapped right under it. It also SIGKILLs and waits for
+# the process to actually be gone: a plain SIGTERM followed straight by the
+# replacement's launch raced, the old shell still holding its layer-shell
+# surface when the new one mapped. See its header for what counts as a bar
+# (only bars are ever stopped -- never the wallpaper picker or Super+M).
+QS_STOP="$BASE/qs-stop.sh"
+qs_stop() {
+  bash "$QS_STOP" "$@" || true
 }
 
 if [[ "$bar_mode" == "quickshell-dock" ]]; then
   pkill waybar >/dev/null 2>&1 || true
   pkill -x swaync >/dev/null 2>&1 || true
-  stop_other_qs_shells "$qs_config"
+  qs_stop --keep "$qs_config"
 
   # Restart this theme's own shell even if it is already running: its QML
   # is what just changed shape (a different theme may have been applied
   # over it), and Quickshell only re-reads a config at startup.
-  pkill -9 -f "quickshell -c $qs_config" >/dev/null 2>&1 || true
-  wait_for_exit "quickshell -c $qs_config"
+  qs_stop --only "$qs_config"
 
   if command -v quickshell >/dev/null 2>&1; then
     nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
@@ -1436,7 +1395,7 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
     echo "Warning: quickshell not found — $qs_config bar/notifications not started" >&2
   fi
 else
-  stop_other_qs_shells ""
+  qs_stop --keep ""
   pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
   pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
 fi

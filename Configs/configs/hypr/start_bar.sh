@@ -56,40 +56,48 @@ else
   fi
 fi
 
+# Finding and stopping Quickshell bars goes through theme-switcher's
+# qs-stop.sh, shared with apply-theme.sh. It reads each `quickshell`/`qs`
+# process's real argv instead of `pgrep -f "quickshell -c <name>"`, which
+# both missed a shell launched as `qs -c laptop` / `--config` / `-p` / with a
+# flag in between -- so it was never stopped on a theme switch -- AND reported
+# such a shell as not running, so this script launched a second copy of it.
+# Either way: two bars stacked at the top of the screen.
+#
+# The pkill fallbacks only matter on an install whose theme-switcher hasn't
+# been synced since qs-stop.sh was added.
+QS_STOP="$BASE/qs-stop.sh"
 QS_PATTERN="quickshell -c $qs_config"
 
-# Every OTHER theme's Quickshell shell, so starting this one can tear down
-# one left running by a theme switch that didn't go through apply-theme.sh
-# (or a login where the previous session's shell was still up). Read from
-# the themes themselves rather than hardcoded, same as apply-theme.sh does --
-# plus any config directory carrying a colors.json, which is how a shell no
-# theme names any more gets stopped too (quickshell/bar/ was
-# quickshell/hyperspace/; a `-c hyperspace` left from before that rename
-# would otherwise stack a second bar). Same rule as apply-theme.sh's
-# qs_configs_all.
+# Every OTHER bar shell: one left running by a theme switch that didn't go
+# through apply-theme.sh, a login where the previous session's shell was
+# still up, or a config no theme names any more (`-c hyperspace`, from
+# before quickshell/hyperspace/ became quickshell/bar/).
 stop_other_qs_shells() {
-  local dir id
-  {
-    if command -v jq >/dev/null 2>&1; then
-      for dir in "$BASE"/themes/*/; do
-        [[ -r "$dir/theme.json" ]] || continue
-        [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
-        jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null
-      done
-    fi
-    for dir in "$HOME"/.config/quickshell/*/; do
-      if [[ -f "$dir/colors.json" ]]; then basename "$dir"; fi
-    done
-  } | sort -u | while IFS= read -r id; do
-    if [[ -n "$id" && "$id" != "null" && "$id" != "$qs_config" ]]; then
-      pkill -9 -f "quickshell -c $id" >/dev/null 2>&1 || true
-    fi
-  done
+  if [[ -r "$QS_STOP" ]]; then
+    bash "$QS_STOP" --keep "$qs_config" || true
+  fi
+}
+
+qs_running() {
+  if [[ -r "$QS_STOP" ]]; then
+    bash "$QS_STOP" --running "$qs_config"
+  else
+    pgrep -f "$QS_PATTERN" >/dev/null 2>&1
+  fi
+}
+
+qs_stop_own() {
+  if [[ -r "$QS_STOP" ]]; then
+    bash "$QS_STOP" --only "$qs_config" || true
+  else
+    pkill -9 -f "$QS_PATTERN" >/dev/null 2>&1 || true
+  fi
 }
 
 running() {
   if [[ "$bar_mode" == "quickshell-dock" ]]; then
-    pgrep -f "$QS_PATTERN" >/dev/null 2>&1
+    qs_running
   else
     pgrep -x waybar >/dev/null 2>&1
   fi
@@ -97,7 +105,7 @@ running() {
 
 stop_bar() {
   if [[ "$bar_mode" == "quickshell-dock" ]]; then
-    pkill -9 -f "$QS_PATTERN" >/dev/null 2>&1 || true
+    qs_stop_own
   else
     pkill -x waybar >/dev/null 2>&1 || true
     pkill -x swaync >/dev/null 2>&1 || true
@@ -115,7 +123,7 @@ start_bar() {
     stop_other_qs_shells
 
     if command -v quickshell >/dev/null 2>&1; then
-      pgrep -f "$QS_PATTERN" >/dev/null 2>&1 || {
+      qs_running || {
         # "$qs_config", never a literal. This line said `-c laptop` while
         # the pgrep above it tested for the ACTIVE theme's config, so under
         # any other Quickshell theme it looked for a shell that wasn't
@@ -129,8 +137,12 @@ start_bar() {
       echo "start_bar.sh: quickshell not found -- $qs_config bar/notifications not started" >&2
     fi
   else
-    pkill -9 -f "$QS_PATTERN" >/dev/null 2>&1 || true
-    stop_other_qs_shells
+    # Waybar theme: every Quickshell bar goes, this "config" included.
+    if [[ -r "$QS_STOP" ]]; then
+      bash "$QS_STOP" --keep "" || true
+    else
+      pkill -9 -f "$QS_PATTERN" >/dev/null 2>&1 || true
+    fi
     pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
     pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
   fi
