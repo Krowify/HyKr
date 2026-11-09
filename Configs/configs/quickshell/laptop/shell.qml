@@ -85,31 +85,31 @@ ShellRoot {
         NotificationToasts {}
     }
 
-    // barHeight / rightOffset follow BarStyle.qml: a floating bar (Default)
-    // sits BarStyle.gap lower and BarStyle.sideGap further in from the right edge
+    // barHeight / rightOffset follow Colors.qml: a floating bar (Default)
+    // sits Colors.barGap lower and Colors.barGap further in from the right edge
     // than the flat one, so the panels move with it. Both are 0 for the flat
     // Sakura bar, which leaves these at the values they always had.
     VolumePanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "volume"
-        barHeight: BarStyle.barBottom
-        rightOffset: 170 + BarStyle.sideGap
+        barHeight: Colors.barBottom
+        rightOffset: 170 + Colors.barGap
     }
     NetworkPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "network"
-        barHeight: BarStyle.barBottom
-        rightOffset: 130 + BarStyle.sideGap
+        barHeight: Colors.barBottom
+        rightOffset: 130 + Colors.barGap
     }
     BluetoothPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "bluetooth"
-        barHeight: BarStyle.barBottom
-        rightOffset: 90 + BarStyle.sideGap
+        barHeight: Colors.barBottom
+        rightOffset: 90 + Colors.barGap
     }
     NotificationCenterPanel {
         anchorScreen: DockState.activeScreen
         visible: DockState.activePanel === "notifications"
-        barHeight: BarStyle.barBottom
+        barHeight: Colors.barBottom
     }
 }

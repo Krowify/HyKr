@@ -699,7 +699,7 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
   # "quickshell" block except "config". Lets several themes share one shell
   # and still draw different bars:
   #
-  #   quickshell/laptop/BarStyle.qml  rounded, radius, gap, border, clockSize,
+  #   quickshell/laptop/Colors.qml  rounded, radius, gap, border, clockSize,
   #                                   dateSize
   #                                   (Sakura's flat strip vs Default's
   #                                   floating rounded bar)

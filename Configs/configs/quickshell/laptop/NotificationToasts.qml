@@ -20,11 +20,11 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "laptop-popup"
 
-    // Bar bottom (34, plus BarStyle.gap for a floating bar) + 10 -- toasts sit
+    // Bar bottom (34, plus Colors.barGap for a floating bar) + 10 -- toasts sit
     // below the top bar instead of flush against the screen edge, and line
     // up with a floating bar's inset right edge.
     anchors { top: true; right: true }
-    margins { top: BarStyle.barBottom + 10; right: 14 + BarStyle.sideGap }
+    margins { top: Colors.barBottom + 10; right: 14 + Colors.barGap }
     implicitWidth: 280
     // With no toasts queued the Column measures 0, which left this mapped
     // as a zero-height layer-shell surface the whole time the dock was up.
@@ -51,12 +51,12 @@ PanelWindow {
                 // the color rather than the opacity property. The urgency
                 // stripe and the text below stay fully opaque so a toast is
                 // still readable over a busy wallpaper.
-                color: Qt.rgba(0.051, 0.102, 0.094, 0.55)
+                color: Colors.cardBg
                 border.width: 1
-                border.color: Qt.rgba(1, 1, 1, 0.1)
+                border.color: Colors.barBorder
 
-                readonly property color urgencyColor: urgency === "critical" ? "#f87171"
-                    : urgency === "low" ? "#6f8985" : "#c8102e"
+                readonly property color urgencyColor: urgency === "critical" ? Colors.red
+                    : urgency === "low" ? Colors.muted : Colors.accent
 
                 Rectangle {
                     width: 3
@@ -72,11 +72,11 @@ PanelWindow {
                     anchors.leftMargin: 16
                     spacing: 2
 
-                    Text { text: appName; color: "#8fa39f"; font.pixelSize: 10 }
-                    Text { text: summary; color: "#eaf0ee"; font.pixelSize: 13; font.weight: Font.DemiBold; width: parent.width; wrapMode: Text.WordWrap }
+                    Text { text: appName; color: Colors.icon; font.pixelSize: 10 }
+                    Text { text: summary; color: Colors.text; font.pixelSize: 13; font.weight: Font.DemiBold; width: parent.width; wrapMode: Text.WordWrap }
                     Text {
                         visible: body.length > 0
-                        text: body; color: "#c8d4d1"; font.pixelSize: 11; width: parent.width; wrapMode: Text.WordWrap
+                        text: body; color: Colors.textSoft; font.pixelSize: 11; width: parent.width; wrapMode: Text.WordWrap
                     }
                 }
 

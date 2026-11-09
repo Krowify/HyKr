@@ -37,15 +37,15 @@ PanelWindow {
     required property var modelData
     readonly property var targetScreen: modelData
 
-    // The bar's own height comes from BarStyle.qml; the layer surface is that
+    // The bar's own height comes from Colors.qml; the layer surface is that
     // plus the gap a rounded (floating) bar keeps from the top edge -- zero
     // for the flat bar, so its surface is exactly the 34px it always was.
-    readonly property int barHeight: BarStyle.barHeight
+    readonly property int barHeight: Colors.barHeight
 
     screen: targetScreen
     color: "transparent"
-    implicitHeight: BarStyle.barBottom
-    exclusiveZone: BarStyle.barBottom
+    implicitHeight: Colors.barBottom
+    exclusiveZone: Colors.barBottom
 
     anchors { top: true; left: true; right: true }
 
@@ -71,7 +71,7 @@ PanelWindow {
     // opaque one at a glance. Content now lives as siblings below,
     // full opacity, on top of this.
     //
-    // Inset by BarStyle.gap and rounded by BarStyle.radius when the theme asks for
+    // Inset by Colors.barGap and rounded by Colors.barRadius when the theme asks for
     // a floating bar (Default); both are 0 for the flat one (Sakura). The
     // strip around a floating bar is fully transparent, which the theme's
     // ignore_alpha = 0.2 layer rule keeps out of the blur -- only the
@@ -79,13 +79,13 @@ PanelWindow {
     Rectangle {
         id: barBackground
         anchors.fill: parent
-        anchors.topMargin: BarStyle.gap
-        anchors.leftMargin: BarStyle.sideGap
-        anchors.rightMargin: BarStyle.sideGap
-        radius: BarStyle.radius
-        color: Qt.rgba(0.039, 0.078, 0.071, 0.55) // #0a1412 at 55% alpha
+        anchors.topMargin: Colors.barGap
+        anchors.leftMargin: Colors.barGap
+        anchors.rightMargin: Colors.barGap
+        radius: Colors.barRadius
+        color: Colors.barBg // the theme's background at 55% alpha -- see Colors.qml
         border.width: 1
-        border.color: BarStyle.borderColour
+        border.color: Colors.barBorder
     }
 
     // Content tracks the background exactly, so a floating bar's icons stay
@@ -119,7 +119,7 @@ PanelWindow {
                         // a neutral white alpha: they read as "unlit", and
                         // tinting them too would leave nothing for the active
                         // one to contrast against.
-                        color: isActive ? Colors.accent : Qt.rgba(1, 1, 1, 0.22)
+                        color: isActive ? Colors.accent : Colors.muted
 
                         Behavior on width { NumberAnimation { duration: 120 } }
 
@@ -179,7 +179,7 @@ PanelWindow {
                             text: Services.BatteryService.percent + "%"
                             font.pixelSize: 11
                             font.family: "monospace"
-                            color: Services.BatteryService.low ? "#c8102e" : "#c8d4d1"
+                            color: Services.BatteryService.low ? Colors.red : Colors.textSoft
                             // Animating width rather than toggling visible
                             // slides the label out from behind the icon, and
                             // clip keeps the digits inside whatever width it
@@ -235,7 +235,7 @@ PanelWindow {
                                 // Same accent the other icons use for "needs
                                 // your attention", here meaning on battery and
                                 // under 15%.
-                                color: Services.BatteryService.low ? "#c8102e" : "#9fb3ae"
+                                color: Services.BatteryService.low ? Colors.red : Colors.icon
                             }
                         }
                     }
@@ -249,7 +249,7 @@ PanelWindow {
                         text: Services.AudioService.muted ? "\u{F075F}" : "\u{F057E}"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: DockState.isActive(root.targetScreen, "volume") ? "#c8102e" : "#9fb3ae"
+                        color: DockState.isActive(root.targetScreen, "volume") ? Colors.accent : Colors.icon
                     }
                     TapHandler { onTapped: DockState.toggle(root.targetScreen, "volume") }
                 }
@@ -263,7 +263,7 @@ PanelWindow {
                             : Services.NetworkService.connectionType === "ethernet" ? "" : ""
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: DockState.isActive(root.targetScreen, "network") ? "#c8102e" : "#9fb3ae"
+                        color: DockState.isActive(root.targetScreen, "network") ? Colors.accent : Colors.icon
                     }
                     TapHandler {
                         acceptedButtons: Qt.LeftButton
@@ -283,20 +283,20 @@ PanelWindow {
                         text: "\u{F00AF}"
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: DockState.isActive(root.targetScreen, "bluetooth") ? "#c8102e"
-                            : (Services.BluetoothService.powered ? "#9fb3ae" : "#5c6d6a")
+                        color: DockState.isActive(root.targetScreen, "bluetooth") ? Colors.accent
+                            : (Services.BluetoothService.powered ? Colors.icon : Colors.muted)
                     }
                     TapHandler { onTapped: DockState.toggle(root.targetScreen, "bluetooth") }
                 }
 
-                // BarStyle.dateSize (12 unless the theme bumps it), and the
+                // Colors.dateSize (12 unless the theme bumps it), and the
                 // theme's Nerd Font rather than "monospace" -- the same soft,
                 // pixelated rendering the clock had at 12px.
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Qt.formatDateTime(clock.now, "ddd d")
-                    color: "#c8d4d1"
-                    font.pixelSize: BarStyle.dateSize
+                    color: Colors.textSoft
+                    font.pixelSize: Colors.dateSize
                     font.family: "JetBrainsMono Nerd Font"
                 }
 
@@ -310,12 +310,12 @@ PanelWindow {
                         text: ""
                         font.family: "JetBrainsMono Nerd Font"
                         font.pixelSize: 15
-                        color: DockState.isActive(root.targetScreen, "notifications") ? "#c8102e" : "#9fb3ae"
+                        color: DockState.isActive(root.targetScreen, "notifications") ? Colors.accent : Colors.icon
                     }
                     Rectangle {
                         visible: Services.NotificationService.unreadCount > 0
                         width: 6; height: 6; radius: 3
-                        color: "#f87171"
+                        color: Colors.red
                         anchors.top: parent.top
                         anchors.right: parent.right
                     }
@@ -332,15 +332,15 @@ PanelWindow {
         // the whole bar.
         //
         // The theme's Nerd Font rather than the generic "monospace" alias,
-        // and BarStyle.clockSize (12 unless the theme bumps it): "monospace" at
+        // and Colors.clockSize (12 unless the theme bumps it): "monospace" at
         // 12px resolved to a face that rendered visibly soft/pixelated.
         Text {
             anchors.centerIn: parent
             text: Qt.formatDateTime(clock.now, "hh:mm")
-            color: "#eaf0ee"
-            font.pixelSize: BarStyle.clockSize
+            color: Colors.text
+            font.pixelSize: Colors.clockSize
             font.family: "JetBrainsMono Nerd Font"
-            font.weight: BarStyle.clockSize > 12 ? Font.DemiBold : Font.Normal
+            font.weight: Colors.clockSize > 12 ? Font.DemiBold : Font.Normal
         }
     }
 

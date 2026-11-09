@@ -16,7 +16,7 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Surface | How |
 | --- | --- |
 | Window borders | Flat `#adf0e9` active border, via `templates/hyprland.lua.tpl` |
-| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — floating 8px in from the top and sides, 15px rounded corners (near-pill on the 34px bar), a light grey `#9aa3a8` outline, and a 14px clock and date, all set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/BarStyle.qml`). The Sakura theme runs the same shell flat and edge-to-edge |
+| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — floating 8px in from the top and sides, 15px rounded corners (near-pill on the 34px bar), a light grey `#9aa3a8` outline, and a 14px clock and date, all set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`). The Sakura theme runs the same shell flat and edge-to-edge |
 | Notifications | That same Quickshell process, via its own native notification daemon — not swaync |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |
@@ -39,7 +39,7 @@ and the shell's `FileView` repaints on write.
 So Default points at it rather than duplicating ~690 lines of QML for a
 bar of the same shape, and draws it differently through its `theme.json`'s
 `"quickshell"` block (floating, rounded, lighter outline, larger clock and
-date -- see `quickshell/laptop/BarStyle.qml`), where Sakura keeps the flat
+date -- see `quickshell/laptop/Colors.qml`), where Sakura keeps the flat
 edge-to-edge strip.
 
 ## What was NOT ported, and why
