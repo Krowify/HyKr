@@ -1,7 +1,7 @@
 {
   "name": "Default",
   "id": "default",
-  "default_wallpaper": "wallpapers/blackturq.jpg",
+  "default_wallpaper": "wallpapers/guitar_case.jpg",
 
   "quickshell": {
     "config": "laptop",
