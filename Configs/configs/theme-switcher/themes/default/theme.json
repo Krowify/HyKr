@@ -16,6 +16,13 @@
     "dateSize": 14
   },
 
+  "fastfetch": {
+    "logo": {
+      "type": "file",
+      "source": "assets/hykr-logo.txt"
+    }
+  },
+
   "fonts": {
     "family": "JetBrainsMono Nerd Font",
     "family_bold": "JetBrainsMono Nerd Font Bold"

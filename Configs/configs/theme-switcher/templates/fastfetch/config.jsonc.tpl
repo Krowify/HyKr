@@ -14,6 +14,11 @@
     "source": "{{logo_source}}",
     "width": {{logo_width}},
     "height": {{logo_height}},
+    "color": {
+      "1": "{{grad0}}",
+      "2": "{{fg}}",
+      "3": "{{fg_dim}}"
+    },
     "padding": {
       "top": 0,
       "left": 2,

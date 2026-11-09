@@ -19,8 +19,9 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`), in its `"layout": "islands"` form: three islands floating 8px in from the top and sides — workspaces on the left, the clock in the centre, battery/volume/network/bluetooth/date/notifications on the right. The two side islands are always the same width, and the left one adds CPU and RAM utilisation whenever both side islands still clear the centre one at that width (per screen — a narrow monitor just leaves them out). 15px corners, a light grey `#9aa3a8` outline, a 14px clock and date in your kitty font (`"font": "kitty"` — read from kitty.conf's `font_family` on each theme apply; icons stay on JetBrainsMono Nerd Font), colours from this theme's palette. All set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`); Sakura runs the same shell as one flat edge-to-edge bar |
 | Notifications | That same Quickshell process, via its own native notification daemon — not swaync |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
+| fastfetch | `assets/hykr-logo.txt` — a "HyKr" wordmark (capitals in the accent, lowercase in the text colour, a dim `hyprland · arch` tag) instead of the random-Pokémon logo; its `$1`/`$2`/`$3` colours are filled from the palette on every apply, via the shared fastfetch template's `logo.color` |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |
-| Wofi / rofi, kitty, starship, wlogout, fastfetch, GTK 3/4, Qt6, VS Code, Obsidian, spicetify, peaclock | The shared templates in `../../templates/`, same as every other theme |
+| Wofi / rofi, kitty, starship, wlogout, GTK 3/4, Qt6, VS Code, Obsidian, spicetify, peaclock | The shared templates in `../../templates/`, same as every other theme |
 
 Because the palette lives in `colors.json`, every one of those shared
 templates renders in Default with no per-theme file — which is why this
