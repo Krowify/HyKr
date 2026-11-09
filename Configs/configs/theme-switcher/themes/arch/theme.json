@@ -2,7 +2,6 @@
   "name": "Arch",
   "id": "arch",
   "default_wallpaper": "wallpapers/arch_logo.png",
-  "bar": "quickshell-dock",
 
   "quickshell": {
     "config": "bar",

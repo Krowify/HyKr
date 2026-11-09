@@ -12,16 +12,14 @@ pipewire-audio                                         # pipewire audio meta-pac
 sof-firmware                                            # DSP firmware many modern laptops (Intel/AMD SOF audio) need for speakers/mic to work at all -- silent no-op on hardware that doesn't use it, but silent-audio-on-first-boot is a very common gap without it
 wireplumber                                            # pipewire session manager
 alsa-utils                                             # alsamixer/amixer -- low-level ALSA control, useful when PipeWire's own mixer isn't picking up hardware
-pavucontrol                                            # full mixer, a middle-click on the volume module of the Quickshell pill/stats bars (quickshell/bar/), and the waybar fallback's left-click
+pavucontrol                                            # full mixer, a middle-click on the volume module of the Quickshell pill/stats bars (quickshell/bar/)
 networkmanager                                         # network manager
 nm-connection-editor                                   # network manager gui, a right-click on any Quickshell bar's network icon
 bluez                                                  # bluetooth protocol stack
 bluez-utils                                            # bluetooth utility cli
 blueman                                                # bluetooth manager gui, the "Open manager" button in the Quickshell bars' bluetooth panel
-pacman-contrib                                         # provides checkupdates, used by waybar's custom/pacman module
 gnome-keyring                                          # libsecret keyring daemon -- Hyprland has no keyring of its own like GNOME/KDE, so apps needing one (VS Code, browsers) fail without this; autostarted in hyprland.lua
 hyprpolkitagent                                        # polkit authentication agent -- Hyprland has no polkit agent of its own either, so a privilege-escalation prompt (mounting a drive from Dolphin, some NetworkManager/Bluetooth actions) silently fails or hangs without this; autostarted in hyprland.lua
-psmisc                                                 # provides killall, used unconditionally by waybar's colorpicker.sh to stop any stale hyprpicker before relaunching it — was never listed as a dependency
 xdg-desktop-portal-hyprland                            # xdg desktop portal for hyprland
 xdg-desktop-portal-gtk                                 # file picker / dbus integration
 gvfs                                                   # GIO virtual filesystems: trash and MTP/phone access in GTK apps and the GTK file picker (xdg-desktop-portal-gtk) -- Dolphin itself uses KIO, not this
@@ -29,10 +27,10 @@ qt5-wayland                                            # wayland support for qt5
 qt6-wayland                                            # wayland support for qt6 apps
 
 # --------------------------------------------------- // Theming
-python-pywal16                                         # generates the colors waybar/wofi/swaync style.css all @import — 16-color fork of pywal, needed for the --cols16 flag used in wallpaper.sh/link_dots.sh (plain python-pywal doesn't support it, provides/replaces it, same `wal` command)
+python-pywal16                                         # generates the colors wofi/wlogout style.css @import — 16-color fork of pywal, needed for the --cols16 flag used in wallpaper.sh/link_dots.sh (plain python-pywal doesn't support it, provides/replaces it, same `wal` command)
 awww                                                    # wallpaper daemon, paired with pywal by wofi's wallpaper picker (newer fork of swww, same usage)
-kitty                                                  # terminal, opened by swaync's nmtui quick action and wofi
-nerd-fonts                                             # glyphs used by waybar, wofi, and starship
+kitty                                                  # terminal, Super+Return and the dropdown terminal
+nerd-fonts                                             # glyphs used by the Quickshell bars, wofi, and starship
 fd                                                      # used by wofi's wallpaper picker and nvim's telescope
 materia-gtk-theme                                      # GTK widget theme (Materia-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
 qogir-icon-theme                                       # icon theme (Qogir-dark) — elifouts/Dotfiles' preference, set in Configs/configs/gtk-{3,4}.0/settings.ini
@@ -40,9 +38,7 @@ illogical-impulse-bibata-modern-classic-bin            # cursor theme — from e
 nwg-look                                                # GUI to apply/preview the GTK theme (also reads gtk-{3,4}.0/settings.ini)
 qt6ct-kde                                              # Qt6 theming, patched fork of qt6ct (AUR) -- plain qt6ct doesn't style KDE Frameworks apps (dolphin) correctly, only generic Qt6 apps. Same config path/format as qt6ct, same QT_QPA_PLATFORMTHEME=qt6ct env value.
 
-# --------------------------------------------------- // Waybar
-waybar
-hyprpicker                                             # backs waybar's custom/colorpicker widget
+# --------------------------------------------------- // Quickshell bars
 nvtop                                                  # GPU-load fallback for the Minimal theme's stats bar (quickshell/bar/services/SystemStatsService.qml) when neither amdgpu sysfs nor nvidia-smi answers -- GPU-agnostic despite the name
 
 # --------------------------------------------------- // Wofi
@@ -51,8 +47,7 @@ wofi
 # --------------------------------------------------- // Rofi
 rofi                                                    # icon-grid picker used by wallpaper.sh and apply-theme.sh's dynamic theme picker — wofi's own image grid is flaky to click-select, so this is preferred when present
 
-# --------------------------------------------------- // Swaync
-swaync
+# --------------------------------------------------- // Notifications
 libnotify                                              # provides notify-send, used across the stack
 
 # --------------------------------------------------- // Hyprlock

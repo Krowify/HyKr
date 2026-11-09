@@ -12,7 +12,7 @@ DIR="$(dirname "$(realpath "$0")")"
 # nothing has de-symlinked it yet), rewriting config.json in place would
 # edit the tracked repo file. De-symlink to a real, independent copy
 # first -- same pattern apply-theme.sh's de_symlink() uses for hypr,
-# waybar, gtk-4.0, etc.
+# wofi, gtk-4.0, etc.
 if [ -L "$HOME/.config/quickshell" ]; then
     real="$(readlink -f "$HOME/.config/quickshell")"
     rm -f "$HOME/.config/quickshell"

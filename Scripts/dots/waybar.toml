@@ -1,3 +1,0 @@
-[waybar]
-source = "Configs/configs/waybar"
-target = "~/.config/waybar"

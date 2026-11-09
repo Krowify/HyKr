@@ -2,7 +2,6 @@
   "name": "Graphite",
   "id": "graphite",
   "default_wallpaper": "wallpapers/arch.png",
-  "bar": "quickshell-dock",
 
   "quickshell": {
     "config": "bar",

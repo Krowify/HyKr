@@ -2,11 +2,10 @@
 
 A shared, palette-driven shell any theme can run: a top bar on every screen
 — in one of several styles, a dynamic notch or three floating islands so
-far — a native notification daemon with toasts, and four popup panels. It
-runs *instead of* waybar + swaync — the theme's `theme.json` says so:
+far — a native notification daemon with toasts, and four popup panels. A
+theme picks it in its `theme.json`:
 
 ```json
-"bar": "quickshell-dock",
 "quickshell": { "config": "bar", "style": "notch" }
 ```
 
@@ -14,7 +13,7 @@ runs *instead of* waybar + swaync — the theme's `theme.json` says so:
 used it. `apply-theme.sh` and `hypr/start_bar.sh` still stop a leftover
 `quickshell -c hyperspace` process from before the rename.)
 
-`theme-switcher/apply-theme.sh` reads those two on a theme switch,
+`theme-switcher/apply-theme.sh` reads that block on a theme switch,
 `hypr/start_bar.sh` on login and on `Super+Ctrl+B`, and `hypr/dock_ipc.sh`
 when a keybind needs to talk to the running shell. None of them hardcode a
 config name, so adding another Quickshell-based theme needs no changes to

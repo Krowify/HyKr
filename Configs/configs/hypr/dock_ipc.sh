@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# Call a function on the running Quickshell dock's IpcHandler, falling back
-# to swaync-client when the active theme has no such dock.
+# Call a function on the running Quickshell dock's IpcHandler.
 #
 #   dock_ipc.sh toggle-notifications
 #   dock_ipc.sh toggle-dnd
 #
-# The Quickshell themes (Laptop, Hyperspace) replace swaync entirely -- each
-# shell carries its own notification daemon -- so the Super+N keybind and
-# quick_settings.sh's DND entry have to reach the shell instead. They used
+# Each theme's Quickshell shell carries its own notification daemon, so the
+# Super+N keybind and quick_settings.sh's DND entry have to reach the shell.
+# They used
 # to do that by shelling out to a hardcoded `quickshell -c laptop ipc call
 # dock ...`, which silently did nothing under any OTHER Quickshell theme.
 # This resolves the config name from the active theme (theme.json's
@@ -25,8 +24,8 @@ action="${1:-}"
 [[ -z "$action" ]] && { echo "Usage: dock_ipc.sh <toggle-notifications|toggle-dnd>" >&2; exit 2; }
 
 case "$action" in
-    toggle-notifications) qs_fn="toggleNotifications"; fallback=(swaync-client -t -sw) ;;
-    toggle-dnd)           qs_fn="toggleDnd";           fallback=(swaync-client --toggle-dnd) ;;
+    toggle-notifications) qs_fn="toggleNotifications" ;;
+    toggle-dnd)           qs_fn="toggleDnd" ;;
     *) echo "dock_ipc.sh: unknown action '$action'" >&2; exit 2 ;;
 esac
 
@@ -43,13 +42,7 @@ if command -v jq >/dev/null 2>&1 && [[ -r "$CURRENT" ]]; then
     fi
 fi
 
-# The ipc call is the test: under a waybar theme no such shell is running,
-# so it fails and the swaync path runs unchanged -- exactly the behaviour
-# the hardcoded version had, just no longer tied to one config name.
-if command -v quickshell >/dev/null 2>&1 &&
-   quickshell -c "$qs_config" ipc call dock "$qs_fn" >/dev/null 2>&1; then
-    exit 0
-fi
-
-command -v "${fallback[0]}" >/dev/null 2>&1 || exit 0
-"${fallback[@]}" >/dev/null 2>&1 || true
+# Nothing to fall back to: with no shell running there is no notification
+# center to toggle, so a failed call is simply a no-op.
+command -v quickshell >/dev/null 2>&1 || exit 0
+quickshell -c "$qs_config" ipc call dock "$qs_fn" >/dev/null 2>&1 || true

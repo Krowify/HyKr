@@ -4,7 +4,7 @@
 # apply-theme.sh and hypr/start_bar.sh.
 #
 #   qs-stop.sh --keep NAME     stop every bar shell EXCEPT config NAME
-#                              ("" = stop them all, i.e. going back to waybar)
+#                              ("" = stop them all)
 #   qs-stop.sh --only NAME     stop config NAME and nothing else (a restart)
 #   qs-stop.sh --running NAME  exit 0 if config NAME is running, 1 if not
 #   qs-stop.sh --list          print "<pid> <config>" for every instance
@@ -81,7 +81,6 @@ bar_configs() {
     if command -v jq >/dev/null 2>&1; then
       for dir in "$BASE"/themes/*/; do
         [[ -r "$dir/theme.json" ]] || continue
-        [[ "$(jq -r '.bar // "waybar"' "$dir/theme.json" 2>/dev/null)" == "quickshell-dock" ]] || continue
         jq -r '.quickshell.config // "laptop"' "$dir/theme.json" 2>/dev/null
       done
     fi

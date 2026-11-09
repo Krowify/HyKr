@@ -14,7 +14,7 @@
 # and only falls back to a plain wofi list).
 #
 # The actual "apply this wallpaper" step (awww + pywal + kitty/starship/
-# swaync/pywalfox propagation) lives in apply_wallpaper.sh, shared with
+# pywalfox propagation) lives in apply_wallpaper.sh, shared with
 # the quickshell wallpaper-picker (Super+Shift+W) so both pickers drive
 # the same color pipeline instead of duplicating it. That pipeline uses
 # pywal's actual per-wallpaper colors rather than whatever theme-switcher

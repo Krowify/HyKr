@@ -10,8 +10,7 @@
 # Why the unlock side exists: hyprlock takes an exclusive ext-session-lock
 # surface, and a Quickshell shell (`quickshell -c hyperspace`, `-c laptop`)
 # does not always survive that -- come back from the lock screen and the
-# dock can be gone, with nothing supervising it to bring it back. waybar
-# themes are no different in principle; start_bar.sh handles either.
+# dock can be gone, with nothing supervising it to bring it back.
 #
 # start_bar.sh only starts what the ACTIVE theme asks for, and only if it
 # isn't already running, so on a healthy unlock this is a no-op rather than

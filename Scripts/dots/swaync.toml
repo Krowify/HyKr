@@ -1,3 +1,0 @@
-[swaync]
-source = "Configs/configs/swaync"
-target = "~/.config/swaync"

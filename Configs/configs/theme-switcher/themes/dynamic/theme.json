@@ -2,7 +2,6 @@
   "name": "Dynamic - Matugen",
   "id": "dynamic",
   "default_wallpaper": "wallpapers/peakpx.jpg",
-  "bar": "quickshell-dock",
 
   "quickshell": {
     "config": "bar",

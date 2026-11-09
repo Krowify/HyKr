@@ -6,7 +6,7 @@ of the application it configures, so it can be symlinked directly into
 
 Currently sourced from [elifouts/Dotfiles](https://github.com/elifouts/Dotfiles):
 
-- `waybar/`, `wofi/`, `swaync/`, `nvim/`, `starship.toml`, `wal/`, `wlogout/`
+- `wofi/`, `nvim/`, `starship.toml`, `wal/`, `wlogout/`
 - `hypr/` — `hyprlock.conf` as-is; `hyprland.lua` is ours (keybinds); `hypridle.conf`
   and `wallpaper.sh` are adapted (dropped references to things not in this repo:
   a `cava` config, an unrecognized `hyprdvd` tool, a hardcoded Spotify path)
@@ -31,14 +31,13 @@ Not from elifouts:
   runtime-tested — no `quickshell` binary in the dev environment this was
   built in; the `Process`/polling blocks are the most likely thing to need
   fixing if something doesn't work.
-- `quickshell/laptop/` — the Sakura theme's whole bar stack, replacing
-  waybar + swaync with one process (`quickshell -c laptop`): a horizontal
+- `quickshell/laptop/` — the Sakura and Default themes' whole bar stack,
+  bar and notifications in one process (`quickshell -c laptop`): a horizontal
   top dock per screen (workspaces, clock, battery/volume/network/bluetooth/
   date/notifications — hover the battery for the exact percentage), four
   popup panels, and a native notification daemon with a toast stack. Exposes an `IpcHandler` on target `dock`
   (reached through `hypr/dock_ipc.sh`) so `Super+N` and the quick-settings
-  DND entry hit it under this theme instead of the swaync-client they still
-  use everywhere else. Same not-runtime-tested caveat as
+  DND entry reach it. Same not-runtime-tested caveat as
   `quickshell/hykr/` above.
 - `quickshell/bar/` — the shared, palette-driven bar stack
   (`quickshell -c bar`; was `quickshell/hyperspace/`), same idea as
@@ -49,9 +48,8 @@ Not from elifouts:
   hanging off the top edge that widens around a fixed clock when something
   changes and collapses again (Hyperspace, and the default); `islands`,
   three floating pills across the top; `pill`, one centred pill holding
-  everything (Arch, Dynamic, Everforest, Graphite — their old waybar
-  layout); and `stats`, three thin pills with CPU/GPU/RAM/temperature
-  readings (Minimal's old waybar layout).
+  everything (Arch, Dynamic, Everforest, Graphite); and `stats`, three thin
+  pills with CPU/GPU/RAM/temperature readings (Minimal).
   Panels drop under whichever icon was clicked, measured from the live
   layout rather than hardcoded offsets, which is what lets one set of panels
   serve both. Every .qml but the services sits in the config root: reached
@@ -117,8 +115,7 @@ Not from elifouts:
   says hibernation is possible — the hibernate half is a property of the
   sleep operation, so plain `suspend` here would bound nothing.
 - `hypr/dock_ipc.sh` — calls a function on whichever Quickshell dock the
-  active theme runs (`toggle-notifications`, `toggle-dnd`), falling back to
-  `swaync-client` under the waybar themes. Used by `Super+N` and the
+  active theme runs (`toggle-notifications`, `toggle-dnd`). Used by `Super+N` and the
   quick-settings DND entry, which previously hardcoded
   `quickshell -c laptop` and so did nothing under any other Quickshell theme.
 - `hypr/quick_settings.sh` — lightweight wofi menu (`Super+S`) wrapping
@@ -132,16 +129,13 @@ Not from elifouts:
   (`/dev/rfkill` is root-only, so an rfkill bind fails silently on a
   keypress). Always exits 0 — these are bound to hardware keys that may not
   emit a keycode at all on a given machine.
-- `hypr/start_bar.sh` — picks the bar + notification daemon from the theme
-  that's actually active (`current-theme.json` → that theme's `theme.json`
-  `bar` and `quickshell.config` fields) instead of hardcoding one: `waybar`
-  + `swaync` for most themes, `quickshell -c <config>` for a theme with
-  `"bar": "quickshell-dock"` (every shipped theme now). It also stops any other
-  theme's Quickshell shell, so switching between two of them can't stack
-  two bars. Run from `hyprland.lua`'s autostart, and with
-  `--toggle` from `Super+Ctrl+B`, both of which used to start waybar
-  unconditionally — which is why waybar kept reappearing on top of the
-  Quickshell dock after every login.
+- `hypr/start_bar.sh` — starts the bar + notification daemon of the theme
+  that's actually active: `quickshell -c <config>`, from `current-theme.json`
+  → that theme's `theme.json` `quickshell.config` field (default `laptop`).
+  It also stops any other theme's Quickshell shell, so switching between two
+  of them can't stack two bars, and any waybar/swaync left over from an older
+  HyKr install. Run from `hyprland.lua`'s autostart, from `lock.sh` after an
+  unlock, and with `--toggle` from `Super+Ctrl+B`.
 - `hypr/KEYBINDS.md` — every bind in `hyprland.lua`, grouped the same
   way the file is, as Keybind/Action tables — a human-readable index,
   not copy-pasteable syntax (see `hyprland.lua` directly for that).
@@ -157,7 +151,7 @@ Not from elifouts:
   `scripts/theme-picker.sh` were pulled in.
 
   **Important, HyKr-specific fix**: `apply-theme.sh` writes directly
-  into `hypr/`, `wofi/`, `kitty/`, `waybar/`, `swaync/`, `wlogout/`,
+  into `hypr/`, `wofi/`, `kitty/`, `wlogout/`,
   `fastfetch/`, and `starship.toml` — all paths `link_dots.sh` symlinks
   *whole-directory* from this repo. Applying a theme unmodified would
   write straight through those symlinks and silently overwrite this

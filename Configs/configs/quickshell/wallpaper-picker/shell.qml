@@ -6,7 +6,7 @@
 // singletons (~200 extra lines across 5 files) and renders the wallpaper
 // itself via a custom GPU shader layer instead of a compositor daemon. This
 // keeps a single self-contained file and defers entirely to commands.sh ->
-// apply_wallpaper.sh (awww + pywal + kitty/starship/swaync/pywalfox), same
+// apply_wallpaper.sh (awww + pywal + kitty/starship/pywalfox), same
 // as the picker it replaces.
 //
 // Selecting a card now stages a choice instead of applying immediately --

@@ -23,11 +23,9 @@ case "$chosen" in
         bluetoothctl power "$(bluetoothctl show | grep -q 'Powered: yes' && echo off || echo on)"
         ;;
     *"DND"*)
-        # Under a Quickshell theme (Laptop, Hyperspace) that shell owns
-        # notifications and swaync isn't running, so this entry did nothing
-        # there. dock_ipc.sh asks whichever dock the active theme runs -- it
-        # flips the same doNotDisturb the notification center's own switch
-        # does -- and falls back to swaync-client under the waybar themes.
+        # The active theme's Quickshell shell owns notifications.
+        # dock_ipc.sh asks whichever dock the active theme runs -- it flips
+        # the same doNotDisturb the notification center's own switch does.
         ~/.config/hypr/dock_ipc.sh toggle-dnd
         ;;
     *"Night Light"*)

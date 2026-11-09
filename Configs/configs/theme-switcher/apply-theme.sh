@@ -32,8 +32,8 @@ OUT="$HOME/.config/hypr/generated-theme.lua"
 [[ ! -f "$TPL" ]] && { echo "Missing: $TPL"; exit 1; }
 
 # HyKr: this script's writes below (hypr/generated-theme.conf,
-# hypr/hyprlock.conf, wofi/style.css, kitty/theme.conf, waybar/config +
-# style.css, swaync's config/style, wlogout's colors/layout,
+# hypr/hyprlock.conf, wofi/style.css, kitty/theme.conf,
+# wlogout's colors/layout,
 # fastfetch/config.jsonc, starship.toml) all target paths that HyKr's
 # link_dots.sh symlinks whole-directory-wise straight into
 # Configs/configs/<app>/ in the repo. A plain `cp`/`>` write follows an
@@ -71,7 +71,7 @@ de_symlink() {
 # tree, and a `git pull` that refuses with "local changes would be
 # overwritten". Exactly the failure the rest of this list exists to prevent.
 for p in "$HOME/.config/hypr" "$HOME/.config/wofi" "$HOME/.config/kitty" \
-         "$HOME/.config/waybar" "$HOME/.config/swaync" "$HOME/.config/wlogout" \
+         "$HOME/.config/wlogout" \
          "$HOME/.config/fastfetch" "$HOME/.config/starship.toml" "$HOME/.config/gtk-4.0" \
          "$HOME/.config/gtk-3.0" "$HOME/.config/theme-switcher" \
          "$HOME/.config/spicetify" "$HOME/.config/quickshell"; do
@@ -124,7 +124,7 @@ fi
 
 # Run an external command with a time limit, discarding its output. Every
 # program this script pokes at a running desktop (awww, kitty's socket,
-# swaync-client, spicetify, hyprctl) can block instead of failing -- on a
+# spicetify, hyprctl) can block instead of failing -- on a
 # daemon that's wedged, a socket nobody answers, or a D-Bus name that
 # auto-starts a service -- and `|| true` only rescues a bad exit status, not
 # a hang. One stuck call used to leave a theme apply sitting silently in the
@@ -156,19 +156,17 @@ ensure_swww() {
   return 1
 }
 
-# waybar, swaync and hyprctl all need a live Wayland session. install.sh
-# applies the default theme from a TTY on a fresh setup, where swaync-client
-# blocks on a session bus that has to be autolaunched and hyprctl waits on a
-# compositor socket that never appears -- neither fails, they just hang, and
-# `|| true` only rescues a bad exit status, not a hang.
+# Quickshell and hyprctl both need a live Wayland session. install.sh
+# applies the default theme from a TTY on a fresh setup, where hyprctl waits
+# on a compositor socket that never appears -- it doesn't fail, it just
+# hangs, and `|| true` only rescues a bad exit status, not a hang.
 wayland_is_live() {
   [[ -n "${WAYLAND_DISPLAY:-}" || -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]
 }
 
-# Read early: both the matugen branch below and the bar-mode switch near
-# the end of the script need these before any of the per-app sections run.
+# Read early: the matugen branch below needs it before any of the per-app
+# sections run.
 dynamic_colors="$(jq -r '.dynamic_colors // false' "$THEME_JSON")"
-bar_mode="$(jq -r '.bar // "waybar"' "$THEME_JSON")"
 
 # --------- Dynamic-color themes: generate colors from wallpaper via matugen ----------
 # Originally hardcoded to `$THEME == "dynamic"`; generalized to any theme
@@ -395,9 +393,9 @@ IFS=$'\001' read -r \
       (.fonts.family_bold // "JetBrainsMono Nerd Font Bold"),
 
 
-      # Which `quickshell -c <name>` config holds the bar for this theme,
-      # read whenever .bar is "quickshell-dock". Defaults to "laptop" so
-      # the Sakura theme keeps working without naming it.
+      # Which `quickshell -c <name>` config holds the bar for this theme.
+      # Defaults to "laptop" so the Sakura theme keeps working without
+      # naming it.
       (.quickshell.config // "laptop"),
 
       # fastfetch logo. Default is the random-Pokemon script every other
@@ -631,7 +629,7 @@ fi
 # own comments) -- config.json is the single source of color it reads,
 # same idea as wofi/rofi's CSS templates above. Previously that file's
 # color fields were just static hardcoded defaults nobody regenerated,
-# so the picker never matched whatever theme kitty/waybar/etc were
+# so the picker never matched whatever theme kitty/the bar/etc were
 # actually showing. jq -c so the rewritten file stays one line smaller
 # than a full pretty-print diff would be, matching how this script
 # otherwise avoids reformatting files it only partially owns.
@@ -657,8 +655,7 @@ fi
 # each config directory that already has a colors.json is one, so this
 # needs no list of theme names to stay current, and switching back to
 # another dock theme can't show it a palette from two themes ago. It's a
-# handful of bytes, and the same reason the waybar templates are rendered
-# even for themes that don't run waybar. (The wallpaper-picker config is
+# handful of bytes. (The wallpaper-picker config is
 # untouched -- its file is config.json, owned by the block further up.)
 #
 # Each dock's Colors.qml declares only the keys it actually reads, so the
@@ -700,55 +697,53 @@ done
 # ...and the active theme's own config even if it has never had one (a dock
 # added without a committed seed would otherwise sit on Colors.qml's
 # built-in fallbacks until the first wallpaper pick).
-if [[ "$bar_mode" == "quickshell-dock" ]]; then
-  write_qs_colors "$QS_BASE/$qs_config"
+write_qs_colors "$QS_BASE/$qs_config"
 
-  # The bar's SHAPE, as opposed to its colours: everything in theme.json's
-  # "quickshell" block except "config". Lets several themes share one shell
-  # and still draw different bars:
-  #
-  #   quickshell/laptop/Colors.qml  layout (single/islands), rounded, radius,
-  #                                   gap, border, clockSize, dateSize
-  #                                   (Sakura's flat strip vs Default's
-  #                                   floating rounded bar)
-  #   quickshell/bar/DockState.qml    style (notch/islands/pill/stats),
-  #                                   colorful, alpha (Hyperspace's notch,
-  #                                   the pill themes, Minimal's stats bar)
-  #
-  # Every key is written every time, defaults first and the theme's own
-  # values over them, so switching from a theme that set a key to one that
-  # doesn't resets it -- rather than relying on the running shell's
-  # JsonAdapter to forget a key that disappeared from the file. Each shell
-  # reads only its own keys; the rest are ignored.
-  #
-  # "font": "kitty" is resolved here to kitty.conf's own font_family, so a
-  # theme can say "use whatever my terminal uses" and keep following it --
-  # change kitty's font and the next theme apply carries it to the bar.
-  # Both kitty forms are read: the newer `font_family family='Name' ...`
-  # and the plain `font_family Name`. Unresolvable (no kitty.conf, or kitty
-  # left on "monospace"/"auto") means "" -- the shell's own default font.
-  kitty_font=""
-  if [[ -r "$HOME/.config/kitty/kitty.conf" ]]; then
-    kitty_font_line="$(grep -m1 -E '^[[:space:]]*font_family[[:space:]]' "$HOME/.config/kitty/kitty.conf" 2>/dev/null || true)"
-    kitty_font_line="${kitty_font_line#*font_family}"
-    if [[ "$kitty_font_line" =~ family=\'([^\']+)\' || "$kitty_font_line" =~ family=\"([^\"]+)\" ]]; then
-      kitty_font="${BASH_REMATCH[1]}"
-    else
-      kitty_font="$(sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$kitty_font_line")"
-    fi
-    case "$kitty_font" in monospace | auto) kitty_font="" ;; esac
+# The bar's SHAPE, as opposed to its colours: everything in theme.json's
+# "quickshell" block except "config". Lets several themes share one shell
+# and still draw different bars:
+#
+#   quickshell/laptop/Colors.qml  layout (single/islands), rounded, radius,
+#                                   gap, border, clockSize, dateSize
+#                                   (Sakura's flat strip vs Default's
+#                                   floating rounded bar)
+#   quickshell/bar/DockState.qml    style (notch/islands/pill/stats),
+#                                   colorful, alpha (Hyperspace's notch,
+#                                   the pill themes, Minimal's stats bar)
+#
+# Every key is written every time, defaults first and the theme's own
+# values over them, so switching from a theme that set a key to one that
+# doesn't resets it -- rather than relying on the running shell's
+# JsonAdapter to forget a key that disappeared from the file. Each shell
+# reads only its own keys; the rest are ignored.
+#
+# "font": "kitty" is resolved here to kitty.conf's own font_family, so a
+# theme can say "use whatever my terminal uses" and keep following it --
+# change kitty's font and the next theme apply carries it to the bar.
+# Both kitty forms are read: the newer `font_family family='Name' ...`
+# and the plain `font_family Name`. Unresolvable (no kitty.conf, or kitty
+# left on "monospace"/"auto") means "" -- the shell's own default font.
+kitty_font=""
+if [[ -r "$HOME/.config/kitty/kitty.conf" ]]; then
+  kitty_font_line="$(grep -m1 -E '^[[:space:]]*font_family[[:space:]]' "$HOME/.config/kitty/kitty.conf" 2>/dev/null || true)"
+  kitty_font_line="${kitty_font_line#*font_family}"
+  if [[ "$kitty_font_line" =~ family=\'([^\']+)\' || "$kitty_font_line" =~ family=\"([^\"]+)\" ]]; then
+    kitty_font="${BASH_REMATCH[1]}"
+  else
+    kitty_font="$(sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//' <<<"$kitty_font_line")"
   fi
+  case "$kitty_font" in monospace | auto) kitty_font="" ;; esac
+fi
 
-  if [[ -d "$QS_BASE/$qs_config" ]]; then
-    jq --arg kitty_font "$kitty_font" \
-       '{layout: "single", font: "", rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
-         style: "notch", colorful: false, alpha: 0.55}
-        + ((.quickshell // {}) | del(.config))
-        | if .font == "kitty" then .font = $kitty_font else . end' \
-      "$THEME_JSON" > "$QS_BASE/$qs_config/style.json.tmp" \
-      && mv "$QS_BASE/$qs_config/style.json.tmp" "$QS_BASE/$qs_config/style.json" \
-      || rm -f "$QS_BASE/$qs_config/style.json.tmp"
-  fi
+if [[ -d "$QS_BASE/$qs_config" ]]; then
+  jq --arg kitty_font "$kitty_font" \
+     '{layout: "single", font: "", rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
+       style: "notch", colorful: false, alpha: 0.55}
+      + ((.quickshell // {}) | del(.config))
+      | if .font == "kitty" then .font = $kitty_font else . end' \
+    "$THEME_JSON" > "$QS_BASE/$qs_config/style.json.tmp" \
+    && mv "$QS_BASE/$qs_config/style.json.tmp" "$QS_BASE/$qs_config/style.json" \
+    || rm -f "$QS_BASE/$qs_config/style.json.tmp"
 fi
 
 # --------- Fastfetch ----------
@@ -880,61 +875,11 @@ if [[ -f "$KITTY_TPL" ]]; then
       # `|| true`: this script runs under `set -euo pipefail`, and a kitty
       # window closed between the pgrep above and this read makes the
       # pipeline fail -- which would abort the whole theme apply partway
-      # through, before waybar/swaync had been restarted.
+      # through, before the bar had been restarted.
       sock="$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^KITTY_LISTEN_ON=//p' || true)"
       [[ -n "$sock" ]] || continue
       tmo 3 kitty @ --to "$sock" set-colors --all -- "$KITTY_OUT" || true
     done
-  fi
-fi
-
-# --------- Waybar (theme-specific layout + colors) ----------
-WAYBAR_DIR="$THEME_PATH/templates/waybar"
-WAYBAR_OUT_DIR="$HOME/.config/waybar"
-WAYBAR_CFG_OUT="$WAYBAR_OUT_DIR/config"
-WAYBAR_STYLE_OUT="$WAYBAR_OUT_DIR/style.css"
-
-if [[ -d "$WAYBAR_DIR" ]]; then
-  mkdir -p "$WAYBAR_OUT_DIR"
-
-  if [[ -f "$WAYBAR_DIR/config" ]]; then
-    cp "$WAYBAR_DIR/config" "$WAYBAR_CFG_OUT"
-  fi
-
-  if [[ -f "$WAYBAR_DIR/style.css.tpl" ]]; then
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{accent_alt}}/$accent_alt_hex/g" \
-      -e "s/{{green}}/$green_hex/g" \
-      -e "s/{{yellow}}/$yellow_hex/g" \
-      -e "s/{{orange}}/$orange_hex/g" \
-      -e "s/{{blue}}/$blue_hex/g" \
-      -e "s/{{teal}}/$teal_hex/g" \
-      -e "s/{{red}}/$red_hex/g" \
-      -e "s/{{pink}}/$pink_hex/g" \
-      -e "s/{{lavender}}/$lavender_hex/g" \
-      -e "s/{{surface}}/$surface_hex/g" \
-      -e "s/{{surface2}}/$surface2_hex/g" \
-      -e "s/{{bg_alt}}/$bg_alt_hex/g" \
-      -e "s/{{overlay}}/$overlay_hex/g" \
-      -e "s/{{fg_dim}}/$fg_dim_hex/g" \
-      -e "s/{{bg_rgba}}/$bg_rgba/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      -e "s/{{font_family_bold}}/$font_family_bold/g" \
-      "$WAYBAR_DIR/style.css.tpl" > "$WAYBAR_STYLE_OUT"
-  fi
-
-  # Only restart waybar for themes that actually run it. A
-  # "quickshell-dock" theme that still ships waybar templates (so its
-  # colors stay in sync for when you switch back) would otherwise spawn
-  # waybar here, on top of the Quickshell dock, for the rest of this
-  # script -- the bar-mode block at the end kills it again, but any
-  # failure in between leaves two bars mapped at once.
-  if [[ "$bar_mode" != "quickshell-dock" ]] && wayland_is_live; then
-    pkill waybar >/dev/null 2>&1 || true
-    waybar >/dev/null 2>&1 &
   fi
 fi
 
@@ -1002,57 +947,6 @@ if [[ -f "$HYPRLOCK_TPL" ]]; then
     -e "s|{{font_family_bold}}|$font_family_bold|g" \
     -e "s|{{wallpaper_path}}|$wp_abs|g" \
     "$HYPRLOCK_TPL" > "$HYPRLOCK_OUT"
-fi
-
-# --------- SwayNC ----------
-SWAYNC_TPL_DIR="$BASE/templates/swaync"
-SWAYNC_OUT_DIR="$HOME/.config/swaync"
-
-SWAYNC_CFG_TPL="$SWAYNC_TPL_DIR/config.json.tpl"
-SWAYNC_STYLE_TPL="$SWAYNC_TPL_DIR/style.css.tpl"
-
-SWAYNC_CFG_OUT="$SWAYNC_OUT_DIR/config.json"
-SWAYNC_STYLE_OUT="$SWAYNC_OUT_DIR/style.css"
-
-if [[ -d "$SWAYNC_TPL_DIR" ]]; then
-  mkdir -p "$SWAYNC_OUT_DIR"
-
-  if [[ -f "$SWAYNC_CFG_TPL" ]]; then
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{blue}}/$blue_hex/g" \
-      -e "s/{{lavender}}/$lavender_hex/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      -e "s/{{font_family_bold}}/$font_family_bold/g" \
-      "$SWAYNC_CFG_TPL" > "$SWAYNC_CFG_OUT"
-  fi
-
-  if [[ -f "$SWAYNC_STYLE_TPL" ]]; then
-    sed \
-      -e "s/{{bg}}/$bg_hex/g" \
-      -e "s/{{fg}}/$fg_hex/g" \
-      -e "s/{{accent}}/$accent_hex/g" \
-      -e "s/{{accent_alt}}/$accent_hex/g" \
-      -e "s/{{font_family}}/$font_family/g" \
-      -e "s/{{font_family_bold}}/$font_family_bold/g" \
-      "$SWAYNC_STYLE_TPL" > "$SWAYNC_STYLE_OUT"
-  fi
-
-  # Reload swaync -- but only when it is actually RUNNING. Under a
-  # Quickshell theme (every shipped theme now) swaync is stopped, and
-  # calling swaync-client then doesn't fail fast: where swaync is D-Bus
-  # activatable, the call tries to auto-start it, which can wait out the
-  # D-Bus timeout (~25s) while Quickshell holds the notification name --
-  # twice, one per call. A theme apply looked like it did nothing for the
-  # best part of a minute. A swaync that isn't running has nothing to
-  # reload anyway: when a waybar theme starts it below, it reads the files
-  # just written.
-  if wayland_is_live && pgrep -x swaync >/dev/null 2>&1 && command -v swaync-client >/dev/null 2>&1; then
-    tmo 3 swaync-client -R || true
-    tmo 3 swaync-client -rs || true
-  fi
 fi
 
 # --------- Wlogout ----------
@@ -1457,12 +1351,11 @@ if [[ -f "$SPICETIFY_TPL" ]]; then
   fi
 fi
 
-# --------- Bar mode: waybar+swaync vs a Quickshell shell ----------
-# A theme can replace the waybar+swaync pair entirely with one Quickshell
-# process (bar, native notification daemon, and its quick panels) by
-# setting "bar": "quickshell-dock" in theme.json. Nothing else supervises
-# these processes, so switching themes has to explicitly tear down
-# whichever pair was running and bring up the other.
+# --------- Bar: the theme's Quickshell shell ----------
+# Every theme's bar is one Quickshell process (bar, native notification
+# daemon, and its quick panels), named by theme.json's "quickshell.config".
+# Nothing else supervises these processes, so switching themes has to
+# explicitly tear down the previous theme's shell and bring up this one.
 if ! wayland_is_live; then
   echo "No Wayland session — skipping bar/notification restart and hyprctl reload" >&2
   exit 0
@@ -1483,26 +1376,23 @@ qs_stop() {
   bash "$QS_STOP" "$@" || true
 }
 
-if [[ "$bar_mode" == "quickshell-dock" ]]; then
-  pkill waybar >/dev/null 2>&1 || true
-  pkill -x swaync >/dev/null 2>&1 || true
-  qs_stop --keep "$qs_config"
+# waybar and swaync are no longer part of HyKr, but an install upgraded from
+# an older version may still have them -- and swaync, D-Bus-activated, would
+# fight the shell for org.freedesktop.Notifications. Stop any leftovers.
+pkill -x waybar >/dev/null 2>&1 || true
+pkill -x swaync >/dev/null 2>&1 || true
+qs_stop --keep "$qs_config"
 
-  # Restart this theme's own shell even if it is already running: its QML
-  # is what just changed shape (a different theme may have been applied
-  # over it), and Quickshell only re-reads a config at startup.
-  qs_stop --only "$qs_config"
+# Restart this theme's own shell even if it is already running: its QML
+# is what just changed shape (a different theme may have been applied
+# over it), and Quickshell only re-reads a config at startup.
+qs_stop --only "$qs_config"
 
-  if command -v quickshell >/dev/null 2>&1; then
-    nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
-    disown
-  else
-    echo "Warning: quickshell not found — $qs_config bar/notifications not started" >&2
-  fi
+if command -v quickshell >/dev/null 2>&1; then
+  nohup quickshell -c "$qs_config" >/dev/null 2>&1 &
+  disown
 else
-  qs_stop --keep ""
-  pgrep -x waybar >/dev/null 2>&1 || { nohup waybar >/dev/null 2>&1 & disown; }
-  pgrep -x swaync >/dev/null 2>&1 || { nohup swaync >/dev/null 2>&1 & disown; }
+  echo "Warning: quickshell not found — $qs_config bar/notifications not started" >&2
 fi
 
 tmo 5 hyprctl reload || true

@@ -1,7 +1,6 @@
-// Entry point for `quickshell -c laptop`. Replaces waybar+swaync for
-// the "Sakura" theme (theme.json sets "bar": "quickshell-dock", which
-// apply-theme.sh reads to decide which pair of processes to run) with
-// one Quickshell shell: a horizontal dock bar per screen, plus a native
+// Entry point for `quickshell -c laptop`, the bar for the Sakura and
+// Default themes (theme.json's "quickshell": { "config": "laptop" }, the
+// default when a theme names none): a horizontal dock bar per screen, plus a native
 // notification daemon and toast stack shared across all of them.
 //
 // The four popup panels (Volume/Network/Bluetooth/NotificationCenter)
@@ -50,25 +49,20 @@ ShellRoot {
         return DockState.activeScreen;
     }
 
-    // Lets Hyprland keybinds and quick_settings.sh reach this shell the
-    // same way they reach swaync under every other theme. Both call sites
-    // try `quickshell -c laptop ipc call dock ...` first and fall back to
-    // swaync-client, which keeps this scoped to the Sakura theme by
-    // construction: no laptop shell is running under the waybar themes, so
-    // the ipc call just fails there and the old swaync path runs unchanged.
+    // Lets Hyprland keybinds and quick_settings.sh reach this shell. Both
+    // call sites go through hypr/dock_ipc.sh, which resolves the ACTIVE
+    // theme's quickshell config name; the target name "dock" is shared with
+    // the bar shell's, so that script needs no per-theme special-casing.
     IpcHandler {
         target: "dock"
 
-        // Super+N. Was bound to `swaync-client -t -sw`, which does nothing
-        // under this theme -- swaync isn't running, the dock's own
-        // notification center replaces it.
+        // Super+N: the dock's own notification center.
         function toggleNotifications(): void {
             DockState.toggle(root.focusedScreen(), "notifications");
         }
 
-        // The quick-settings menu's "Toggle DND" entry, same story: it
-        // shelled out to `swaync-client --toggle-dnd` and was dead here.
-        // This is the exact property NotificationCenterPanel's DND switch
+        // The quick-settings menu's "Toggle DND" entry. This is the exact
+        // property NotificationCenterPanel's DND switch
         // flips, so the two stay in sync either way you toggle it.
         function toggleDnd(): void {
             Services.NotificationService.doNotDisturb = !Services.NotificationService.doNotDisturb;

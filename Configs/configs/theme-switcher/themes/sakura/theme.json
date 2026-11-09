@@ -3,7 +3,6 @@
   "id": "sakura",
   "default_wallpaper": "wallpapers/japan-artistic-5120x2880-25406.jpg",
   "dynamic_colors": true,
-  "bar": "quickshell-dock",
 
   "quickshell": {
     "config": "laptop"

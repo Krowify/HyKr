@@ -29,8 +29,8 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | `Super+G` | Toggle group |
 | `Super+J` | Swap split (window positions — `togglesplit` is broken upstream in Hyprland 0.56.2, [hyprwm/Hyprland#15106](https://github.com/hyprwm/Hyprland/issues/15106)) |
 | `Super+M` | Toggle quick-settings panel (Quickshell) |
-| `Super+Ctrl+B` | Toggle the bar (Waybar, or the Sakura theme's Quickshell dock — whichever the active theme runs) |
-| `Super+N` | Toggle notification center (the Sakura theme's Quickshell dock, else SwayNC) |
+| `Super+Ctrl+B` | Toggle the active theme's Quickshell bar |
+| `Super+N` | Toggle notification center (the active theme's Quickshell bar) |
 | `Super+Shift+N` | Toggle blue light filter (hyprsunset) |
 | `Super+Shift+I` | Toggle caffeine (kills/restarts hypridle) |
 | `Super+S` | Quick-settings menu (Wofi) |
@@ -53,7 +53,7 @@ syntax, see `hyprland.lua` directly — this page is the human-readable index.
 | `Super+Ctrl+Right`/`Left` | Next/previous workspace (relative) |
 | `Super+Ctrl+Down` | Go to nearest empty workspace |
 | `Super+Shift+W` | Wallpaper picker (Wofi + awww + pywal) |
-| `Super+Shift+T` | Theme picker (Wofi) — switches Hyprland, Waybar, Wofi, Kitty, Fastfetch, Starship, Hyprlock, SwayNC, and Wlogout to one of the bundled themes |
+| `Super+Shift+T` | Theme picker (Wofi) — switches Hyprland, the Quickshell bar, Wofi, Kitty, Fastfetch, Starship, Hyprlock, and Wlogout to one of the bundled themes |
 
 ## Alt
 

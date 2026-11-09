@@ -1,6 +1,6 @@
 #!/bin/bash
 # Applies a wallpaper (path given as $1) and propagates its pywal colors
-# everywhere: awww, kitty, starship, swaync, pywalfox, the pywallpaper.jpg
+# everywhere: awww, kitty, starship, pywalfox, the pywallpaper.jpg
 # cache. Shared by every wallpaper picker in this repo (wallpaper.sh's own
 # rofi/wofi menu, and the quickshell wallpaper-picker) so they all drive
 # the exact same color pipeline instead of duplicating/diverging it.
@@ -43,18 +43,6 @@ wal -i "$selected_wallpaper" -n --cols16
 # below -- rofi included -- has $background/$foreground/$colorN as
 # plain bash variables to render with, not just files under ~/.cache.
 source ~/.cache/wal/colors.sh
-
-# Guarded, unlike every other optional tool in this script: the
-# "bar": "quickshell-dock" themes (every shipped theme now) deliberately
-# pkill swaync, so on those themes swaync is *always* down when a wallpaper is
-# picked and an unguarded swaync-client took the rest of this script with it.
-# Only when swaync is RUNNING, and time-limited: with swaync stopped (every
-# Quickshell theme) a swaync-client call can try to D-Bus-activate it and
-# wait out the ~25s D-Bus timeout instead of failing -- see the same guard
-# in apply-theme.sh.
-if pgrep -x swaync >/dev/null 2>&1 && command -v swaync-client >/dev/null 2>&1; then
-    timeout 3 swaync-client --reload-css >/dev/null 2>&1 || true
-fi
 
 cat ~/.cache/wal/colors-kitty.conf > ~/.config/kitty/current-theme.conf
 

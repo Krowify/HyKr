@@ -4,7 +4,7 @@
 #
 # link_dots.sh symlinks each Scripts/dots/*.toml target to its repo
 # source, but apply-theme.sh's de_symlink() permanently converts a
-# handful of those (hypr, wofi, kitty, waybar, swaync, wlogout,
+# handful of those (hypr, wofi, kitty, wlogout,
 # fastfetch, starship.toml, gtk-4.0) into independent real copies the
 # first time a theme is applied -- on purpose, so a theme switch never
 # silently edits tracked repo files. From that point on, a plain
@@ -65,7 +65,7 @@ done < <(git -C "$repoDir" ls-files --others --ignored --exclude-standard 2>/dev
 # exactly what the header above promises not to do.
 #
 # Entries are "<manifest>:<path within it>" because the same filename means
-# different things per app: waybar/config and wlogout/layout are generated,
+# different things per app: wlogout/layout is generated,
 # but wofi/config is a hand-written file that SHOULD be synced. A bare
 # filename pattern could not tell those apart.
 #
@@ -86,11 +86,7 @@ SKIP_PATTERNS=(
     'quickshell:wallpaper-picker/config.json'
     'spicetify:color.ini'
     'starship:starship.toml'
-    'swaync:config.json'
-    'swaync:style.css'
     'theme-switcher:themes/*/colors.json'
-    'waybar:config'
-    'waybar:style.css'
     'wlogout:layout'
     'wlogout:style.css'
     'wofi:style.css'

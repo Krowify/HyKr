@@ -251,19 +251,6 @@ hl.on("hyprland.start", function()
     -- privilege-escalation prompts (mounting a drive from Dolphin, some
     -- NetworkManager/Bluetooth actions) silently fail or hang without one.
     hl.exec_cmd("hyprpolkitagent")
-    -- Bar + notification daemon, picked from the ACTIVE theme rather
-    -- than hardcoded. Every shipped theme replaces the waybar+swaync pair
-    -- with one Quickshell process ("bar": "quickshell-dock" in its
-    -- theme.json, which apply-theme.sh honours); waybar+swaync are only the
-    -- fallback for a theme that names no bar.
-    -- Starting waybar unconditionally here meant it came back on every
-    -- login even under the Sakura theme -- stacked on top of the
-    -- Quickshell dock -- and swaync doubled its notifications.
-    -- The `[ -x ... ] ||` guard covers an install whose ~/.config/hypr
-    -- apply-theme.sh already de-symlinked into a real copy (it does that
-    -- on the first theme apply) before start_bar.sh existed: there the
-    -- script isn't present until link_dots.sh is re-run, and without the
-    -- fallback that login would come up with no bar at all.
     -- Re-assert what the theme switcher last set: the wallpaper (nothing else
     -- in this autostart ever did -- awww-daemon was started and then simply
     -- hoped to restore its own cache) and, if a generated file has gone
@@ -271,7 +258,9 @@ hl.on("hyprland.start", function()
     -- does re-apply a theme, apply-theme.sh brings up that theme's bar itself,
     -- and start_bar.sh below then finds it already running and no-ops.
     hl.exec_cmd("[ -x ~/.config/hypr/restore_theme.sh ] && ~/.config/hypr/restore_theme.sh")
-    hl.exec_cmd("[ -x ~/.config/hypr/start_bar.sh ] && ~/.config/hypr/start_bar.sh || { waybar & swaync & }")
+    -- Bar + notification daemon: the ACTIVE theme's Quickshell shell
+    -- (theme.json's "quickshell.config"), started by start_bar.sh.
+    hl.exec_cmd("~/.config/hypr/start_bar.sh")
     hl.exec_cmd("hypridle")
     hl.exec_cmd("awww-daemon")
     hl.exec_cmd("wal -R")
@@ -324,19 +313,10 @@ hl.bind(var_mainMod .. " + G", hl.dsp.group.toggle())
 -- bound here until upstream restores togglesplit or ships a replacement.
 hl.bind(var_mainMod .. " + J", hl.dsp.layout("swapsplit"))
 hl.bind(var_mainMod .. " + M", hl.dsp.exec_cmd("pkill -x -f 'quickshell -c hykr' || quickshell -c hykr"))
--- Toggles whichever bar the active theme actually runs (waybar, or the
--- Sakura theme's Quickshell dock) -- the old "pkill waybar || waybar"
--- could only ever start waybar, resurrecting it under the Sakura theme.
+-- Toggles the active theme's Quickshell bar.
 hl.bind(var_mainMod .. " + CTRL + B", hl.dsp.exec_cmd("~/.config/hypr/start_bar.sh --toggle"))
--- Notification center. The Sakura theme runs no swaync (its Quickshell
--- dock carries its own notification daemon and center), so this bind was
--- simply dead under that theme. Ask the dock over IPC first; under every
--- waybar theme no laptop shell is running, that call fails, and
--- swaync-client runs exactly as before.
--- dock_ipc.sh resolves the ACTIVE theme's Quickshell config (Laptop's dock,
--- Hyperspace's, or none) and falls back to swaync-client under the waybar
--- themes. It replaces a hardcoded `quickshell -c laptop ipc call ...` that
--- did nothing at all under any other Quickshell theme.
+-- Notification center. dock_ipc.sh resolves the ACTIVE theme's Quickshell
+-- config and calls its notification-center toggle over IPC.
 hl.bind(var_mainMod .. " + N", hl.dsp.exec_cmd("~/.config/hypr/dock_ipc.sh toggle-notifications"))
 hl.bind(var_mainMod .. " + SHIFT + N", hl.dsp.exec_cmd("pkill hyprsunset || hyprsunset -t 5000"))
 hl.bind(var_mainMod .. " + SHIFT + I", hl.dsp.exec_cmd("pkill hypridle || hypridle"))

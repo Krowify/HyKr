@@ -3,7 +3,6 @@
   "id": "hyperspace",
   "default_wallpaper": "wallpapers/hyperspace.png",
   "dynamic_colors": true,
-  "bar": "quickshell-dock",
 
   "quickshell": {
     "config": "bar",

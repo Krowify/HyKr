@@ -16,8 +16,8 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Surface | How |
 | --- | --- |
 | Window borders | Flat `#adf0e9` active border, via `templates/hyprland.lua.tpl` |
-| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`), in its `"layout": "islands"` form: three islands floating 8px in from the top and sides — workspaces on the left, the clock in the centre, battery/volume/network/bluetooth/date/notifications on the right. The two side islands are always the same width, and the left one adds CPU and RAM utilisation whenever both side islands still clear the centre one at that width (per screen — a narrow monitor just leaves them out). 15px corners, a light grey `#9aa3a8` outline, a 14px clock and date in your kitty font (`"font": "kitty"` — read from kitty.conf's `font_family` on each theme apply; icons stay on JetBrainsMono Nerd Font), colours from this theme's palette. All set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`); Sakura runs the same shell as one flat edge-to-edge bar |
-| Notifications | That same Quickshell process, via its own native notification daemon — not swaync |
+| Bar | The shared Quickshell dock, `quickshell -c laptop`, in its `"layout": "islands"` form: three islands floating 8px in from the top and sides — workspaces on the left, the clock in the centre, battery/volume/network/bluetooth/date/notifications on the right. The two side islands are always the same width, and the left one adds CPU and RAM utilisation whenever both side islands still clear the centre one at that width (per screen — a narrow monitor just leaves them out). 15px corners, a light grey `#9aa3a8` outline, a 14px clock and date in your kitty font (`"font": "kitty"` — read from kitty.conf's `font_family` on each theme apply; icons stay on JetBrainsMono Nerd Font), colours from this theme's palette. All set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`); Sakura runs the same shell as one flat edge-to-edge bar |
+| Notifications | That same Quickshell process, via its own native notification daemon |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | fastfetch | `assets/hykr-logo.txt` — a "HyKr" wordmark instead of the random-Pokémon logo, centred against the info column (`padding_top: 4`) and shaded row by row with the same accent→text gradient as the info keys (`$1`–`$8`; `$9` is the dim `hyprland · arch` tag), filled from the palette on every apply |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |
@@ -51,10 +51,10 @@ recorded decision rather than an oversight.
 
 | Upstream | HyKr keeps | Why |
 | --- | --- | --- |
-| mako | the Quickshell dock's own notification daemon | Only one process can claim `org.freedesktop.Notifications`. Under `"bar": "quickshell-dock"`, `apply-theme.sh` stops both waybar and swaync and lets the dock serve notifications itself, so mako has nothing to replace. |
+| mako | the Quickshell dock's own notification daemon | Only one process can claim `org.freedesktop.Notifications`. The Quickshell dock serves notifications itself, so mako has nothing to replace. |
 | walker | wofi + rofi | `apply-theme.sh` resolves its launcher by name (`_PICKER`) and ships `.rasi` templates. Walker uses its own XML layout format (14 `item_*.xml` files), so supporting it is a feature, not a theme. |
 | waybar | the Quickshell dock | This theme originally shipped its own flat waybar layout. It now runs the Quickshell dock instead, alongside Sakura and Hyperspace; the waybar templates were removed rather than left inert. `git show 9e0b789` still has them if the flat waybar bar is ever wanted back. |
-| ghostty | kitty | Harmless to install both, but kitty is hardcoded in swaync's quick actions and wofi. Upstream's two GLSL cursor shaders are ghostty-only and have no equivalent here. |
+| ghostty | kitty | Harmless to install both, but kitty is HyKr's hardcoded terminal (`hyprland.lua`, wofi). Upstream's two GLSL cursor shaders are ghostty-only and have no equivalent here. |
 | `kdeglobals` + `color-schemes/*.colors` | qt6ct | Two competing mechanisms for the same Qt apps. HyKr sets `QT_QPA_PLATFORMTHEME=qt6ct` and generates `qt6ct-colors.conf`, so a dropped-in `kdeglobals` would be inert at best. |
 
 Three smaller divergences:

@@ -2,7 +2,6 @@
   "name": "Everforest",
   "id": "everforest",
   "default_wallpaper": "wallpapers/a_city_with_buildings_and_lights.jpg",
-  "bar": "quickshell-dock",
 
   "quickshell": {
     "config": "bar",

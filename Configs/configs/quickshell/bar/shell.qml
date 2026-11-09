@@ -1,7 +1,6 @@
 // Entry point for `quickshell -c bar` (this directory was quickshell/
-// hyperspace/ until it became a shared shell). Replaces waybar+swaync for
-// any theme whose theme.json sets "bar": "quickshell-dock" and
-// "quickshell": { "config": "bar", "style": ... } -- apply-theme.sh,
+// hyperspace/ until it became a shared shell). The bar for any theme whose
+// theme.json sets "quickshell": { "config": "bar", "style": ... } -- apply-theme.sh,
 // hypr/start_bar.sh and hypr/dock_ipc.sh all read those -- with one
 // Quickshell shell: a top bar per screen in the theme's style (see
 // DockState.barStyle), plus a native notification daemon and toast stack
@@ -45,12 +44,10 @@ ShellRoot {
         return DockState.activeScreen;
     }
 
-    // Lets Hyprland keybinds and quick_settings.sh reach this shell the same
-    // way they reach swaync under the waybar themes. Both call sites go
-    // through hypr/dock_ipc.sh, which resolves the ACTIVE theme's quickshell
-    // config name (so the same keybind reaches `-c laptop` or `-c bar` as
-    // appropriate) and falls back to swaync-client when no
-    // such shell is running. The target name stays "dock", identical to the
+    // Lets Hyprland keybinds and quick_settings.sh reach this shell. Both
+    // call sites go through hypr/dock_ipc.sh, which resolves the ACTIVE
+    // theme's quickshell config name (so the same keybind reaches
+    // `-c laptop` or `-c bar` as appropriate). The target name stays "dock", identical to the
     // Laptop shell's, so that script needs no per-theme special-casing.
     IpcHandler {
         target: "dock"

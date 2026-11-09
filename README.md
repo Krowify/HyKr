@@ -23,7 +23,7 @@
 ```
 HyKr/
 ├── Configs/
-│   ├── configs/   # dotfiles → ~/.config (waybar, wofi, swaync, hypr, nvim, starship.toml,
+│   ├── configs/   # dotfiles → ~/.config (wofi, hypr, nvim, starship.toml,
 │   │               #   wal, wlogout, kitty, gtk-3.0, gtk-4.0, fastfetch, quickshell,
 │   │               #   theme-switcher) + zsh/.zshrc → ~/.zshrc
 │   ├── .local/    # dotfiles → ~/.local
