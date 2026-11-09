@@ -25,11 +25,9 @@ hl.config({
 
     decoration = {
         rounding = {{rounding}},
-
-        -- rounding_power is NOT set here even though Default upstream
-        -- uses 3: theme.json has no field for it, so hardcoding it would
-        -- make this the one theme whose corner profile can't be tuned
-        -- from its theme.json like every other value in this block.
+        -- From theme.json's hypr.rounding_power (apply-theme.sh falls back
+        -- to Hyprland's own default of 2 when a theme leaves it out).
+        rounding_power = {{rounding_power}},
 
         shadow = {
             enabled = {{shadow_enabled}},

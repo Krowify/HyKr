@@ -375,7 +375,7 @@ IFS=$'\001' read -r \
 
 # theme.json -> one shot (same \001 separator, same reason as above)
 IFS=$'\001' read -r \
-  border_size gaps_out rounding blur_enabled_bool blur_size blur_passes blur_vibrancy default_wallpaper \
+  border_size gaps_out rounding rounding_power blur_enabled_bool blur_size blur_passes blur_vibrancy default_wallpaper \
   font_family font_family_bold qs_config \
   logo_type logo_source logo_width logo_height logo_padding_top \
   < <(jq -r '
@@ -383,6 +383,9 @@ IFS=$'\001' read -r \
       (.hypr.border_size // 3),
       (.hypr.gaps_out // 20),
       (.hypr.rounding // 16),
+      # Corner curve: 2 is the Hyprland default (a plain circular arc);
+      # higher values give a squarer, squircle-like corner.
+      (.hypr.rounding_power // 2),
       (.hypr.blur.enabled // true),
       (.hypr.blur.size // 2),
       (.hypr.blur.passes // 3),
@@ -493,6 +496,7 @@ sed \
   -e "s/{{border_active}}/$border_active/g" \
   -e "s/{{border_inactive}}/$border_inactive/g" \
   -e "s/{{rounding}}/$rounding/g" \
+  -e "s/{{rounding_power}}/$rounding_power/g" \
   -e "s/{{active_opacity}}/$active_opacity/g" \
   -e "s/{{inactive_opacity}}/$inactive_opacity/g" \
   -e "s/{{shadow_enabled}}/$shadow_enabled/g" \
