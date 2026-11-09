@@ -699,8 +699,8 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
   # "quickshell" block except "config". Lets several themes share one shell
   # and still draw different bars:
   #
-  #   quickshell/laptop/Colors.qml  rounded, radius, gap, border, clockSize,
-  #                                   dateSize
+  #   quickshell/laptop/Colors.qml  layout (single/islands), rounded, radius,
+  #                                   gap, border, clockSize, dateSize
   #                                   (Sakura's flat strip vs Default's
   #                                   floating rounded bar)
   #   quickshell/bar/DockState.qml    style (notch/islands/pill/stats),
@@ -713,7 +713,7 @@ if [[ "$bar_mode" == "quickshell-dock" ]]; then
   # JsonAdapter to forget a key that disappeared from the file. Each shell
   # reads only its own keys; the rest are ignored.
   if [[ -d "$QS_BASE/$qs_config" ]]; then
-    jq '{rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
+    jq '{layout: "single", rounded: false, radius: 10, gap: 8, border: "", clockSize: 12, dateSize: 12,
          style: "notch", colorful: false, alpha: 0.55}
         + ((.quickshell // {}) | del(.config))' \
       "$THEME_JSON" > "$QS_BASE/$qs_config/style.json.tmp" \

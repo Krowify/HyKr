@@ -80,6 +80,14 @@ ShellRoot {
         DockBar {}
     }
 
+    // CPU/RAM polling exists for the islands layout's left island alone
+    // (the Default theme); Sakura's flat bar leaves it switched off.
+    Binding {
+        target: Services.SystemStatsService
+        property: "wanted"
+        value: Colors.barIslands
+    }
+
     Variants {
         model: Quickshell.screens
         NotificationToasts {}

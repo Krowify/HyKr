@@ -24,9 +24,9 @@ pragma Singleton
 // flat edge-to-edge strip this dock has always been; Default asks for a
 // floating, rounded bar with a light outline and a larger clock and date:
 //
-//   "quickshell": { "config": "laptop", "rounded": true, "radius": 15,
-//                   "gap": 8, "border": "#9aa3a8", "clockSize": 14,
-//                   "dateSize": 14 }
+//   "quickshell": { "config": "laptop", "layout": "islands",
+//                   "rounded": true, "radius": 15, "gap": 8,
+//                   "border": "#9aa3a8", "clockSize": 14, "dateSize": 14 }
 //
 // The shape lived in a BarStyle.qml singleton of its own for a while. On a
 // live install every BarStyle.* read in the dock came back undefined -- a
@@ -144,8 +144,15 @@ Singleton {
     // The bar itself, excluding any gap around it.
     readonly property int barHeight: 34
 
-    // Floating + rounded, or flat and flush with the screen edges.
-    readonly property bool barRounded: style.rounded === true
+    // "islands": three separate islands -- workspaces (+ CPU/RAM when they
+    // fit) on the left, the clock in the centre, the controls on the right,
+    // the two side islands always the same width. Anything else: one bar.
+    readonly property bool barIslands: style.layout === "islands"
+
+    // Floating + rounded, or flat and flush with the screen edges. Islands
+    // always float -- three islands flush against the edges would just be a
+    // bar with two notches in it.
+    readonly property bool barRounded: style.rounded === true || root.barIslands
 
     // How far a rounded bar floats in from the top, left and right edges.
     // Zero when flat: a square bar runs edge to edge as it always has.
@@ -180,6 +187,7 @@ Singleton {
 
         JsonAdapter {
             id: style
+            property string layout: "single"
             property bool rounded: false
             property real radius: 10
             property real gap: 8

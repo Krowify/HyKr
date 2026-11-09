@@ -16,7 +16,7 @@ upstream's `hypr/colors.toml` plus the `@define-color` block in its
 | Surface | How |
 | --- | --- |
 | Window borders | Flat `#adf0e9` active border, via `templates/hyprland.lua.tpl` |
-| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`) — floating 8px in from the top and sides, 15px rounded corners (near-pill on the 34px bar), a light grey `#9aa3a8` outline, and a 14px clock and date, all set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`). The Sakura theme runs the same shell flat and edge-to-edge |
+| Bar | The shared Quickshell dock, `quickshell -c laptop` (`"bar": "quickshell-dock"`), in its `"layout": "islands"` form: three islands floating 8px in from the top and sides — workspaces on the left, the clock in the centre, battery/volume/network/bluetooth/date/notifications on the right. The two side islands are always the same width, and the left one adds CPU and RAM utilisation whenever both side islands still clear the centre one at that width (per screen — a narrow monitor just leaves them out). 15px corners, a light grey `#9aa3a8` outline, a 14px clock and date, colours from this theme's palette. All set in `theme.json`'s `"quickshell"` block (see `quickshell/laptop/Colors.qml`); Sakura runs the same shell as one flat edge-to-edge bar |
 | Notifications | That same Quickshell process, via its own native notification daemon — not swaync |
 | Lock screen | `templates/hyprlock.conf.tpl` — flat black, no wallpaper |
 | btop, cava | The shared `templates/btop.theme.tpl` and `templates/cava.config.tpl` |

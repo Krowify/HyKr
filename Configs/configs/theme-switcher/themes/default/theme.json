@@ -6,6 +6,7 @@
 
   "quickshell": {
     "config": "laptop",
+    "layout": "islands",
     "rounded": true,
     "radius": 15,
     "gap": 8,
