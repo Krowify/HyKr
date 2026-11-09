@@ -1,7 +1,7 @@
 {
   "name": "Arch",
   "id": "arch",
-  "default_wallpaper": "wallpapers/arch_logo.png",
+  "default_wallpaper": "wallpapers/arch_chrome.png",
 
   "quickshell": {
     "config": "bar",
