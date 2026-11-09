@@ -377,7 +377,7 @@ IFS=$'\001' read -r \
 IFS=$'\001' read -r \
   border_size gaps_out rounding blur_enabled_bool blur_size blur_passes blur_vibrancy default_wallpaper \
   font_family font_family_bold qs_config \
-  logo_type logo_source logo_width logo_height \
+  logo_type logo_source logo_width logo_height logo_padding_top \
   < <(jq -r '
     [
       (.hypr.border_size // 3),
@@ -403,7 +403,11 @@ IFS=$'\001' read -r \
       (.fastfetch.logo.type // "command-raw"),
       (.fastfetch.logo.source // ""),
       (.fastfetch.logo.width // 38),
-      (.fastfetch.logo.height // 16)
+      (.fastfetch.logo.height // 16),
+      # Blank lines above the logo, to centre a short one against the info
+      # column (the 8-row HyKr wordmark of the Default theme); 0 keeps every other logo
+      # where it always was.
+      (.fastfetch.logo.padding_top // 0)
     ] | map(tostring) | join("\u0001")
   ' "$THEME_JSON")
 
@@ -785,7 +789,7 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
     grad_steps+=("$(hex_lerp "$accent_hex" "$fg_hex" $((i * 10)))")
   done
 
-  # The "Color" swatch module (pacman + ghosts) used 7 hardcoded
+  # The "Color" swatch module (seven circles) used 7 hardcoded
   # truecolor ANSI codes -- always the same neon rainbow no matter the
   # theme, which is what stood out as unthemed against a muted palette
   # like laptop's red/black. Same idea as the gradient above: pull each
@@ -806,6 +810,7 @@ if [[ -f "$FASTFETCH_TPL" ]]; then
     -e "s|{{logo_source}}|$logo_source|g" \
     -e "s|{{logo_width}}|$logo_width|g" \
     -e "s|{{logo_height}}|$logo_height|g" \
+    -e "s|{{logo_padding_top}}|${logo_padding_top:-0}|g" \
     -e "s/{{fg}}/$fg_hex/g" \
     -e "s/{{fg_dim}}/$fg_dim_hex/g" \
     -e "s/{{red}}/$red_hex/g" \

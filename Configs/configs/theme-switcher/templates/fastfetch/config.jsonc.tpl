@@ -16,11 +16,17 @@
     "height": {{logo_height}},
     "color": {
       "1": "{{grad0}}",
-      "2": "{{fg}}",
-      "3": "{{fg_dim}}"
+      "2": "{{grad1}}",
+      "3": "{{grad3}}",
+      "4": "{{grad4}}",
+      "5": "{{grad6}}",
+      "6": "{{grad7}}",
+      "7": "{{grad9}}",
+      "8": "{{grad10}}",
+      "9": "{{fg_dim}}"
     },
     "padding": {
-      "top": 0,
+      "top": {{logo_padding_top}},
       "left": 2,
       "right": 4
     }
@@ -103,7 +109,7 @@
     {
       "type": "custom",
       "key": " 󰸱 Color",
-      "format": "\u001b[38;2;{{swatch1}}m󰮯 \u001b[38;2;{{swatch2}}m \u001b[38;2;{{swatch3}}m󰊠 \u001b[38;2;{{swatch4}}m󰊠 \u001b[38;2;{{swatch5}}m󰊠 \u001b[38;2;{{swatch6}}m󰊠 \u001b[38;2;{{swatch7}}m󰊠 \u001b[0m"
+      "format": "\u001b[38;2;{{swatch1}}m\u25cf \u001b[38;2;{{swatch2}}m\u25cf \u001b[38;2;{{swatch3}}m\u25cf \u001b[38;2;{{swatch4}}m\u25cf \u001b[38;2;{{swatch5}}m\u25cf \u001b[38;2;{{swatch6}}m\u25cf \u001b[38;2;{{swatch7}}m\u25cf \u001b[0m"
     }
   ]
 }

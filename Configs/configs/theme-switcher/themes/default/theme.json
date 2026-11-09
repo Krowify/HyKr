@@ -19,7 +19,8 @@
   "fastfetch": {
     "logo": {
       "type": "file",
-      "source": "assets/hykr-logo.txt"
+      "source": "assets/hykr-logo.txt",
+      "padding_top": 4
     }
   },
 
