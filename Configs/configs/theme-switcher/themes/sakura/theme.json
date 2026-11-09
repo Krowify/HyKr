@@ -5,7 +5,12 @@
   "dynamic_colors": true,
 
   "quickshell": {
-    "config": "laptop"
+    "config": "laptop",
+    "layout": "islands",
+    "radius": 8,
+    "gap": 10,
+    "clockSize": 14,
+    "dateSize": 13
   },
 
   "fastfetch": {
